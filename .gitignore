@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+monster_dataset/smoke*
+monster_dataset/runs/

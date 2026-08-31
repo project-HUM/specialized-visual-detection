@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "status": "awaiting_reviewed_ground_truth",
+  "sealed_test_reviewed_frames": 0,
+  "passing_targets": {
+    "monster_f1_at_64px_gte_0.85": "not_evaluated",
+    "monster_count_mae_lte_0.5": "not_evaluated",
+    "facing_accuracy_gte_0.95_and_coverage_gte_0.85": "not_evaluated",
+    "a_wave_f1_gte_0.90_and_direction_accuracy_gte_0.95": "not_evaluated"
+  },
+  "diagnostic_not_ground_truth": {
+    "frames": 1074,
+    "registration_success_rate": 1.0,
+    "visual_character_known_rate": 0.019553072625698324,
+    "visual_wave_active_rate": 0.010242085661080074,
+    "monster_count_mean": 0.957169459962756,
+    "monster_count_p95": 3.0,
+    "quality_flag_counts": {
+      "a_key_without_visual_wave": 2,
+      "character_not_visible": 1053,
+      "wave_character_missing": 1053
+    },
+    "warning": "These are output/abstention diagnostics, not accuracy scores. Keys and pending weak labels are not ground truth."
+  }
+}

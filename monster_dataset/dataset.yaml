@@ -1,0 +1,7 @@
+# Ultralytics export configuration. Generated labels must come from reviewed
+# annotations via: python perception_cli.py monster-yolo-export
+path: .
+train: yolo_images/train
+val: yolo_images/validation
+names:
+  0: monster

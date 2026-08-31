@@ -1,0 +1,416 @@
+{
+  "source": "C:\\projects\\map-info-extractor\\InputFlagInspector_2026-08-28_01-29-59\\perception_investigation\\proof\\ui_masked_unstable_residual_cases\\unstable_residual_001747.064.png",
+  "model": "google/owlv2-base-patch16-ensemble",
+  "device": "cuda",
+  "dtype": "float16",
+  "width": 960,
+  "height": 458,
+  "strategy": "text",
+  "concept": "pirate monster, pirate mushroom, pirate enemy",
+  "latency": {
+    "preprocess_ms": 119.47929987218231,
+    "inference_ms": 485.7775999698788,
+    "postprocess_ms": 47.60420008096844,
+    "total_ms": 652.8610999230295
+  },
+  "timestamp": "2026-08-31T18:28:06.100599+00:00",
+  "detections": [
+    {
+      "score": 0.5074800848960876,
+      "concept": "pirate monster",
+      "label": "pirate monster",
+      "source": "text",
+      "prompt": "pirate monster",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate monster"
+      },
+      "box": [
+        190.25,
+        43.75,
+        273.75,
+        114.5
+      ],
+      "center": [
+        232.0,
+        79.125
+      ]
+    },
+    {
+      "score": 0.46950510144233704,
+      "concept": "pirate monster",
+      "label": "pirate monster",
+      "source": "text",
+      "prompt": "pirate monster",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate monster"
+      },
+      "box": [
+        782.0,
+        324.5,
+        876.5,
+        399.5
+      ],
+      "center": [
+        829.25,
+        362.0
+      ]
+    },
+    {
+      "score": 0.4654786288738251,
+      "concept": "pirate monster",
+      "label": "pirate monster",
+      "source": "text",
+      "prompt": "pirate monster",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate monster"
+      },
+      "box": [
+        257.5,
+        147.5,
+        331.25,
+        224.125
+      ],
+      "center": [
+        294.375,
+        185.8125
+      ]
+    },
+    {
+      "score": 0.4403790235519409,
+      "concept": "pirate monster",
+      "label": "pirate monster",
+      "source": "text",
+      "prompt": "pirate monster",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate monster"
+      },
+      "box": [
+        557.5,
+        259.25,
+        644.5,
+        345.5
+      ],
+      "center": [
+        601.0,
+        302.375
+      ]
+    },
+    {
+      "score": 0.41905349493026733,
+      "concept": "pirate monster",
+      "label": "pirate monster",
+      "source": "text",
+      "prompt": "pirate monster",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate monster"
+      },
+      "box": [
+        677.5,
+        315.25,
+        758.0,
+        395.75
+      ],
+      "center": [
+        717.75,
+        355.5
+      ]
+    },
+    {
+      "score": 0.1905733346939087,
+      "concept": "pirate mushroom",
+      "label": "pirate mushroom",
+      "source": "text",
+      "prompt": "pirate mushroom",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate mushroom"
+      },
+      "box": [
+        677.5,
+        315.25,
+        758.0,
+        395.75
+      ],
+      "center": [
+        717.75,
+        355.5
+      ]
+    },
+    {
+      "score": 0.19042274355888367,
+      "concept": "pirate mushroom",
+      "label": "pirate mushroom",
+      "source": "text",
+      "prompt": "pirate mushroom",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate mushroom"
+      },
+      "box": [
+        190.25,
+        43.75,
+        273.75,
+        114.5
+      ],
+      "center": [
+        232.0,
+        79.125
+      ]
+    },
+    {
+      "score": 0.18476751446723938,
+      "concept": "pirate mushroom",
+      "label": "pirate mushroom",
+      "source": "text",
+      "prompt": "pirate mushroom",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate mushroom"
+      },
+      "box": [
+        557.5,
+        259.25,
+        644.5,
+        345.5
+      ],
+      "center": [
+        601.0,
+        302.375
+      ]
+    },
+    {
+      "score": 0.18359363079071045,
+      "concept": "pirate mushroom",
+      "label": "pirate mushroom",
+      "source": "text",
+      "prompt": "pirate mushroom",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate mushroom"
+      },
+      "box": [
+        782.0,
+        324.5,
+        876.5,
+        399.5
+      ],
+      "center": [
+        829.25,
+        362.0
+      ]
+    },
+    {
+      "score": 0.18126320838928223,
+      "concept": "pirate mushroom",
+      "label": "pirate mushroom",
+      "source": "text",
+      "prompt": "pirate mushroom",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate mushroom"
+      },
+      "box": [
+        257.5,
+        147.5,
+        331.25,
+        224.125
+      ],
+      "center": [
+        294.375,
+        185.8125
+      ]
+    },
+    {
+      "score": 0.46080446243286133,
+      "concept": "pirate enemy",
+      "label": "pirate enemy",
+      "source": "text",
+      "prompt": "pirate enemy",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate enemy"
+      },
+      "box": [
+        190.25,
+        43.75,
+        273.75,
+        114.5
+      ],
+      "center": [
+        232.0,
+        79.125
+      ]
+    },
+    {
+      "score": 0.4445647597312927,
+      "concept": "pirate enemy",
+      "label": "pirate enemy",
+      "source": "text",
+      "prompt": "pirate enemy",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate enemy"
+      },
+      "box": [
+        782.0,
+        324.5,
+        876.5,
+        399.5
+      ],
+      "center": [
+        829.25,
+        362.0
+      ]
+    },
+    {
+      "score": 0.42274293303489685,
+      "concept": "pirate enemy",
+      "label": "pirate enemy",
+      "source": "text",
+      "prompt": "pirate enemy",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate enemy"
+      },
+      "box": [
+        103.125,
+        159.25,
+        220.125,
+        224.625
+      ],
+      "center": [
+        161.625,
+        191.9375
+      ]
+    },
+    {
+      "score": 0.4194101393222809,
+      "concept": "pirate enemy",
+      "label": "pirate enemy",
+      "source": "text",
+      "prompt": "pirate enemy",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate enemy"
+      },
+      "box": [
+        257.5,
+        147.5,
+        331.25,
+        224.125
+      ],
+      "center": [
+        294.375,
+        185.8125
+      ]
+    },
+    {
+      "score": 0.4165593087673187,
+      "concept": "pirate enemy",
+      "label": "pirate enemy",
+      "source": "text",
+      "prompt": "pirate enemy",
+      "guide": null,
+      "positive_score": null,
+      "positive_support": null,
+      "best_guide": null,
+      "negative_score": null,
+      "metadata": {
+        "raw_prompt": "pirate enemy"
+      },
+      "box": [
+        557.5,
+        259.25,
+        644.5,
+        345.5
+      ],
+      "center": [
+        601.0,
+        302.375
+      ]
+    }
+  ],
+  "metadata": {
+    "threshold": 0.1,
+    "text_threshold": 0.05,
+    "guide_threshold": 0.1,
+    "targets": [
+      {
+        "name": "pirate monster",
+        "aliases": [],
+        "search_mode": "text"
+      },
+      {
+        "name": "pirate mushroom",
+        "aliases": [],
+        "search_mode": "text"
+      },
+      {
+        "name": "pirate enemy",
+        "aliases": [],
+        "search_mode": "text"
+      }
+    ]
+  }
+}

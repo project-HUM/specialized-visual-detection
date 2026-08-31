@@ -1,0 +1,22 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "perception_investigation/IMPLEMENTATION_NOTE.md": {
+      "bytes": 1395,
+      "sha256": "74137963d08f9d597026e3cfb28c64e4ed0e71a6dc3aa3ed1732e60cc23a6a66"
+    },
+    "perception_investigation/monster_dataset/annotations.jsonl": {
+      "bytes": 106102,
+      "sha256": "3f33aaaa1ee4308b802995271021881d00d831e9a75f47f531f58a08225b66d4"
+    },
+    "perception_investigation/monster_dataset/contacts/contact_001.jpg": {
+      "bytes": 880271,
+      "sha256": "af7c86877a09e245097f1268325651abe58ce8ae539d5b90ed14604f0a5f656e"
+    },
+    "perception_investigation/monster_dataset/dataset_report.json": {
+      "bytes": 356,
+      "sha256": "d8ade2569057962d9f13a85f061db6113f816cf6329557a7e6e1033534a7b554"
+    }
+  },
+  "schema_version": 1
+}

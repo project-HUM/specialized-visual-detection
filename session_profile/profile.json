@@ -1,0 +1,67 @@
+{
+  "background_image": "assets/map_aligned.png",
+  "calibration_quality": {
+    "automatic_mining_status": "bootstrap_only",
+    "character_template_counts": {
+      "left": 4,
+      "right": 3
+    },
+    "guided_calibration_required": true,
+    "monster_template_count": 10,
+    "note": "Template hints are capture-local visual anchors; keys are not stored as visual truth."
+  },
+  "canvas_origin_x": 1,
+  "canvas_origin_y": 220,
+  "character_templates": {
+    "left": [
+      "assets/character_left_00.png",
+      "assets/character_left_01.png",
+      "assets/character_left_02.png",
+      "assets/character_left_03.png"
+    ],
+    "right": [
+      "assets/character_right_00.png",
+      "assets/character_right_01.png",
+      "assets/character_right_02.png"
+    ]
+  },
+  "monster_templates": [
+    "assets/monster_00.png",
+    "assets/monster_01.png",
+    "assets/monster_02.png",
+    "assets/monster_03.png",
+    "assets/monster_04.png",
+    "assets/monster_05.png",
+    "assets/monster_06.png",
+    "assets/monster_07.png",
+    "assets/monster_08.png",
+    "assets/monster_09.png"
+  ],
+  "profile_id": "pirate-ship-2fc8c965e7fe",
+  "reference_frame": 3400,
+  "reference_scene": "assets/reference_scene.png",
+  "reference_time_s": 128.529,
+  "scale": 0.5,
+  "scene_bottom": 945,
+  "scene_top": 30,
+  "source_hashes": {
+    "background": "35dbdd5eae18ad0862213555a86ed6509b669f2a31d7ed101643e5dc01d5d410",
+    "events": "f1db8324b4223947806cb2fff04cd4d852ced7809e8328a0ed14aa92596fe723",
+    "video_or_frames": "2fc8c965e7fec4ec8c0370e5af97a25730d88e08b7e550896937abc59facb170"
+  },
+  "source_height": 1080,
+  "source_width": 1920,
+  "stable_mask": "assets/map_aligned_stable_mask.png",
+  "thresholds": {
+    "background_residual": 34,
+    "character_match": 0.29,
+    "facing_margin": 0.035,
+    "monster_match": 0.42,
+    "monster_nms_radius": 24.0,
+    "wave_flow_margin": 0.35,
+    "wave_position_margin": 18.0,
+    "wave_red_area": 24
+  },
+  "variability_image": "assets/map_aligned_variability.png",
+  "version": 1
+}

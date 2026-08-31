@@ -1,0 +1,70 @@
+{
+  "timestamp": 30.65,
+  "frame_index": 0,
+  "character": {
+    "center": null,
+    "facing": "right",
+    "confidence": 0.55,
+    "provenance": "keys"
+  },
+  "monsters": {
+    "count": 2,
+    "centers": [
+      {
+        "center": [
+          198.0,
+          438.0
+        ],
+        "relative_to_character": null,
+        "confidence": 0.2002,
+        "provenance": "visual_template"
+      },
+      {
+        "center": [
+          683.0,
+          800.0
+        ],
+        "relative_to_character": null,
+        "confidence": 0.1364,
+        "provenance": "visual_template"
+      }
+    ],
+    "confidence": 0.1683,
+    "provenance": "visual_template"
+  },
+  "a_wave": {
+    "state": "unknown",
+    "direction": "unknown",
+    "confidence": 0.0,
+    "provenance": "visual"
+  },
+  "visual_only": {
+    "character": {
+      "center": null,
+      "facing": "unknown",
+      "confidence": 0.0,
+      "provenance": "visual"
+    },
+    "a_wave": {
+      "state": "unknown",
+      "direction": "unknown",
+      "confidence": 0.0,
+      "provenance": "visual"
+    }
+  },
+  "registration": {
+    "ok": true,
+    "shift": [
+      0.022,
+      35.62
+    ],
+    "confidence": 1.0,
+    "good_matches": 404,
+    "inliers": 298,
+    "stable_fraction": 0.2049
+  },
+  "quality_flags": [
+    "character_not_visible",
+    "wave_character_missing"
+  ]
+}

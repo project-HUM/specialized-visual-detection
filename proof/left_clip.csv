@@ -1,0 +1,9 @@
+frame_index,timestamp,character_x,character_y,character_facing,character_confidence,monster_count,monster_centers,a_wave_state,a_wave_direction,a_wave_confidence,a_wave_provenance,registration_ok,registration_confidence,quality_flags
+3054,115.631,,,left,0.55,2,"[[1463.0, 845.0], [1218.0, 857.0]]",unknown,unknown,0.0,visual,True,1.0,character_not_visible;wave_character_missing
+3060,115.839367,,,left,0.55,2,"[[1218.0, 845.0], [1421.0, 831.0]]",unknown,unknown,0.0,visual,True,1.0,character_not_visible;wave_character_missing
+3065,116.047733,597.0,711.0,left,0.6776,3,"[[1108.0, 833.0], [1385.0, 825.0], [1218.0, 835.0]]",active,left,1.0,fused,True,1.0,
+3070,116.263033,597.0,711.0,left,0.55,2,"[[1343.0, 817.0], [1218.0, 827.0]]",active,left,1.0,fused,True,1.0,character_not_visible;character_temporal_hold
+3075,116.4714,597.0,711.0,left,0.55,2,"[[748.0, 821.0], [1108.0, 819.0]]",active,right,0.98,fused,True,1.0,character_not_visible;character_temporal_hold;wave_direction_key_disagreement
+3081,116.679767,597.0,711.0,left,0.55,0,[],active,left,1.0,fused,True,1.0,character_not_visible;character_temporal_hold
+3086,116.888133,597.0,711.0,left,0.55,1,"[[1227.0, 803.0]]",active,left,0.98,visual,True,1.0,character_not_visible;character_temporal_hold
+3092,117.103467,597.0,711.0,left,0.55,1,"[[496.0, 245.0]]",active,left,0.98,visual,True,1.0,character_not_visible;character_temporal_hold

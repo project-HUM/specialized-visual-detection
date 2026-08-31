@@ -1,0 +1,8 @@
+frame_index,timestamp,character_x,character_y,character_facing,character_confidence,monster_count,monster_centers,a_wave_state,a_wave_direction,a_wave_confidence,a_wave_provenance,registration_ok,registration_confidence,quality_flags
+2968,112.415167,,,left,0.55,1,"[[200.0, 483.0]]",unknown,unknown,0.0,visual,True,1.0,character_not_visible;wave_character_missing
+2974,112.630467,324.0,683.0,left,0.55,0,[],active,unknown,0.539,visual,True,1.0,facing_ambiguous;wave_direction_disagreement
+2980,112.8458,324.0,683.0,left,0.55,1,"[[198.0, 479.0]]",active,right,0.98,visual,True,1.0,character_not_visible;character_temporal_hold
+2986,113.054167,324.0,683.0,right,0.55,2,"[[385.0, 493.0], [214.0, 481.0]]",active,left,0.98,fused,True,1.0,character_not_visible;character_temporal_hold;wave_direction_key_disagreement
+2991,113.283367,324.0,683.0,right,0.55,0,[],active,left,0.98,fused,True,1.0,character_not_visible;character_temporal_hold;wave_direction_key_disagreement
+2997,113.491733,324.0,683.0,right,0.55,0,[],active,left,0.98,fused,True,1.0,character_not_visible;character_temporal_hold;wave_direction_key_disagreement
+3003,113.707033,324.0,683.0,right,0.55,0,[],active,unknown,0.539,fused,True,1.0,character_not_visible;character_temporal_hold;wave_direction_disagreement

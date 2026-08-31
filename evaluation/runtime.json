@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "resolution": "1920x1080",
+  "frames": 10,
+  "mean_ms": 209.3696399941109,
+  "p50_ms": 213.7605000170879,
+  "p95_ms": 230.9464199992362,
+  "throughput_fps": 4.776241674906294,
+  "peak_process_memory_bytes": 111128576,
+  "python": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "opencv": "4.11.0",
+  "numpy": "2.2.1",
+  "video_sha256": "2fc8c965e7fec4ec8c0370e5af97a25730d88e08b7e550896937abc59facb170"
+}

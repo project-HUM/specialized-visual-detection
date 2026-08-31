@@ -1,0 +1,49 @@
+{
+  "timestamp": null,
+  "frame_index": 0,
+  "character": {
+    "center": null,
+    "facing": "unknown",
+    "confidence": 0.0,
+    "provenance": "visual"
+  },
+  "monsters": {
+    "count": 0,
+    "centers": [],
+    "confidence": 0.0,
+    "provenance": "visual_template"
+  },
+  "a_wave": {
+    "state": "unknown",
+    "direction": "unknown",
+    "confidence": 0.0,
+    "provenance": "visual"
+  },
+  "visual_only": {
+    "character": {
+      "center": null,
+      "facing": "unknown",
+      "confidence": 0.0,
+      "provenance": "visual"
+    },
+    "a_wave": {
+      "state": "unknown",
+      "direction": "unknown",
+      "confidence": 0.0,
+      "provenance": "visual"
+    }
+  },
+  "registration": {
+    "ok": false,
+    "shift": null,
+    "confidence": 0.0,
+    "good_matches": 0,
+    "inliers": 0,
+    "stable_fraction": 0.0
+  },
+  "quality_flags": [
+    "character_not_visible",
+    "registration_failed",
+    "wave_character_missing"
+  ]
+}

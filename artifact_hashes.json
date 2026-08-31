@@ -1,0 +1,98 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "background_reconstruction/map_aligned.png": {
+      "bytes": 863022,
+      "sha256": "35dbdd5eae18ad0862213555a86ed6509b669f2a31d7ed101643e5dc01d5d410"
+    },
+    "background_reconstruction/map_aligned_stable_mask.png": {
+      "bytes": 30129,
+      "sha256": "24248e5cd1769ddb5501eb3354791c4aa6e9a2688ddde7d9e8bb6dffb56a5a60"
+    },
+    "events.csv": {
+      "bytes": 517601,
+      "sha256": "f1db8324b4223947806cb2fff04cd4d852ced7809e8328a0ed14aa92596fe723"
+    },
+    "perception_investigation/PROOF_REPORT.md": {
+      "bytes": 4495,
+      "sha256": "afa384499b8441f6fa2b8a673e5b898a55c656443e91879d8fc3a43fdc0a0b22"
+    },
+    "perception_investigation/README.md": {
+      "bytes": 4716,
+      "sha256": "8a7c97b512284af155ac2eb3bf0bb6c129781f2d66d0eee353ec0fef898fc776"
+    },
+    "perception_investigation/benchmark/annotations.csv": {
+      "bytes": 26883,
+      "sha256": "1c40c1ca72d9ea01c05bbea9946fd68ecc539541385b8bafc41acd256930baf1"
+    },
+    "perception_investigation/benchmark/annotations.manifest.json": {
+      "bytes": 736,
+      "sha256": "85420fb7ee4d28d159d09abe88929b6a035ed5483da17894ca2f1171334d1104"
+    },
+    "perception_investigation/evaluation/metrics.json": {
+      "bytes": 967,
+      "sha256": "91a8764f07ff33120ee7230c7791549227dfe429bc739d4b9611f0c9a4eda6f3"
+    },
+    "perception_investigation/evaluation/runtime.json": {
+      "bytes": 528,
+      "sha256": "8e29ca612ea370739aca804e20aaa5ef5e54d0be83a04b1f6984828138cff755"
+    },
+    "perception_investigation/perception/benchmark.py": {
+      "bytes": 14130,
+      "sha256": "1e47417d7edb15432db71981c4f3a83ca7ef06b8dbe77c1a20bc02aaa9b533d9"
+    },
+    "perception_investigation/perception/core.py": {
+      "bytes": 37372,
+      "sha256": "9cae1defede96024ffb597f182d79f685274f5b46f22d6c57fc478dbc454d194"
+    },
+    "perception_investigation/perception_cli.py": {
+      "bytes": 20610,
+      "sha256": "bed97f6b2953cd354ace2ac493b4918529332668529d560c279bd4a4a0a2351f"
+    },
+    "perception_investigation/proof/annotated_full_overview_current_timeline.mp4": {
+      "bytes": 134962672,
+      "sha256": "db14e9b5e0307cecce24efccab14b0c0833d2e8a3825f9dfeb71b2be944be90a"
+    },
+    "perception_investigation/proof/crowded_clip.mp4": {
+      "bytes": 397966,
+      "sha256": "74727993957e0e7a5fbee4e7cd881b8754bd6c9af3ab1790627e4b1d41cabc28"
+    },
+    "perception_investigation/proof/failure_unknown_clip.mp4": {
+      "bytes": 7101,
+      "sha256": "1392297dc3beff14ebd1ef0e38cdc066f24d6ce587d31ae0cef58cf1293fc8e3"
+    },
+    "perception_investigation/proof/full_overview_current.csv": {
+      "bytes": 141716,
+      "sha256": "71ba1fac7297bf42ded274d7589947fd2ce8ba50f0cf3c82050abd6396bc466f"
+    },
+    "perception_investigation/proof/full_overview_current.jsonl": {
+      "bytes": 853589,
+      "sha256": "9255a300d816174c6c9ea758faef8e678db75f9a279fba00280de6d96f480a0d"
+    },
+    "perception_investigation/proof/left_clip.mp4": {
+      "bytes": 749549,
+      "sha256": "a642bc8a61447bdd624f7494c90777fdb035c9c370ba0d0fcaa5f0b0ab7f744c"
+    },
+    "perception_investigation/proof/proof_gallery.png": {
+      "bytes": 4577186,
+      "sha256": "384fd60abe176e903f1aeb82e04eb63b5c122eeb0dd38011c0dead336f3837f1"
+    },
+    "perception_investigation/proof/right_clip.mp4": {
+      "bytes": 666392,
+      "sha256": "820bf92bf94224be50e7b3a9b6712ae8137da9ffa9dbd74fecf71d8ade9f9f5c"
+    },
+    "perception_investigation/requirements-lock.txt": {
+      "bytes": 86,
+      "sha256": "8155320ce7552be4fc4ee0b6f0e61db8cd9977e34a4376026a5a166d237d1b16"
+    },
+    "perception_investigation/session_profile/profile.json": {
+      "bytes": 2092,
+      "sha256": "9d9ea098792c551767b97afe283b20c0d80c567a8ecc291ef6dfc90f6efb4230"
+    },
+    "sync.json": {
+      "bytes": 1009,
+      "sha256": "46976b003fa3fac83ea5676ccf6bdbc847922c20f900d5c6d411e1d593b8fe52"
+    }
+  },
+  "schema_version": 1
+}

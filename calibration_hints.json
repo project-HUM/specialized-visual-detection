@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "note": "Capture-local bootstrap boxes visually checked on screen.mp4. Facing labels use an exclusive held direction interval but must not be treated as benchmark truth.",
+  "character": [
+    {"timestamp": 30.447689, "bbox": [225, 600, 145, 170], "facing": "right"},
+    {"timestamp": 58.774214, "bbox": [110, 585, 140, 180], "facing": "right"},
+    {"timestamp": 112.989205, "bbox": [185, 595, 140, 175], "facing": "right"},
+    {"timestamp": 116.000471, "bbox": [535, 625, 135, 175], "facing": "left"},
+    {"timestamp": 661.041833, "bbox": [830, 555, 180, 190], "facing": "left"},
+    {"timestamp": 697.835882, "bbox": [735, 550, 190, 200], "facing": "left"},
+    {"timestamp": 857.541832, "bbox": [815, 550, 190, 200], "facing": "left"}
+  ],
+  "monsters": [
+    {"timestamp": 30.447689, "bbox": [135, 360, 130, 115]},
+    {"timestamp": 30.447689, "bbox": [325, 365, 140, 115]},
+    {"timestamp": 30.447689, "bbox": [640, 380, 140, 110]},
+    {"timestamp": 30.447689, "bbox": [655, 715, 145, 115]},
+    {"timestamp": 112.989205, "bbox": [145, 395, 140, 115]},
+    {"timestamp": 112.989205, "bbox": [310, 410, 150, 110]},
+    {"timestamp": 112.989205, "bbox": [320, 620, 140, 110]},
+    {"timestamp": 116.000471, "bbox": [1035, 750, 145, 115]},
+    {"timestamp": 116.000471, "bbox": [1145, 750, 145, 115]},
+    {"timestamp": 116.000471, "bbox": [1315, 740, 155, 115]}
+  ]
+}

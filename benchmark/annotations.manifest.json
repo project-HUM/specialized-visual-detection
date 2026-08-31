@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "count": 360,
+  "minimum_separation_s": 0.55,
+  "split_ranges": [
+    {
+      "name": "train",
+      "start": 0.0,
+      "end": 1298.4
+    },
+    {
+      "name": "validation",
+      "start": 1298.4,
+      "end": 1731.2
+    },
+    {
+      "name": "test",
+      "start": 1731.2,
+      "end": 2163.8
+    }
+  ],
+  "categories": {
+    "clean_gameplay": 120,
+    "a_skill": 120,
+    "heavy_effects": 120
+  },
+  "splits": {
+    "train": 216,
+    "validation": 72,
+    "test": 72
+  },
+  "annotations_sha256": "1c40c1ca72d9ea01c05bbea9946fd68ecc539541385b8bafc41acd256930baf1",
+  "warning": "weak_* columns are candidate-mining evidence only; evaluation uses review_status=reviewed."
+}

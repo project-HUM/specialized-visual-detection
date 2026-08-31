@@ -1,0 +1,111 @@
+{
+  "timestamp": 30.447689,
+  "frame_index": 0,
+  "character": {
+    "center": [
+      298.0,
+      685.0
+    ],
+    "facing": "right",
+    "confidence": 1.0,
+    "provenance": "visual",
+    "scores": {
+      "left": 0.1724,
+      "right": 0.7196
+    }
+  },
+  "monsters": {
+    "count": 4,
+    "centers": [
+      {
+        "center": [
+          728.0,
+          795.0
+        ],
+        "relative_to_character": [
+          430.0,
+          110.0
+        ],
+        "confidence": 0.6202,
+        "provenance": "visual_template"
+      },
+      {
+        "center": [
+          198.0,
+          438.0
+        ],
+        "relative_to_character": [
+          -100.0,
+          -247.0
+        ],
+        "confidence": 0.4212,
+        "provenance": "visual_template"
+      },
+      {
+        "center": [
+          397.0,
+          442.0
+        ],
+        "relative_to_character": [
+          99.0,
+          -243.0
+        ],
+        "confidence": 0.3934,
+        "provenance": "visual_template"
+      },
+      {
+        "center": [
+          707.0,
+          449.0
+        ],
+        "relative_to_character": [
+          409.0,
+          -236.0
+        ],
+        "confidence": 0.094,
+        "provenance": "visual_template"
+      }
+    ],
+    "confidence": 0.3822,
+    "provenance": "visual_template"
+  },
+  "a_wave": {
+    "state": "inactive",
+    "direction": "inactive",
+    "confidence": 0.75,
+    "provenance": "visual"
+  },
+  "visual_only": {
+    "character": {
+      "center": [
+        298.0,
+        685.0
+      ],
+      "facing": "right",
+      "confidence": 1.0,
+      "provenance": "visual",
+      "scores": {
+        "left": 0.1724,
+        "right": 0.7196
+      }
+    },
+    "a_wave": {
+      "state": "inactive",
+      "direction": "inactive",
+      "confidence": 0.75,
+      "provenance": "visual"
+    }
+  },
+  "registration": {
+    "ok": true,
+    "shift": [
+      -0.015,
+      35.995
+    ],
+    "confidence": 1.0,
+    "good_matches": 415,
+    "inliers": 296,
+    "stable_fraction": 0.2049
+  },
+  "quality_flags": []
+}

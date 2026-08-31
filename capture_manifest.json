@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "capture_dir": "C:/projects/map-info-extractor/InputFlagInspector_2026-08-28_01-29-59",
+  "video": "C:/projects/map-info-extractor/InputFlagInspector_2026-08-28_01-29-59/screen.mp4",
+  "events": "C:/projects/map-info-extractor/InputFlagInspector_2026-08-28_01-29-59/events.csv",
+  "background": "C:/projects/map-info-extractor/InputFlagInspector_2026-08-28_01-29-59/background_reconstruction",
+  "note": "The source capture remains in map-info-extractor; set PERCEPTION_CAPTURE_DIR when using another capture."
+}
