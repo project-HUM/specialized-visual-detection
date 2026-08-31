@@ -20,10 +20,14 @@ from perception import FrameAnalyzer, SessionProfile, build_session_profile
 from perception.benchmark import build_manifest, evaluate
 from perception.core import EventTimeline, sha256_file, video_frame_timestamps
 from perception.render import draw_observation, write_per_frame_csv
+from perception.specialized_detector import YoloMonsterDetector
+from perception.monster_evaluation import evaluate_monsters
 from monster_dataset.sampler import discover_recordings, sample_from_benchmark
-from monster_dataset.annotation_io import read_jsonl, export_yolo
+from monster_dataset.annotation_io import export_yolo, sync_splits_from_benchmark
+from monster_dataset.schema import read_jsonl
 from monster_dataset.validation import write_report
-from monster_dataset.contact_sheet import write_contact_sheets
+from monster_dataset.contact_sheet import write_contact_sheets, write_temporal_context
+from monster_dataset.review_app import MonsterReviewApp
 
 
 HERE = Path(__file__).resolve().parent
@@ -51,6 +55,7 @@ def _parser() -> argparse.ArgumentParser:
     image.add_argument("--events", type=Path)
     image.add_argument("--json", type=Path)
     image.add_argument("--annotated", type=Path)
+    _add_detector_arguments(image)
 
     video = commands.add_parser("video")
     video.add_argument("input", type=Path, nargs="?", default=CAPTURE / "screen.mp4")
@@ -63,6 +68,7 @@ def _parser() -> argparse.ArgumentParser:
     video.add_argument("--csv", type=Path)
     video.add_argument("--annotated", type=Path)
     video.add_argument("--annotated-width", type=int, default=960)
+    _add_detector_arguments(video)
 
     manifest = commands.add_parser("benchmark-manifest")
     manifest.add_argument("--events", type=Path, default=CAPTURE / "events.csv")
@@ -86,6 +92,7 @@ def _parser() -> argparse.ArgumentParser:
     bench.add_argument("--start", type=float, default=100.0)
     bench.add_argument("--frames", type=int, default=30)
     bench.add_argument("--output", type=Path, default=HERE / "evaluation" / "runtime.json")
+    _add_detector_arguments(bench)
 
     summary = commands.add_parser("summarize")
     summary.add_argument("--observations", type=Path, required=True)
@@ -117,16 +124,55 @@ def _parser() -> argparse.ArgumentParser:
     monster_sample.add_argument("--benchmark", type=Path, default=HERE / "benchmark" / "annotations.csv")
     monster_sample.add_argument("--images", type=Path, default=HERE / "monster_dataset" / "images")
     monster_sample.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    monster_report = commands.add_parser("monster-report", help="summarize reviewed/pending monster annotations")
+    monster_report = commands.add_parser("monster-review-report", aliases=["monster-report"], help="validate and summarize monster annotations")
     monster_report.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
     monster_report.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "dataset_report.json")
     monster_contact = commands.add_parser("monster-contact-sheet", help="render contact sheets for annotation review")
     monster_contact.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
     monster_contact.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "contacts")
+    monster_contact.add_argument("--split", choices=("train", "validation"), required=True)
+    temporal = commands.add_parser("monster-temporal-context", help="render previous/current/next review strips")
+    temporal.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
+    temporal.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
+    temporal.add_argument("--split", choices=("train", "validation"), required=True)
+    temporal.add_argument("--delta", type=float, default=0.20)
+    temporal.add_argument("--frame-id", action="append", help="render only selected frame IDs; repeat as needed")
+    temporal.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "temporal_context")
+    review = commands.add_parser("monster-review", help="interactive train/validation box review with temporal context")
+    review.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
+    review.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
+    review.add_argument("--split", choices=("train","validation"), required=True)
+    review.add_argument("--start-id")
+    review.add_argument("--delta", type=float, default=.20)
     monster_yolo = commands.add_parser("monster-yolo-export", help="export only reviewed canonical labels to YOLO text")
     monster_yolo.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    monster_yolo.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "yolo_labels")
+    monster_yolo.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "yolo_dataset")
+    monster_yolo.add_argument("--split", choices=("train", "validation"), required=True)
+    sync_splits = commands.add_parser("monster-sync-splits", help="migrate split metadata without reading sealed images")
+    sync_splits.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
+    sync_splits.add_argument("--benchmark", type=Path, default=HERE / "benchmark" / "annotations.csv")
+    monster_evaluate = commands.add_parser("monster-evaluate", help="evaluate detector and tracker separately on reviewed development labels")
+    monster_evaluate.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
+    monster_evaluate.add_argument("--observations", type=Path, required=True)
+    monster_evaluate.add_argument("--split", choices=("train", "validation"), default="validation")
+    monster_evaluate.add_argument("--radius", type=float, default=64.0)
+    monster_evaluate.add_argument("--output", type=Path, default=HERE / "evaluation" / "specialized_monster")
     return parser
+
+def _add_detector_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--monster-backend", choices=("template", "yolo"), default="template")
+    parser.add_argument("--monster-weights", type=Path)
+    parser.add_argument("--monster-confidence", type=float, default=.21)
+    parser.add_argument("--monster-nms-iou", type=float, default=.78)
+    parser.add_argument("--monster-imgsz", type=int, default=768)
+    parser.add_argument("--monster-device")
+
+def _monster_detector(args: argparse.Namespace):
+    if args.monster_backend == "template": return None
+    if args.monster_weights is None: raise ValueError("--monster-weights is required for --monster-backend yolo")
+    return YoloMonsterDetector(args.monster_weights,confidence=args.monster_confidence,
+                               nms_iou=args.monster_nms_iou,input_resolution=args.monster_imgsz,
+                               device=args.monster_device)
 
 
 def _frame_at(path: Path, timestamp: float | None) -> np.ndarray:
@@ -158,7 +204,7 @@ def _run_video(args: argparse.Namespace) -> None:
             while next_time <= timestamps[index]:
                 next_time += minimum_step
     timeline = EventTimeline(args.events) if args.events else None
-    analyzer = FrameAnalyzer(args.profile)
+    analyzer = FrameAnalyzer(args.profile, monster_detector=_monster_detector(args))
     capture = cv2.VideoCapture(str(args.input))
     if not capture.isOpened():
         raise RuntimeError(f"Could not open {args.input}")
@@ -184,7 +230,9 @@ def _run_video(args: argparse.Namespace) -> None:
                 continue
             timestamp = timestamps[frame_index]
             state = timeline.state_at(timestamp) if timeline else None
+            started = time.perf_counter()
             observation = analyzer.analyze(frame, timestamp, state)
+            observation["runtime_ms"] = (time.perf_counter() - started) * 1000.0
             observation["frame_index"] = frame_index
             jsonl.write(json.dumps(observation, separators=(",", ":")) + "\n")
             observations.append(observation)
@@ -206,7 +254,7 @@ def _run_video(args: argparse.Namespace) -> None:
 def _benchmark_runtime(args: argparse.Namespace) -> dict:
     capture = cv2.VideoCapture(str(args.video))
     capture.set(cv2.CAP_PROP_POS_MSEC, args.start * 1000.0)
-    analyzer = FrameAnalyzer(args.profile)
+    analyzer = FrameAnalyzer(args.profile, monster_detector=_monster_detector(args))
     samples = []
     for _ in range(args.frames):
         ok, frame = capture.read()
@@ -394,7 +442,7 @@ def main() -> int:
     elif args.command == "image":
         frame = _frame_at(args.input, args.timestamp)
         timeline = EventTimeline(args.events) if args.events and args.timestamp is not None else None
-        observation = FrameAnalyzer(args.profile).analyze(frame, args.timestamp, timeline.state_at(args.timestamp) if timeline else None)
+        observation = FrameAnalyzer(args.profile, monster_detector=_monster_detector(args)).analyze(frame, args.timestamp, timeline.state_at(args.timestamp) if timeline else None)
         encoded = json.dumps(observation, indent=2)
         print(encoded)
         if args.json:
@@ -441,13 +489,24 @@ def main() -> int:
     elif args.command == "monster-sample":
         items = sample_from_benchmark(args.video, args.benchmark, args.images, output_jsonl=args.annotations)
         print(json.dumps({"frames": len(items), "annotations": str(args.annotations), "images": str(args.images)}, indent=2))
-    elif args.command == "monster-report":
+    elif args.command in {"monster-review-report", "monster-report"}:
         print(json.dumps(write_report(read_jsonl(args.annotations), args.output), indent=2))
     elif args.command == "monster-contact-sheet":
-        outputs = write_contact_sheets(read_jsonl(args.annotations), args.output)
+        outputs = write_contact_sheets(read_jsonl(args.annotations), args.output, split=args.split)
         print(json.dumps({"sheets": len(outputs), "output": str(args.output)}, indent=2))
+    elif args.command == "monster-temporal-context":
+        outputs = write_temporal_context(read_jsonl(args.annotations), args.video, args.output,
+                                         split=args.split, delta_s=args.delta,
+                                         frame_ids=set(args.frame_id) if args.frame_id else None)
+        print(json.dumps({"frames": len(outputs), "split": args.split, "output": str(args.output)}, indent=2))
+    elif args.command == "monster-review":
+        MonsterReviewApp(args.annotations,args.video,split=args.split,start_id=args.start_id,delta_s=args.delta).run()
     elif args.command == "monster-yolo-export":
-        print(json.dumps(export_yolo(read_jsonl(args.annotations), args.output), indent=2))
+        print(json.dumps(export_yolo(read_jsonl(args.annotations), args.output, split=args.split), indent=2))
+    elif args.command == "monster-sync-splits":
+        print(json.dumps(sync_splits_from_benchmark(read_jsonl(args.annotations),args.benchmark,args.annotations),indent=2))
+    elif args.command == "monster-evaluate":
+        print(json.dumps(evaluate_monsters(args.annotations,args.observations,args.output,split=args.split,radius=args.radius),indent=2))
     return 0
 
 

@@ -1,35 +1,73 @@
+"""Canonical annotation import and strict split-aware detector export."""
 from __future__ import annotations
-import csv, json
+import csv
+import shutil
 from pathlib import Path
-from .schema import FrameAnnotation, MonsterAnnotation, read_jsonl, write_jsonl
+from .schema import FrameAnnotation
+from .schema import write_jsonl
 
 def from_benchmark_csv(path: Path, image_root: Path) -> list[FrameAnnotation]:
     rows = list(csv.DictReader(path.open("r", encoding="utf-8-sig", newline="")))
-    result=[]
-    for row in rows:
-        result.append(FrameAnnotation(row["sample_id"], float(row["timestamp"]), str(image_root / f"{row['sample_id']}_{float(row['timestamp']):010.3f}.jpg"), category=row.get("category", "unspecified"), review_status=row.get("review_status", "pending"), notes=row.get("notes", "")))
-    return result
+    return [FrameAnnotation(frame_id=row["sample_id"], timestamp=float(row["timestamp"]),
+                            image_path=str(image_root / f"{row['sample_id']}_{float(row['timestamp']):010.3f}.jpg"),
+                            split=row["split"], category=row.get("category", "unspecified"),
+                            review_status=row.get("review_status", "pending"), notes=row.get("notes", "")) for row in rows]
 
-def export_yolo(items: list[FrameAnnotation], output_dir: Path, *, include_pending: bool = False) -> dict[str,int]:
-    output_dir.mkdir(parents=True, exist_ok=True); labels=0; skipped=0
-    for item in items:
-        if item.review_status != "reviewed" and not include_pending:
-            skipped += 1; continue
-        image = Path(item.image_path)
-        # YOLO remains an export, never the canonical representation.
-        try:
-            import cv2
-            frame = cv2.imread(str(image), cv2.IMREAD_UNCHANGED)
-            if frame is None: raise FileNotFoundError(image)
-            # Canonical boxes are in source capture coordinates even though
-            # review images are downscaled to 960x540.
-            width,height=1920,1080
-        except Exception:
-            skipped += 1; continue
-        lines=[]
+def validate_for_export(items: list[FrameAnnotation], split: str) -> list[FrameAnnotation]:
+    if split not in {"train", "validation"}:
+        raise ValueError("Detector development export permits only train or validation; sealed test is protected")
+    selected = [item for item in items if item.split == split]
+    if not selected:
+        raise ValueError(f"No annotations found for split {split!r}")
+    failures: list[str] = []
+    for item in selected:
+        if item.review_status != "reviewed":
+            failures.append(f"{item.frame_id}: review_status={item.review_status}")
+        if any(monster.review_required for monster in item.monsters):
+            failures.append(f"{item.frame_id}: contains review_required monster")
+        failures.extend(f"{item.frame_id}: {error}" for error in item.validate())
+        if not Path(item.image_path).is_file():
+            failures.append(f"{item.frame_id}: image does not exist: {item.image_path}")
+    if failures:
+        preview = "\n".join(failures[:20])
+        suffix = f"\n... and {len(failures)-20} more" if len(failures) > 20 else ""
+        raise ValueError(f"Refusing {split} export; annotations are not training-ready:\n{preview}{suffix}")
+    return selected
+
+def export_yolo(items: list[FrameAnnotation], output_dir: Path, *, split: str) -> dict[str, int | str]:
+    selected = validate_for_export(items, split)
+    labels_dir, images_dir = output_dir / "labels" / split, output_dir / "images" / split
+    labels_dir.mkdir(parents=True, exist_ok=True); images_dir.mkdir(parents=True, exist_ok=True)
+    instances = 0
+    for item in selected:
+        lines: list[str] = []
         for monster in item.monsters:
-            x1,y1,x2,y2=monster.bbox_xyxy
-            lines.append(f"0 {((x1+x2)/2)/width:.6f} {((y1+y2)/2)/height:.6f} {(x2-x1)/width:.6f} {(y2-y1)/height:.6f}")
-        (output_dir / f"{item.frame_id}.txt").write_text("\n".join(lines)+("\n" if lines else ""), encoding="utf-8")
-        labels += 1
-    return {"exported":labels,"skipped":skipped}
+            x1, y1, x2, y2 = monster.bbox_xyxy
+            lines.append(f"0 {((x1+x2)/2)/1920:.6f} {((y1+y2)/2)/1080:.6f} {(x2-x1)/1920:.6f} {(y2-y1)/1080:.6f}")
+            instances += 1
+        (labels_dir / f"{item.frame_id}.txt").write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+        shutil.copy2(item.image_path, images_dir / f"{item.frame_id}{Path(item.image_path).suffix.lower()}")
+    (output_dir / "dataset.yaml").write_text(
+        f"path: {output_dir.resolve().as_posix()}\ntrain: images/train\nval: images/validation\nnames:\n  0: monster\n",
+        encoding="utf-8",
+    )
+    return {"split": split, "frames": len(selected), "instances": instances, "output": str(output_dir)}
+
+def sync_splits_from_benchmark(items: list[FrameAnnotation], benchmark_csv: Path,
+                               output_path: Path) -> dict[str, int]:
+    """Migrate split metadata without decoding or revealing any test pixels."""
+    split_by_id = {row["sample_id"]: row["split"] for row in csv.DictReader(
+        benchmark_csv.open("r", encoding="utf-8-sig", newline=""))}
+    missing = [item.frame_id for item in items if item.frame_id not in split_by_id]
+    if missing:
+        raise ValueError(f"Benchmark is missing {len(missing)} annotation frame IDs")
+    for item in items:
+        item.split = split_by_id[item.frame_id]
+        local_image = output_path.parent / "images" / Path(item.image_path).name
+        if local_image.is_file():
+            try:
+                item.image_path = local_image.relative_to(output_path.parent.parent).as_posix()
+            except ValueError:
+                item.image_path = str(local_image)
+    write_jsonl(items, output_path)
+    return {split: sum(item.split == split for item in items) for split in ("train", "validation", "test")}

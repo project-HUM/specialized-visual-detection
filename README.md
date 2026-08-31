@@ -18,15 +18,16 @@ unseen-outfit generalization.
 - Detector-ready unstable residual cutouts remove the same fixed HUD regions
   used by registration before preserving foreground RGB pixels.
 - `MonsterTracker` camera-compensates detector boxes in map coordinates,
-  requires two observations by default, assigns stable IDs, and explicitly
-  flags short interpolated holds rather than presenting them as fresh visual
-  detections.
+  requires two observations by default, and separates unsupported temporal
+  holds from visually supported occlusion. Persistent `OcclusionGroup` objects
+  retain member counts without claiming fresh individual observations.
 - Capture-local character templates with independent left/right banks. The
   current bootstrap has 4 left and 3 right anchors; the profile truthfully sets
   `guided_calibration_required=true` because neither side has 30 reviewed
   examples. Changed outfits require a new profile/hints.
-- Repeated pirate-sprite template proposals with center NMS. These are a
-  baseline proposal mechanism, not yet a validated detector.
+- `FrameAnalyzer(profile, monster_detector=...)` accepts the template baseline
+  or learned `YoloMonsterDetector`; backend objects do not leak through the
+  normalized interface and provenance remains explicit.
 - A backend-independent `MonsterDetection`/`SpecializedMonsterDetector`
   contract, conservative duplicate suppression, explicit tentative/visible/
   occluded/temporal-hold track states, many-track/one-detection occlusion
@@ -55,9 +56,12 @@ python -m pytest -q tests
 python perception_cli.py benchmark-runtime --frames 60
 python perception_cli.py discover-video
 python perception_cli.py monster-sample
-python perception_cli.py monster-report
-python perception_cli.py monster-contact-sheet
-python perception_cli.py monster-yolo-export
+python perception_cli.py monster-review-report
+python perception_cli.py monster-review --split train
+python perception_cli.py monster-contact-sheet --split train
+python perception_cli.py monster-temporal-context --split train
+python perception_cli.py monster-yolo-export --split train
+python perception_cli.py monster-yolo-export --split validation
 ```
 
 Regenerate the fixed-UI-masked residual proof inputs:
@@ -77,18 +81,31 @@ prompt-selection probe, not an accuracy score.
 Analyze one frame from the source video:
 
 ```powershell
-python perception_cli.py image ..\screen.mp4 --timestamp 30.447689 `
-  --events ..\events.csv --json proof\right_cast.json `
+python perception_cli.py image "$env:PERCEPTION_CAPTURE_DIR\screen.mp4" --timestamp 30.447689 `
+  --events "$env:PERCEPTION_CAPTURE_DIR\events.csv" --json proof\right_cast.json `
   --annotated proof\right_cast.png
 ```
 
 Analyze/render a retained video interval:
 
 ```powershell
-python perception_cli.py video ..\screen.mp4 --start 29.8 --end 31.4 `
+python perception_cli.py video "$env:PERCEPTION_CAPTURE_DIR\screen.mp4" --start 29.8 --end 31.4 `
   --sample-fps 5 --jsonl proof\right_clip.jsonl `
   --csv proof\right_clip.csv --annotated proof\right_clip.mp4
 ```
+
+Use learned inference after training without changing `FrameAnalyzer` or the
+tracker:
+
+```powershell
+python perception_cli.py video "$env:PERCEPTION_CAPTURE_DIR\screen.mp4" `
+  --monster-backend yolo --monster-weights monster_dataset\runs\v0-768\weights\best.pt `
+  --monster-confidence 0.21 --monster-nms-iou 0.78 --monster-imgsz 768 `
+  --jsonl evaluation\validation-observations.jsonl
+```
+
+Template and YOLO detections are not silently fused; select one backend per
+run. `visual_detection_count` and `estimated_count` remain separate.
 
 The full overview intentionally samples at approximately 0.5 fps while spanning
 the full retained 00:00-36:03 timeline. Exact source presentation timestamps
@@ -97,7 +114,7 @@ so playback spans that timeline. It is a review artifact, not a claim that every
 source frame was inferred:
 
 ```powershell
-python perception_cli.py video ..\screen.mp4 --start 0 --end 2163.8 `
+python perception_cli.py video "$env:PERCEPTION_CAPTURE_DIR\screen.mp4" --start 0 --end 2163.8 `
   --sample-fps 0.5 --jsonl proof\full_overview_current.jsonl `
   --csv proof\full_overview_current.csv `
   --annotated proof\annotated_full_overview_current_timeline.mp4
@@ -112,20 +129,20 @@ The `weak_*` columns come only from synchronized keys and are never consumed by
 the evaluator. Contact sheets and individual review images are under
 `benchmark/frames`.
 
-For every frame, fill the visual columns and change `review_status` to
-`reviewed`. Monster centers use JSON such as `[[321,650],[612,649]]`. Keep the
-sealed test untouched until thresholds/model choice are frozen. Then run:
+Review canonical monster boxes and ground positions in
+`monster_dataset/annotations.jsonl`. Keep the sealed test untouched until
+weights and every threshold are frozen. During development run:
 
 ```powershell
-python perception_cli.py evaluate `
-  --annotations benchmark\annotations.csv `
-  --observations <matching-observations.jsonl> `
-  --output evaluation --split test
+python perception_cli.py monster-evaluate `
+  --annotations monster_dataset\annotations.jsonl `
+  --observations <matching-observations.jsonl> --split validation
 ```
 
-The evaluator matches monster centers within 64 source pixels and emits
-visual-only and key-assisted metrics separately. It refuses to score pending
-weak labels.
+This reports visual detections and persistent estimates separately, including
+center precision/recall, count MAE, exact-count accuracy, condition breakdowns,
+duplicate rate, player false positives, fragmentation proxy, and p50/p95
+latency. It rejects pending labels and the sealed test split.
 
 ## Current proof boundary
 
@@ -136,5 +153,5 @@ occluded groups. Character matching recognizes reviewed bootstrap poses but
 abstains across many other animation phases. Therefore the target accuracy
 metrics are deliberately `not_evaluated`; no ONNX fallback was trained because
 reviewed detector ground truth does not yet exist. The next minimum intervention
-is visual review of the 72 sealed frames plus at least 30 trustworthy character
-crops per facing (or the planned two-second guided facing captures).
+is visual review of the 216 train and 72 validation frames. The 72 sealed frames
+remain unreviewed until model weights and configuration are frozen.

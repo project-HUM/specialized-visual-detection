@@ -21,6 +21,7 @@ from typing import Any, Iterable, Iterator, Sequence
 import cv2
 import numpy as np
 from .tracking import MonsterTracker
+from .specialized_detector import SpecializedMonsterDetector, TemplateMonsterDetector
 
 
 PROFILE_VERSION = 1
@@ -249,7 +250,8 @@ def _nms(points: list[tuple[float, float, float, int, int]], radius: float) -> l
 class FrameAnalyzer:
     """Stateful frame API.  State is incremental and never rereads the video."""
 
-    def __init__(self, profile: SessionProfile | Path | str):
+    def __init__(self, profile: SessionProfile | Path | str,
+                 monster_detector: SpecializedMonsterDetector | None = None):
         self.profile = profile if isinstance(profile, SessionProfile) else SessionProfile.load(profile)
         self.registrar = MapRegistrar(self.profile)
         self.background = _read_image(self.profile.asset(self.profile.background_image))
@@ -262,6 +264,9 @@ class FrameAnalyzer:
         self.monster_templates = [
             _read_image(self.profile.asset(path), cv2.IMREAD_GRAYSCALE) for path in self.profile.monster_templates
         ]
+        self.monster_detector = monster_detector or TemplateMonsterDetector(
+            self.monster_templates, threshold=float(self.profile.thresholds.get("monster_match", 0.42))
+        )
         self.previous_gray: np.ndarray | None = None
         self.previous_wave_centroid: tuple[float, float] | None = None
         self.previous_timestamp: float | None = None
@@ -272,6 +277,10 @@ class FrameAnalyzer:
             min_hits=int(self.profile.thresholds.get("monster_min_hits", 2)),
             max_gap_s=float(self.profile.thresholds.get("monster_track_gap_s", 0.55)),
             base_match_distance=float(self.profile.thresholds.get("monster_track_distance", 28.0)),
+            supported_occlusion_s=float(self.profile.thresholds.get("monster_supported_occlusion_s", 2.5)),
+            dedup_iou=float(self.profile.thresholds.get("monster_dedup_iou", 0.88)),
+            dedup_center_fraction=float(self.profile.thresholds.get("monster_dedup_center_fraction", 0.22)),
+            dedup_size_similarity=float(self.profile.thresholds.get("monster_dedup_size_similarity", 0.72)),
         )
 
     def reset(self) -> None:
@@ -347,43 +356,19 @@ class FrameAnalyzer:
             "scores": {name: round(float(value[0]), 4) for name, value in scores.items()},
         }, flags
 
-    def _detect_monsters(self, scene: np.ndarray, character_center: Sequence[float] | None) -> list[dict[str, Any]]:
-        if not self.monster_templates:
-            return []
-        edge = cv2.Canny(cv2.cvtColor(scene, cv2.COLOR_BGR2GRAY), 55, 140)
-        threshold = self.profile.thresholds.get("monster_match", 0.42)
-        proposals: list[tuple[float, float, float, int, int]] = []
-        for template in self.monster_templates:
-            if template.shape[0] > edge.shape[0] or template.shape[1] > edge.shape[1]:
-                continue
-            result = cv2.matchTemplate(edge, template, cv2.TM_CCOEFF_NORMED)
-            maxima = result == cv2.dilate(result, np.ones((9, 9), np.uint8))
-            ys, xs = np.where(maxima & (result >= threshold))
-            for y, x in zip(ys, xs):
-                proposals.append((x + template.shape[1] / 2, y + template.shape[0] / 2,
-                                  float(result[y, x]), template.shape[1], template.shape[0]))
-        selected = _nms(proposals, self.profile.thresholds.get("monster_nms_radius", 24.0))
+    def _detect_monsters(self, scene: np.ndarray, timestamp: float | None) -> list[dict[str, Any]]:
+        """Normalize any detector backend from scene pixels to source pixels."""
         monsters: list[dict[str, Any]] = []
-        for x, y, score, template_w, template_h in selected:
-            # Templates are centered on the stable head/hat region.  Report an
-            # approximate body center slightly below that visual anchor.
-            source_center = [x / self.profile.scale, y / self.profile.scale + self.profile.scene_top + 28.0]
-            relative = None
-            if character_center is not None:
-                relative = [source_center[0] - character_center[0], source_center[1] - character_center[1]]
-            box_source = [
-                (x - template_w / 2) / self.profile.scale,
-                (y - template_h / 2) / self.profile.scale + self.profile.scene_top,
-                (x + template_w / 2) / self.profile.scale,
-                (y + template_h / 2) / self.profile.scale + self.profile.scene_top,
-            ]
-            monsters.append({
-                "box": [round(float(v), 2) for v in box_source],
-                "center": [round(float(v), 2) for v in source_center],
-                "relative_to_character": None if relative is None else [round(float(v), 2) for v in relative],
-                "confidence": round(max(0.0, min(1.0, (score - threshold) / max(0.05, 1.0 - threshold))), 4),
-                "provenance": "visual_template",
-            })
+        for detection in self.monster_detector.detect(scene, timestamp):
+            x1, y1, x2, y2 = detection.bbox
+            box = [x1/self.profile.scale, y1/self.profile.scale+self.profile.scene_top,
+                   x2/self.profile.scale, y2/self.profile.scale+self.profile.scene_top]
+            gx, gy = detection.ground_position
+            monsters.append({"box":[round(float(v),2) for v in box],
+                             "score":float(detection.detector_confidence),
+                             "ground_position":[round(gx/self.profile.scale,2),round(gy/self.profile.scale+self.profile.scene_top,2)],
+                             "backend":detection.backend,"provenance":f"visual_{detection.backend}",
+                             "metadata":detection.metadata or {}})
         return monsters
 
     def _detect_wave(
@@ -531,15 +516,16 @@ class FrameAnalyzer:
                 character["facing"] = "unknown"
                 character["provenance"] = "visual_track"
                 flags.append("character_temporal_hold")
-        raw_monsters = self._detect_monsters(scene, character["center"])
+        raw_monsters = self._detect_monsters(scene, timestamp)
+        camera_origin = ((registration.shift_x or 0.0) / self.profile.scale,
+                         (registration.shift_y or 0.0) / self.profile.scale)
         monster_tracks = self.monster_tracker.update(
             raw_monsters,
             float(timestamp if timestamp is not None else self.frame_counter / 30.0),
             # Template boxes are in source-pixel coordinates while registration
             # runs on the half-resolution scene; convert the camera translation
             # before updating map-space tracks.
-            camera_origin=((registration.shift_x or 0.0) / self.profile.scale,
-                           (registration.shift_y or 0.0) / self.profile.scale),
+            camera_origin=camera_origin,
             exclusion_boxes=([[character["center"][0] - 45, character["center"][1] - 75,
                                character["center"][0] + 45, character["center"][1] + 75]]
                              if character["center"] is not None else ()),
@@ -549,13 +535,22 @@ class FrameAnalyzer:
         for track in monster_tracks:
             if character["center"] is not None:
                 track["relative_to_character"] = [
-                    round(track["center"][0] - character["center"][0], 2),
-                    round(track["center"][1] - character["center"][1], 2),
+                    round(track["ground_position"][0] - character["center"][0], 2),
+                    round(track["ground_position"][1] - character["center"][1], 2),
                 ]
             else:
                 track["relative_to_character"] = None
             monster_quality.extend(track.get("quality_flags", []))
         flags.extend(sorted(set(monster_quality)))
+        visual_detections = []
+        for item in self.monster_tracker.last_debug["retained_detections"]:
+            box = [item["box"][0]-camera_origin[0], item["box"][1]-camera_origin[1],
+                   item["box"][2]-camera_origin[0], item["box"][3]-camera_origin[1]]
+            visual_detections.append({"box":[round(float(v),2) for v in box],
+                                      "center":[round((box[0]+box[2])/2,2),round((box[1]+box[3])/2,2)],
+                                      "ground_position":[round((box[0]+box[2])/2,2),round(box[3],2)],
+                                      "confidence":round(float(item.get("score",0)),4),
+                                      "provenance":item.get("provenance",f"visual_{item.get('backend','unknown')}")})
         wave, wave_flags = self._detect_wave(scene, residual, character["center"], timestamp)
         flags.extend(wave_flags)
         visual_only = {"character": copy.deepcopy(character), "a_wave": copy.deepcopy(wave)}
@@ -575,6 +570,7 @@ class FrameAnalyzer:
                 "count_max": self.monster_tracker.count_bounds()[1],
                 "centers": monster_tracks,
                 "tracks": monster_tracks,
+                "visual_detections": visual_detections,
                 "confidence": round(float(np.mean([m["confidence"] for m in monster_tracks])) if monster_tracks else 0.0, 4),
                 "provenance": "temporal_tracks",
                 "detector_debug": self.monster_tracker.last_debug,
@@ -763,6 +759,13 @@ def build_session_profile(
             "facing_margin": 0.035,
             "monster_match": 0.42,
             "monster_nms_radius": 24.0,
+            "monster_min_hits": 2,
+            "monster_track_gap_s": 0.55,
+            "monster_supported_occlusion_s": 2.5,
+            "monster_track_distance": 28.0,
+            "monster_dedup_iou": 0.88,
+            "monster_dedup_center_fraction": 0.22,
+            "monster_dedup_size_similarity": 0.72,
             "wave_red_area": 24,
             "wave_position_margin": 18.0,
             "wave_flow_margin": 0.35,
@@ -783,20 +786,22 @@ def analyze_frame(
     profile: SessionProfile | Path | str,
     timestamp: float | None = None,
     key_state: dict[str, Any] | None = None,
+    monster_detector: SpecializedMonsterDetector | None = None,
 ) -> dict[str, Any]:
     frame = _read_image(Path(image)) if isinstance(image, (str, Path)) else image
-    return FrameAnalyzer(profile).analyze(frame, timestamp=timestamp, key_state=key_state)
+    return FrameAnalyzer(profile, monster_detector=monster_detector).analyze(frame, timestamp=timestamp, key_state=key_state)
 
 
 def analyze_video(
     video: Path | str,
     profile: SessionProfile | Path | str,
     events: Path | str | None = None,
+    monster_detector: SpecializedMonsterDetector | None = None,
 ) -> Iterator[dict[str, Any]]:
     video_path = Path(video)
     timestamps = video_frame_timestamps(video_path)
     timeline = EventTimeline(events) if events else None
-    analyzer = FrameAnalyzer(profile)
+    analyzer = FrameAnalyzer(profile, monster_detector=monster_detector)
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
         raise RuntimeError(f"Could not open video: {video_path}")

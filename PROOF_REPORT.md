@@ -15,10 +15,10 @@ are reported as passed.
 The specialized-monster slice is now wired into the same pipeline. Detector
 boxes are conservatively deduplicated, fed to persistent camera-compensated
 tracks, and exposed as separate fresh-visual and estimated counts. Established
-tracks survive a many-monsters/one-detection overlap as an explicit occlusion
-group. A backend-independent one-class detector contract and optional YOLO
-training entry point are present, but training is correctly blocked while the
-canonical labels remain pending.
+tracks survive many-monsters/one-detection overlap in a persistent occlusion
+group with separate fresh-visual and visual-support timestamps. The learned
+YOLO adapter is dependency-injected into `FrameAnalyzer`; training and strict
+split exports remain blocked while canonical labels are pending.
 
 ## Direct observations
 
@@ -105,10 +105,10 @@ the baseline evaluation first; only then is the F1/MAE gate meaningful.
 
 ## Minimum next input
 
-1. Review the 72 sealed frames for a first honest test score, without tuning on
-   them.
-2. Review train/validation monster centers before deciding whether the ONNX
-   fallback is required.
+1. Review the 216 train and 72 validation monster annotations, using temporal
+   context for overlap cases.
+2. Train the 640/768/960 sweep and select every detector/tracker threshold from
+   validation only. Do not reveal the 72 sealed frames yet.
 3. Supply or approve at least 30 clean crops for each visible facing, preferably
    using the planned two-second left and two-second right calibration after any
    outfit change.

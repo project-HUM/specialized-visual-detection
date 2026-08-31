@@ -11,8 +11,33 @@
   "count_distribution": {
     "0": 360
   },
+  "condition_distribution": {},
+  "splits": {
+    "train": {
+      "frames": 216,
+      "reviewed": 0,
+      "pending": 216
+    },
+    "validation": {
+      "frames": 72,
+      "reviewed": 0,
+      "pending": 72
+    },
+    "test": {
+      "frames": 72,
+      "reviewed": 0,
+      "pending": 72
+    }
+  },
+  "malformed_frames": {},
+  "training_ready": false,
   "box_size": {
     "mean_width": 0.0,
     "mean_height": 0.0
+  },
+  "pairwise_iou": {
+    "pairs": 0,
+    "max": 0.0,
+    "ge_0_5": 0
   }
 }

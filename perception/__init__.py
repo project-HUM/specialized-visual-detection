@@ -12,6 +12,7 @@ from .core import (
     analyze_video,
     build_session_profile,
 )
+from .specialized_detector import MonsterDetection, SpecializedMonsterDetector, TemplateMonsterDetector, YoloMonsterDetector
 
 __all__ = [
     "FrameAnalyzer",
@@ -19,4 +20,8 @@ __all__ = [
     "analyze_frame",
     "analyze_video",
     "build_session_profile",
+    "MonsterDetection",
+    "SpecializedMonsterDetector",
+    "TemplateMonsterDetector",
+    "YoloMonsterDetector",
 ]

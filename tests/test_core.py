@@ -15,6 +15,7 @@ from perception.core import (
     _scene,
     probe_frame_timestamps,
 )
+from perception.specialized_detector import MonsterDetection
 from render_background_subtraction import remove_fixed_ui
 
 
@@ -157,3 +158,17 @@ def test_stale_last_direction_is_not_fused_as_visible_facing():
     FrameAnalyzer._fuse_keys(character, wave, {"direction": "right", "direction_held": False, "a_age_s": None}, flags)
     assert character["facing"] == "unknown"
     assert character["provenance"] == "visual"
+
+def test_frame_analyzer_uses_injected_monster_detector(tmp_path: Path):
+    profile, source = _profile(tmp_path)
+    class FakeDetector:
+        backend = "yolo"
+        def detect(self, image, timestamp=None):
+            return [MonsterDetection((200, 120, 230, 160), .9, (215, 160), "yolo")]
+    analyzer=FrameAnalyzer(profile,monster_detector=FakeDetector())
+    first=analyzer.analyze(source,timestamp=0.0)
+    second=analyzer.analyze(source,timestamp=0.1)
+    assert first["monsters"]["visual_detection_count"]==1
+    assert first["monsters"]["estimated_count"]==0
+    assert second["monsters"]["estimated_count"]==1
+    assert second["monsters"]["tracks"][0]["provenance"]=="visual_yolo"

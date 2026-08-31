@@ -20,13 +20,19 @@ def draw_observation(frame: np.ndarray, observation: dict[str, Any]) -> np.ndarr
         cv2.circle(canvas, point, 34, color, 3)
         cv2.putText(canvas, f"character {character['facing']} {character['confidence']:.2f}",
                     (point[0] - 100, point[1] - 45), cv2.FONT_HERSHEY_SIMPLEX, 0.65, color, 2, cv2.LINE_AA)
+    for detection in observation["monsters"].get("visual_detections", []):
+        if "box" in detection:
+            x1,y1,x2,y2=(int(round(value)) for value in detection["box"])
+            cv2.rectangle(canvas,(x1,y1),(x2,y2),(60,220,60),2)
+            cv2.circle(canvas,tuple(int(round(value)) for value in detection.get("ground_position",detection["center"])),4,(60,220,60),-1)
     tracks = observation["monsters"].get("tracks", observation["monsters"].get("centers", []))
     for index, monster in enumerate(tracks):
         point = tuple(int(round(value)) for value in monster["center"])
         state = monster.get("state", "visible")
         color = (255, 170, 30) if state == "visible" else (0, 190, 255) if state == "occluded" else (150, 150, 150)
         cv2.circle(canvas, point, 28, color, 2)
-        cv2.putText(canvas, f"M{monster.get('track_id', index + 1)} {state}", (point[0] - 38, point[1] - 33),
+        group = f" G{monster['occlusion_group_id']}" if monster.get("occlusion_group_id") is not None else ""
+        cv2.putText(canvas, f"M{monster.get('track_id', index + 1)} {state}{group}", (point[0] - 38, point[1] - 33),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.48, color, 2, cv2.LINE_AA)
     wave = observation["a_wave"]
     wave_color = (30, 30, 240) if wave["state"] == "active" else (170, 170, 170)

@@ -5,10 +5,14 @@ export. Training is intentionally blocked until every selected frame is
 visually reviewed:
 
 ```powershell
-python perception_cli.py monster-yolo-export --annotations monster_dataset\annotations.jsonl --output monster_dataset\yolo_labels
-python train_specialized_detector.py --annotations monster_dataset\annotations.jsonl --data monster_dataset\dataset.yaml --imgsz 640 --epochs 40
+python perception_cli.py monster-review-report
+python perception_cli.py monster-yolo-export --split train
+python perception_cli.py monster-yolo-export --split validation
+python -m pip install -r requirements-training.txt
+python train_specialized_detector.py --imgsz 640 768 960 --epochs 40
 ```
 
-The first resolution sweep should repeat the command at 640, 768, and 960,
-recording precision/recall, overlap and occlusion recall, latency, and RSS.
-The sealed test is not used by this training entry point.
+Training device selection is automatic unless `--device cpu` or `--device 0`
+is supplied. Each resolution gets a separate run directory and records backend
+metrics and timing. The sealed test is rejected by development export and
+evaluation.

@@ -8,8 +8,15 @@ reasonably inferable monster, including separate entries for overlapping
 instances, and set `review_status` to `reviewed` only after visual audit.
 
 The compatibility benchmark remains `../benchmark/annotations.csv` (216 train,
-72 validation, 72 sealed test). Detector training should use a contiguous-time
-split derived from this source once labels exist; never tune on the sealed test.
-Use the contact-sheet command for review, then regenerate the report and export
-YOLO labels. The JSONL fields preserve ground position and uncertainty that
-YOLO cannot represent.
+72 validation, 72 sealed test). Use only train and validation during detector
+development; never review or tune on the sealed test. For ambiguous overlap,
+`monster-temporal-context --split train` renders previous/current/next strips.
+Strict export fails if any selected annotation is pending, malformed, or marked
+`review_required`. The JSONL fields preserve ground position and uncertainty
+that YOLO cannot represent.
+
+`python perception_cli.py monster-review --split train` opens the interactive
+review UI. Drag the current image to add a source-coordinate box; the canonical
+position defaults to its bottom center. The UI shows VFR-aligned previous,
+current, and next frames, supports occlusion/visibility/review-required flags,
+and autosaves when navigating.

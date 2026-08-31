@@ -30,3 +30,17 @@
 
 All new artifacts are capture-local and preserve explicit pending/reviewed
 provenance; pending proposals are never treated as ground truth.
+
+## Learned-detector and occlusion extension
+
+- `FrameAnalyzer` now receives a `SpecializedMonsterDetector` by dependency
+  injection; template and YOLO modes remain separate and keep explicit
+  provenance.
+- Train/validation review is supported by an interactive VFR-aware three-frame
+  UI. Strict export and evaluation reject pending/malformed labels and reject
+  the sealed test split during development.
+- Tracks now distinguish fresh visual timestamps from support timestamps.
+  Persistent occlusion groups preserve confirmed counts through repeated merged
+  detections and recover members when detections separate.
+- Specialized evaluation reports raw visual and persistent-count results
+  independently and writes a failure queue for the later active-learning loop.

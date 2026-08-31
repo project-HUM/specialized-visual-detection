@@ -93,3 +93,66 @@ def test_occluded_tracks_recover_without_id_swap():
         result = tracker.update([_detection(box) for box in detections], timestamp)
     assert [item["track_id"] for item in result] == [1, 2]
     assert result[0]["center"][0] < result[1]["center"][0]
+
+def test_supported_occlusion_has_separate_fresh_and_support_timestamps():
+    tracker=MonsterTracker(min_hits=2,max_gap_s=.5,supported_occlusion_s=2.5,base_match_distance=50)
+    tracker.update([_detection([100,100,130,150]),_detection([150,100,180,150])],0.0)
+    tracker.update([_detection([101,100,131,150]),_detection([151,100,181,150])],0.1)
+    tracks=tracker.update([_detection([115,95,168,155])],1.9)
+    assert len(tracks)==2
+    assert all(t["state"]=="occluded" and t["supported"] and not t["observed"] for t in tracks)
+    assert all(t["last_fresh_visual_timestamp"]==.1 and t["last_support_timestamp"]==1.9 for t in tracks)
+
+def test_two_second_occlusion_reuses_persistent_group():
+    tracker=MonsterTracker(min_hits=2,max_gap_s=.5,supported_occlusion_s=2.5,base_match_distance=50)
+    tracker.update([_detection([100,100,130,150]),_detection([150,100,180,150])],0)
+    tracker.update([_detection([101,100,131,150]),_detection([151,100,181,150])],.1)
+    group_ids=[]
+    for timestamp in (.2,.7,1.2,1.7,2.2):
+        tracks=tracker.update([_detection([115,95,168,155])],timestamp)
+        group_ids.append(tracks[0]["occlusion_group_id"])
+    assert len(set(group_ids))==1
+    assert tracker.estimated_count()==2
+    assert all(t["last_fresh_visual_timestamp"]==.1 for t in tracks)
+    assert all(t["last_support_timestamp"]==2.2 for t in tracks)
+
+def test_three_monster_count_survives_repeated_merge_and_separation():
+    tracker=MonsterTracker(min_hits=2,max_gap_s=.5,supported_occlusion_s=2.5,base_match_distance=40,max_speed_px_s=80)
+    # Pre-roll establishes the three credible tracks before the asserted six
+    # frame sequence, while one-frame proposals elsewhere remain tentative.
+    tracker.update([_detection(box) for box in [[49,100,79,150],[109,100,139,150],[169,100,199,150]]],-.1)
+    frames=[
+        [[50,100,80,150],[110,100,140,150],[170,100,200,150]],
+        [[51,100,81,150],[111,100,141,150],[171,100,201,150]],
+        [[70,95,142,155],[172,100,202,150]],
+        [[72,95,144,155],[173,100,203,150]],
+        [[74,95,146,155],[174,100,204,150]],
+        [[56,100,86,150],[116,100,146,150],[176,100,206,150]],
+    ]
+    counts=[]
+    for index,boxes in enumerate(frames):
+        tracker.update([_detection(box) for box in boxes],index*.1)
+        counts.append(tracker.estimated_count())
+    assert counts==[3,3,3,3,3,3]
+
+def test_unsupported_track_expires_while_supported_group_survives():
+    tracker=MonsterTracker(min_hits=2,max_gap_s=.5,supported_occlusion_s=2.5,base_match_distance=50)
+    tracker.update([_detection([0,0,30,50]),_detection([50,0,80,50])],0)
+    tracker.update([_detection([1,0,31,50]),_detection([51,0,81,50])],.1)
+    assert tracker.update([], .7)==[]
+
+def test_camera_movement_during_occlusion_preserves_map_tracks():
+    tracker=MonsterTracker(min_hits=2,base_match_distance=45)
+    tracker.update([_detection([100,100,130,150]),_detection([150,100,180,150])],0,camera_origin=(0,0))
+    tracker.update([_detection([90,100,120,150]),_detection([140,100,170,150])],.1,camera_origin=(10,0))
+    merged=tracker.update([_detection([95,95,148,155])],.2,camera_origin=(20,0))
+    assert len(merged)==2 and tracker.estimated_count()==2
+    assert all(t["state"]=="occluded" for t in merged)
+
+def test_detector_confidence_fluctuation_does_not_fragment_track():
+    tracker=MonsterTracker(min_hits=2)
+    tracker.update([_detection([10,10,40,60],.95)],0)
+    tracks=tracker.update([_detection([11,10,41,60],.25)],.1)
+    tracks=tracker.update([_detection([12,10,42,60],.85)],.2)
+    assert len(tracks)==1 and tracks[0]["track_id"]==1
+    assert tracks[0]["confirmed"] is True

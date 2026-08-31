@@ -1,21 +1,21 @@
 {
   "algorithm": "sha256",
   "files": {
-    "perception_investigation/IMPLEMENTATION_NOTE.md": {
-      "bytes": 1395,
-      "sha256": "74137963d08f9d597026e3cfb28c64e4ed0e71a6dc3aa3ed1732e60cc23a6a66"
+    "IMPLEMENTATION_NOTE.md": {
+      "bytes": 2168,
+      "sha256": "29e1840b81aa67736ca315ac3d8f2049d9e1ecfdee826a92272a9b74e425c019"
     },
-    "perception_investigation/monster_dataset/annotations.jsonl": {
-      "bytes": 106102,
-      "sha256": "3f33aaaa1ee4308b802995271021881d00d831e9a75f47f531f58a08225b66d4"
+    "monster_dataset/annotations.jsonl": {
+      "bytes": 89830,
+      "sha256": "61c0727648c011ae1d3bb53bb59c7ab8c63679b898a5f58f519c68fe8d836fdf"
     },
-    "perception_investigation/monster_dataset/contacts/contact_001.jpg": {
+    "monster_dataset/contacts/contact_001.jpg": {
       "bytes": 880271,
       "sha256": "af7c86877a09e245097f1268325651abe58ce8ae539d5b90ed14604f0a5f656e"
     },
-    "perception_investigation/monster_dataset/dataset_report.json": {
-      "bytes": 356,
-      "sha256": "d8ade2569057962d9f13a85f061db6113f816cf6329557a7e6e1033534a7b554"
+    "monster_dataset/dataset_report.json": {
+      "bytes": 812,
+      "sha256": "dba191ae9f675a9b0fad768ea75c63b70f4c98268d4a2e35559fb1f6c4e9ddb1"
     }
   },
   "schema_version": 1

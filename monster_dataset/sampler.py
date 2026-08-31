@@ -24,7 +24,9 @@ def sample_from_benchmark(video: Path, benchmark_csv: Path, output_dir: Path, *,
         target=bisect.bisect_left(timestamps,item.timestamp); choices=[i for i in (target-1,target) if 0<=i<len(timestamps)]
         index=min(choices,key=lambda i:abs(timestamps[i]-item.timestamp)); capture.set(cv2.CAP_PROP_POS_FRAMES,index); ok,frame=capture.read()
         if not ok: raise RuntimeError(f"Could not decode benchmark frame {index}")
-        path=output_dir/f"{item.frame_id}_{item.timestamp:010.3f}.jpg"; cv2.imwrite(str(path),cv2.resize(frame,(960,540)),[cv2.IMWRITE_JPEG_QUALITY,92]); item.image_path=str(path)
+        path=output_dir/f"{item.frame_id}_{item.timestamp:010.3f}.jpg"; cv2.imwrite(str(path),cv2.resize(frame,(960,540)),[cv2.IMWRITE_JPEG_QUALITY,92])
+        try: item.image_path=path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+        except ValueError: item.image_path=str(path.resolve())
     capture.release()
     if output_jsonl: write_jsonl(items,output_jsonl)
     return items
