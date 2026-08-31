@@ -38,7 +38,7 @@ def draw_observation(frame: np.ndarray, observation: dict[str, Any]) -> np.ndarr
     wave_color = (30, 30, 240) if wave["state"] == "active" else (170, 170, 170)
     lines = [
         f"t={observation['timestamp'] if observation['timestamp'] is not None else '-'}",
-        f"monsters visual={observation['monsters'].get('visual_detection_count', observation['monsters']['count'])} estimated={observation['monsters'].get('estimated_count', observation['monsters']['count'])}",
+        f"monsters visual={observation['monsters'].get('visual_detection_count', observation['monsters']['count'])} estimated={observation['monsters'].get('estimated_count', observation['monsters']['count'])} bounds=[{observation['monsters'].get('count_min', observation['monsters']['count'])},{observation['monsters'].get('count_max', observation['monsters']['count'])}]",
         f"A-wave={wave['state']}/{wave['direction']} {wave['confidence']:.2f} ({wave['provenance']})",
         f"registration={'ok' if observation['registration']['ok'] else 'FAILED'} {observation['registration']['confidence']:.2f}",
     ]
@@ -55,7 +55,7 @@ def draw_observation(frame: np.ndarray, observation: dict[str, Any]) -> np.ndarr
 def write_per_frame_csv(observations: list[dict[str, Any]], path: Path) -> None:
     fields = [
         "frame_index", "timestamp", "character_x", "character_y", "character_facing", "character_confidence",
-        "monster_count", "visual_detection_count", "estimated_monster_count", "monster_centers", "a_wave_state", "a_wave_direction", "a_wave_confidence",
+        "monster_count", "visual_detection_count", "estimated_monster_count", "count_min", "count_max", "monster_centers", "a_wave_state", "a_wave_direction", "a_wave_confidence",
         "a_wave_provenance", "registration_ok", "registration_confidence", "quality_flags",
     ]
     with path.open("w", encoding="utf-8", newline="") as handle:
@@ -73,6 +73,8 @@ def write_per_frame_csv(observations: list[dict[str, Any]], path: Path) -> None:
                 "monster_count": item["monsters"]["count"],
                 "visual_detection_count": item["monsters"].get("visual_detection_count", item["monsters"]["count"]),
                 "estimated_monster_count": item["monsters"].get("estimated_count", item["monsters"]["count"]),
+                "count_min": item["monsters"].get("count_min", item["monsters"]["count"]),
+                "count_max": item["monsters"].get("count_max", item["monsters"]["count"]),
                 "monster_centers": json.dumps([m["center"] for m in item["monsters"]["centers"]]),
                 "a_wave_state": item["a_wave"]["state"],
                 "a_wave_direction": item["a_wave"]["direction"],

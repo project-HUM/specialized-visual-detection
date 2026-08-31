@@ -20,6 +20,14 @@ group with separate fresh-visual and visual-support timestamps. The learned
 YOLO adapter is dependency-injected into `FrameAnalyzer`; training and strict
 split exports remain blocked while canonical labels are pending.
 
+The pre-training semantics are now regression-tested: permissive detector NMS
+precedes authoritative multi-signal deduplication; stale unsupported tracks are
+removed before association; overlap groups select a geometrically explanatory
+contiguous subset; and count bounds distinguish one merged visual unit from
+multiple persistent identities. Per-observation debug metadata records why a
+proposal was retained, suppressed, excluded, grouped, associated, or expired.
+These are implementation guarantees, not learned-model accuracy evidence.
+
 ## Direct observations
 
 - The recording contains 58,743 VFR frames; the retained same-map interval ends

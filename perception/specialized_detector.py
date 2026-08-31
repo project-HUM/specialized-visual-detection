@@ -43,9 +43,14 @@ class TemplateMonsterDetector:
         return output
 
 class YoloMonsterDetector:
-    """Lazy Ultralytics adapter; no backend objects escape this class."""
+    """Lazy Ultralytics adapter with intentionally permissive backend NMS.
+
+    YOLO NMS limits pathological proposal explosion.  The tracker-side
+    multi-signal deduplicator remains authoritative for deciding whether two
+    surviving observations are duplicates.
+    """
     backend = "yolo"
-    def __init__(self, weights: Path | str, *, confidence: float = .21, nms_iou: float = .78,
+    def __init__(self, weights: Path | str, *, confidence: float = .21, nms_iou: float = .90,
                  input_resolution: int = 768, device: str | int | None = None, max_detections: int = 100):
         if not 0 <= confidence <= 1 or not 0 <= nms_iou <= 1: raise ValueError("confidence and nms_iou must be within [0, 1]")
         if input_resolution <= 0 or max_detections <= 0: raise ValueError("input_resolution and max_detections must be positive")

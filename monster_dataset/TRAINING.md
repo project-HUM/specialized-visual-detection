@@ -16,3 +16,9 @@ Training device selection is automatic unless `--device cpu` or `--device 0`
 is supplied. Each resolution gets a separate run directory and records backend
 metrics and timing. The sealed test is rejected by development export and
 evaluation.
+
+For the first 640/768/960 comparison, keep the tracker fixed (`min_hits=2`,
+`max_gap_s=0.55`, supported occlusion `2.5 s`) and use permissive YOLO NMS
+around `0.90`. Sweep detector confidence on validation in the planned
+`0.15-0.25` range, but do not retune tracker behavior independently per input
+resolution. This isolates detector improvements from tracking changes.

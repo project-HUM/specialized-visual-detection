@@ -2,8 +2,8 @@
   "algorithm": "sha256",
   "files": {
     "IMPLEMENTATION_NOTE.md": {
-      "bytes": 2168,
-      "sha256": "29e1840b81aa67736ca315ac3d8f2049d9e1ecfdee826a92272a9b74e425c019"
+      "bytes": 3279,
+      "sha256": "ceb9d447149daabf8180d1ce357f0bbfc2d3eb50de10ffd96bef6f46a7dfacbd"
     },
     "monster_dataset/annotations.jsonl": {
       "bytes": 89830,

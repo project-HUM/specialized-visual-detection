@@ -163,7 +163,10 @@ def _add_detector_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--monster-backend", choices=("template", "yolo"), default="template")
     parser.add_argument("--monster-weights", type=Path)
     parser.add_argument("--monster-confidence", type=float, default=.21)
-    parser.add_argument("--monster-nms-iou", type=float, default=.78)
+    parser.add_argument(
+        "--monster-nms-iou", type=float, default=.90,
+        help="permissive YOLO NMS; tracker-side multi-signal dedup is authoritative",
+    )
     parser.add_argument("--monster-imgsz", type=int, default=768)
     parser.add_argument("--monster-device")
 

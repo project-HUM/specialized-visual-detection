@@ -100,12 +100,41 @@ tracker:
 ```powershell
 python perception_cli.py video "$env:PERCEPTION_CAPTURE_DIR\screen.mp4" `
   --monster-backend yolo --monster-weights monster_dataset\runs\v0-768\weights\best.pt `
-  --monster-confidence 0.21 --monster-nms-iou 0.78 --monster-imgsz 768 `
+  --monster-confidence 0.21 --monster-nms-iou 0.90 --monster-imgsz 768 `
   --jsonl evaluation\validation-observations.jsonl
 ```
 
 Template and YOLO detections are not silently fused; select one backend per
-run. `visual_detection_count` and `estimated_count` remain separate.
+run. YOLO's permissive NMS (`0.90` by default) only prevents pathological
+proposal explosion. The tracker-side deduplicator is authoritative and only
+suppresses boxes when high IoU, near-identical centers, and similar dimensions
+all agree; strongly overlapping plausible monsters remain separate proposals.
+
+### Monster output semantics
+
+The three count concepts intentionally answer different questions:
+
+- `visual_detection_count`: retained detector observations in the current
+  frame, after player exclusion and conservative duplicate suppression.
+- `estimated_count`: live confirmed persistent monster identities, including
+  identities supported inside an unresolved overlap.
+- `count_min` / `count_max`: the range justified by current independent visual
+  evidence plus temporal identity evidence. One merged observation supporting
+  two identities yields `[1, 2]`; adding one independently visible monster
+  yields `[2, 3]`; unsupported holds contribute only to the upper bound.
+
+Track states are exact: `tentative` lacks enough observations for a persistent
+claim; `visible` has its own current detector observation; `occluded` lacks an
+individual box but belongs to a currently supported overlap group; and
+`temporal_hold` has neither fresh nor current supporting visual evidence.
+Accordingly, `observed=true` only for `visible`, while `supported=true` only
+for `visible` and `occluded`. Occluded tracks expose `group_member_count` and
+`monster_overlap`; ordinary holds expose `monster_temporal_hold`.
+
+`detector_debug` records raw confidence/box data, retention or suppression and
+its reason, association IDs/costs, track ages/hits/fresh/support ages, group
+membership, and expired IDs. It is diagnostic metadata rather than another
+source of detection truth.
 
 The full overview intentionally samples at approximately 0.5 fps while spanning
 the full retained 00:00-36:03 timeline. Exact source presentation timestamps

@@ -44,3 +44,23 @@ provenance; pending proposals are never treated as ground truth.
   detections and recover members when detections separate.
 - Specialized evaluation reports raw visual and persistent-count results
   independently and writes a failure queue for the later active-learning loop.
+
+## Pre-training semantic hardening
+
+- YOLO NMS defaults to a permissive `0.90`; custom multi-signal deduplication
+  owns duplicate decisions after backend NMS.
+- Tracks are expired before association, preventing an already-invalid identity
+  from acquiring an enlarged motion gate and attaching to a new monster.
+- New occlusion groups use intersecting predicted geometry and a plausible
+  horizontally contiguous member span. Nearby tracks admitted only by the
+  broad motion gate are not automatically absorbed.
+- Count bounds use independent current evidence units: a supported group adds
+  one lower-bound unit while each live confirmed member remains represented in
+  the upper bound. Unsupported temporal holds add no lower-bound evidence.
+- Debug observations retain preprocessing, exclusion, deduplication,
+  association, lifetime, support, and group provenance for validation failure
+  analysis.
+
+These changes freeze tracker/detector semantics before labeling. They do not
+measure learned-detector accuracy; train and validation annotations are still
+required, and the sealed test remains untouched.

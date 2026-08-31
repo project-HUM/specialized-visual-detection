@@ -558,16 +558,23 @@ class FrameAnalyzer:
         if not registration.ok:
             # Template evidence remains usable, but background-derived wave evidence does not.
             wave = {"state": "unknown", "direction": "unknown", "confidence": 0.0, "provenance": "visual"}
+        estimated_count = self.monster_tracker.estimated_count()
+        count_min, count_max = self.monster_tracker.count_bounds()
         observation = {
             "timestamp": timestamp,
             "frame_index": self.frame_counter,
             "character": character,
             "monsters": {
-                "count": self.monster_tracker.estimated_count(),
+                # ``visual_detection_count`` is current retained detector evidence.
+                # ``estimated_count`` is live confirmed persistent identities.
+                # Bounds combine current independent visual evidence units with
+                # temporal identity evidence; a merged group contributes one to
+                # the lower bound and all credible members to the upper bound.
+                "count": estimated_count,
                 "visual_detection_count": len(self.monster_tracker.last_debug["retained_detections"]),
-                "estimated_count": self.monster_tracker.estimated_count(),
-                "count_min": self.monster_tracker.count_bounds()[0],
-                "count_max": self.monster_tracker.count_bounds()[1],
+                "estimated_count": estimated_count,
+                "count_min": count_min,
+                "count_max": count_max,
                 "centers": monster_tracks,
                 "tracks": monster_tracks,
                 "visual_detections": visual_detections,

@@ -171,4 +171,8 @@ def test_frame_analyzer_uses_injected_monster_detector(tmp_path: Path):
     assert first["monsters"]["visual_detection_count"]==1
     assert first["monsters"]["estimated_count"]==0
     assert second["monsters"]["estimated_count"]==1
+    assert second["monsters"]["count_min"]==1
+    assert second["monsters"]["count_max"]==1
     assert second["monsters"]["tracks"][0]["provenance"]=="visual_yolo"
+    assert second["monsters"]["detector_debug"]["input_detections"][0]["associated_track_id"]==1
+    json.dumps(second["monsters"]["detector_debug"])
