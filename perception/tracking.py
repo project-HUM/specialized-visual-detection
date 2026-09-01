@@ -517,6 +517,9 @@ class MonsterTracker:
                 # fall through and falsely refresh a remaining hidden member
                 # as though it were an individual observation.
                 shared_only_detections.add(detection_index)
+                associations.append(
+                    self._association_record(item, "shared_redundant", [], None)
+                )
                 continue
             member_ids = tuple(track.track_id for track in members)
             existing = next(
@@ -581,7 +584,7 @@ class MonsterTracker:
         }
 
         for detection_index, item in enumerate(retained):
-            if detection_index in matched_detections:
+            if detection_index in matched_detections or detection_index in shared_only_detections:
                 continue
             provenance = str(
                 item.get("provenance", f"visual_{item.get('backend', 'unknown')}")

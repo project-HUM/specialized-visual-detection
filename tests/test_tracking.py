@@ -229,9 +229,10 @@ def test_distinct_local_observations_win_over_extra_shared_proposal():
     visible=[track for track in tracks if track["state"] == "visible"]
     tentative=[track for track in tracks if track["state"] == "tentative"]
     assert [track["track_id"] for track in visible] == [1,2]
-    assert [track["track_id"] for track in tentative] == [3]
+    assert tentative == []
     assert all(track["occlusion_group_id"] is None for track in tracks)
     assert tracker.count_bounds() == (2,2)
+    assert tracker.last_debug["input_detections"][0]["association_kind"] == "shared_redundant"
 
 
 def test_single_unsupported_hold_has_zero_to_one_bound():
@@ -317,13 +318,15 @@ def test_broad_shared_proposal_does_not_falsely_refresh_hidden_third_track():
     tracker.update([_detection(box) for box in boxes],0.1)
     tracker.update([_detection([70,95,182,155])],0.2)
 
-    tracks=tracker.update([
+    noisy_split=[
         _detection([52,100,82,150],.90),
         _detection([112,100,142,150],.88),
         _detection([45,92,205,158],.60),
-    ],0.3,include_tentative=True)
+    ]
+    tracks=tracker.update(noisy_split,0.3,include_tentative=True)
 
     by_id={track["track_id"]:track for track in tracks}
+    assert set(by_id) == {1,2,3}
     assert by_id[1]["state"] == by_id[2]["state"] == "visible"
     assert by_id[1]["observed"] is True and by_id[2]["observed"] is True
     assert by_id[3]["observed"] is False
@@ -332,6 +335,16 @@ def test_broad_shared_proposal_does_not_falsely_refresh_hidden_third_track():
     assert {track["track_id"] for track in tracks if track["confirmed"]} == {1,2,3}
     assert tracker.estimated_count() == 3
     assert tracker.count_bounds() == (2,3)
+    assert tracker.last_debug["input_detections"][2]["association_kind"] == "shared_redundant"
+
+    repeated=tracker.update(noisy_split,0.4,include_tentative=True)
+    repeated_by_id={track["track_id"]:track for track in repeated}
+    assert set(repeated_by_id) == {1,2,3}
+    assert repeated_by_id[3]["observed"] is False
+    assert repeated_by_id[3]["last_fresh_visual_timestamp"] == .1
+    assert tracker.estimated_count() == 3
+    assert tracker.count_bounds() == (2,3)
+    assert tracker.last_debug["input_detections"][2]["association_kind"] == "shared_redundant"
 
 
 def test_slight_motion_reversal_during_overlap_does_not_fragment_ids():
