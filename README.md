@@ -131,6 +131,12 @@ Accordingly, `observed=true` only for `visible`, while `supported=true` only
 for `visible` and `occluded`. Occluded tracks expose `group_member_count` and
 `monster_overlap`; ordinary holds expose `monster_temporal_hold`.
 
+Occlusion decisions are local to candidate members. For an existing or new
+group, one shared geometrically relevant observation supports the group, while
+two distinct individually explanatory observations allow ordinary association
+to resolve it. Unrelated detector boxes elsewhere in the frame never enable or
+disable group support merely by changing the global detection count.
+
 `detector_debug` records raw confidence/box data, retention or suppression and
 its reason, association IDs/costs, track ages/hits/fresh/support ages, group
 membership, and expired IDs. It is diagnostic metadata rather than another

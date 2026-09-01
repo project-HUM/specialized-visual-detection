@@ -323,6 +323,60 @@ class MonsterTracker:
         selected = self._select_occlusion_members(members, observation, now)
         return tuple(track.track_id for track in selected) == group.member_track_ids
 
+    def _individually_explanatory(self, track: _Track, observation: Box, now: float) -> bool:
+        """Whether one observation plausibly represents this track by itself."""
+        predicted = self._predicted(track, now)
+        if _intersection(predicted, observation) <= 0.0:
+            return False
+        pw = max(1.0, predicted[2] - predicted[0])
+        ph = max(1.0, predicted[3] - predicted[1])
+        ow = max(1.0, observation[2] - observation[0])
+        oh = max(1.0, observation[3] - observation[1])
+        width_ratio = ow / pw
+        height_ratio = oh / ph
+        if not (0.55 <= width_ratio <= 1.80 and 0.55 <= height_ratio <= 1.80):
+            return False
+        px, py = _center(predicted)
+        ox, oy = _center(observation)
+        return hypot(px - ox, py - oy) <= 0.75 * max(1.0, hypot(pw, ph))
+
+    def _distinct_individual_support_count(
+        self,
+        tracks: Sequence[_Track],
+        detections: Sequence[dict[str, Any]],
+        detection_indices: Sequence[int],
+        now: float,
+    ) -> int:
+        """Maximum local one-track/one-observation matching cardinality."""
+        edges = {
+            track.track_id: [
+                detection_index
+                for detection_index in detection_indices
+                if self._individually_explanatory(
+                    track, tuple(detections[detection_index]["box"]), now
+                )
+            ]
+            for track in tracks
+        }
+        matched_detection_to_track: dict[int, int] = {}
+
+        def augment(track_id: int, visited: set[int]) -> bool:
+            for detection_index in edges[track_id]:
+                if detection_index in visited:
+                    continue
+                visited.add(detection_index)
+                previous_track_id = matched_detection_to_track.get(detection_index)
+                if previous_track_id is None or augment(previous_track_id, visited):
+                    matched_detection_to_track[detection_index] = track_id
+                    return True
+            return False
+
+        matched = 0
+        for track in sorted(tracks, key=lambda item: item.track_id):
+            if augment(track.track_id, set()):
+                matched += 1
+        return matched
+
     @staticmethod
     def _association_record(
         item: dict[str, Any], kind: str, track_ids: Sequence[int], cost: float | None
@@ -405,21 +459,30 @@ class MonsterTracker:
         matched_detections: set[int] = set()
         associations: list[dict[str, Any]] = []
 
-        # Persist an existing group while exactly one observation supports its members.
+        # Decide each existing group locally. Unrelated detections elsewhere do
+        # not affect whether one shared observation still supports its members.
         for group in list(self._groups.values()):
-            unmatched_confirmed = sum(
-                track.confirmed and track.track_id not in matched_tracks for track in self._tracks
-            )
-            unmatched_detections = len(retained) - len(matched_detections)
-            if unmatched_detections >= unmatched_confirmed:
-                break
+            members = [
+                by_id[track_id]
+                for track_id in group.member_track_ids
+                if track_id in by_id and track_id not in matched_tracks
+            ]
+            if len(members) != len(group.member_track_ids):
+                continue
+            available_detection_indices = [
+                index for index in range(len(retained)) if index not in matched_detections
+            ]
             candidates = [
                 index
-                for index, item in enumerate(retained)
-                if index not in matched_detections
-                and self._group_supports_observation(group, tuple(item["box"]), timestamp, by_id)
+                for index in available_detection_indices
+                if self._group_supports_observation(
+                    group, tuple(retained[index]["box"]), timestamp, by_id
+                )
             ]
-            if len(candidates) == 1:
+            separate_support = self._distinct_individual_support_count(
+                members, retained, available_detection_indices, timestamp
+            )
+            if len(candidates) == 1 and separate_support < 2:
                 detection_index = candidates[0]
                 self._support_group(group, retained[detection_index], timestamp, by_id)
                 matched_detections.add(detection_index)
@@ -434,12 +497,6 @@ class MonsterTracker:
         for detection_index, item in enumerate(retained):
             if detection_index in matched_detections:
                 continue
-            unmatched_confirmed = sum(
-                track.confirmed and track.track_id not in matched_tracks for track in self._tracks
-            )
-            unmatched_detections = len(retained) - len(matched_detections)
-            if unmatched_detections >= unmatched_confirmed:
-                break
             available = [
                 track
                 for track in self._tracks
@@ -447,6 +504,13 @@ class MonsterTracker:
             ]
             members = self._select_occlusion_members(available, tuple(item["box"]), timestamp)
             if len(members) < 2:
+                continue
+            available_detection_indices = [
+                index for index in range(len(retained)) if index not in matched_detections
+            ]
+            if self._distinct_individual_support_count(
+                members, retained, available_detection_indices, timestamp
+            ) >= 2:
                 continue
             member_ids = tuple(track.track_id for track in members)
             existing = next(

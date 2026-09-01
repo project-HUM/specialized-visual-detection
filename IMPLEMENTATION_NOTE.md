@@ -54,6 +54,10 @@ provenance; pending proposals are never treated as ground truth.
 - New occlusion groups use intersecting predicted geometry and a plausible
   horizontally contiguous member span. Nearby tracks admitted only by the
   broad motion gate are not automatically absorbed.
+- Group formation and continued support are decided from observations locally
+  relevant to the candidate members. Global detection/track totals do not
+  suppress a valid many-to-one group when an unrelated false positive appears
+  elsewhere.
 - Count bounds use independent current evidence units: a supported group adds
   one lower-bound unit while each live confirmed member remains represented in
   the upper bound. Unsupported temporal holds add no lower-bound evidence.

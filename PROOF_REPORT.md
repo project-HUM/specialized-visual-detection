@@ -28,6 +28,11 @@ multiple persistent identities. Per-observation debug metadata records why a
 proposal was retained, suppressed, excluded, grouped, associated, or expired.
 These are implementation guarantees, not learned-model accuracy evidence.
 
+Local occlusion regressions also establish that an unrelated extra proposal
+cannot block either creation or continued support of `{M1,M2}` while `M3`
+remains independently visible. The extra proposal stays tentative, estimated
+count remains three, and the evidence bounds remain `[2,3]`.
+
 ## Direct observations
 
 - The recording contains 58,743 VFR frames; the retained same-map interval ends

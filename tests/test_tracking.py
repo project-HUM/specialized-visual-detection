@@ -164,6 +164,76 @@ def test_count_bounds_for_merged_pair_plus_visible_monster_are_two_to_three():
     assert [track["state"] for track in tracks].count("visible") == 1
 
 
+def test_unrelated_false_positive_does_not_block_local_occlusion_group():
+    tracker=MonsterTracker(min_hits=2,base_match_distance=45,max_speed_px_s=80)
+    boxes=[[50,100,80,150],[110,100,140,150],[250,100,280,150]]
+    tracker.update([_detection(box) for box in boxes],0.0)
+    tracker.update([_detection(box) for box in boxes],0.1)
+
+    tracks=tracker.update([
+        _detection([70,95,142,155],.90),       # shared M1+M2 observation
+        _detection([252,100,282,150],.88),     # M3 observation
+        _detection([185,40,215,90],.35),       # unrelated false positive
+    ],0.2,include_tentative=True)
+
+    grouped=[track for track in tracks if track["occlusion_group_id"] is not None]
+    visible=[track for track in tracks if track["state"] == "visible"]
+    tentative=[track for track in tracks if track["state"] == "tentative"]
+    assert {track["track_id"] for track in grouped} == {1,2}
+    assert [track["track_id"] for track in visible] == [3]
+    assert [track["track_id"] for track in tentative] == [4]
+    assert tracker.estimated_count() == 3
+    assert tracker.count_bounds() == (2,3)
+
+
+def test_unrelated_false_positive_does_not_interrupt_existing_group_support():
+    tracker=MonsterTracker(
+        min_hits=2,max_gap_s=.5,supported_occlusion_s=2.5,
+        base_match_distance=45,max_speed_px_s=80,
+    )
+    boxes=[[50,100,80,150],[110,100,140,150],[250,100,280,150]]
+    tracker.update([_detection(box) for box in boxes],0.0)
+    tracker.update([_detection(box) for box in boxes],0.1)
+    first=tracker.update([
+        _detection([70,95,142,155]),
+        _detection([251,100,281,150]),
+    ],0.2)
+    group_id=first[0]["occlusion_group_id"]
+
+    continued=tracker.update([
+        _detection([72,95,144,155],.90),
+        _detection([252,100,282,150],.88),
+        _detection([185,40,215,90],.35),
+    ],0.7,include_tentative=True)
+
+    grouped=[track for track in continued if track["occlusion_group_id"] == group_id]
+    assert {track["track_id"] for track in grouped} == {1,2}
+    assert all(track["state"] == "occluded" for track in grouped)
+    assert all(track["last_support_timestamp"] == .7 for track in grouped)
+    assert tracker.estimated_count() == 3
+    assert tracker.count_bounds() == (2,3)
+
+
+def test_distinct_local_observations_win_over_extra_shared_proposal():
+    tracker=MonsterTracker(min_hits=2,base_match_distance=45,max_speed_px_s=80)
+    boxes=[[50,100,80,150],[110,100,140,150]]
+    tracker.update([_detection(box) for box in boxes],0.0)
+    tracker.update([_detection(box) for box in boxes],0.1)
+
+    tracks=tracker.update([
+        _detection([70,95,142,155],.60),
+        _detection([52,100,82,150],.90),
+        _detection([112,100,142,150],.88),
+    ],0.2,include_tentative=True)
+
+    visible=[track for track in tracks if track["state"] == "visible"]
+    tentative=[track for track in tracks if track["state"] == "tentative"]
+    assert [track["track_id"] for track in visible] == [1,2]
+    assert [track["track_id"] for track in tentative] == [3]
+    assert all(track["occlusion_group_id"] is None for track in tracks)
+    assert tracker.count_bounds() == (2,2)
+
+
 def test_single_unsupported_hold_has_zero_to_one_bound():
     tracker=MonsterTracker(min_hits=1,max_gap_s=.5)
     tracker.update([_detection([10,10,40,60])],0.0)
