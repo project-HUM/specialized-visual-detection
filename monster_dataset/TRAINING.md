@@ -5,6 +5,17 @@ export. Training is intentionally blocked until every selected frame is
 visually reviewed:
 
 ```powershell
+python perception_cli.py monster-prelabel --split train
+python perception_cli.py monster-review --split train --queue pending
+```
+
+TRAIN proposals are review aids, never ground truth. Human confirmation is
+required before a frame becomes canonical. Validation is labeled manually
+without automatic prediction anchoring, and the sealed test stays untouched.
+
+After TRAIN and validation review is complete:
+
+```powershell
 python perception_cli.py monster-review-report
 python perception_cli.py monster-yolo-export --split train
 python perception_cli.py monster-yolo-export --split validation

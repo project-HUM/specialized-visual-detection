@@ -14,7 +14,11 @@ def write_contact_sheets(items: list[FrameAnnotation], output_dir: Path, *, spli
         cells=[]
         for item in items[start:start+columns*4]:
             image=cv2.imread(item.image_path); image=cv2.resize(image,cell_size) if image is not None else np.zeros((cell_size[1],cell_size[0],3),np.uint8)
-            cv2.rectangle(image,(0,0),(cell_size[0],22),(0,0,0),-1); cv2.putText(image,f"{item.frame_id} {item.review_status}",(4,16),cv2.FONT_HERSHEY_SIMPLEX,.42,(255,255,255),1,cv2.LINE_AA)
+            scale_x,scale_y=cell_size[0]/1920.,cell_size[1]/1080.
+            for monster in item.monsters:
+                x1,y1,x2,y2=monster.bbox_xyxy; color=(255,80,210) if monster.source=="codex_prelabel" else (0,255,0)
+                cv2.rectangle(image,(round(x1*scale_x),round(y1*scale_y)),(round(x2*scale_x),round(y2*scale_y)),color,2)
+            cv2.rectangle(image,(0,0),(cell_size[0],22),(0,0,0),-1); cv2.putText(image,f"{item.frame_id} {item.review_status} boxes={len(item.monsters)}",(4,16),cv2.FONT_HERSHEY_SIMPLEX,.40,(255,255,255),1,cv2.LINE_AA)
             cells.append(image)
         while len(cells)<columns*4: cells.append(np.zeros((cell_size[1],cell_size[0],3),np.uint8))
         sheet=cv2.vconcat([cv2.hconcat(cells[i:i+columns]) for i in range(0,columns*4,columns)]); path=output_dir/f"contact_{start//(columns*4)+1:03d}.jpg"; cv2.imwrite(str(path),sheet); outputs.append(path)

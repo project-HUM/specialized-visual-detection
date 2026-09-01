@@ -3,3 +3,5 @@ __pycache__/
 .pytest_cache/
 monster_dataset/smoke*
 monster_dataset/runs/
+monster_dataset/*.bak
+monster_dataset/prelabel_contacts/

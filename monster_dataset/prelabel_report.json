@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "split": "train",
+  "proposal_mechanism": "owlv2_text_pirate_monster",
+  "warning": "Proposals are pending review and are not ground truth or training-ready labels.",
+  "frames_available": 216,
+  "frames_processed": 216,
+  "frames_with_proposals": 213,
+  "frames_with_zero_proposals": 3,
+  "frames_skipped_reviewed_or_non_pending": 0,
+  "frames_skipped_existing_pending_annotations": 0,
+  "monster_proposals": 1072,
+  "dynamic_ui_proposals_removed": 93,
+  "confidence": {
+    "high_gte_0_75": 0,
+    "medium_gte_0_50": 19,
+    "low_lt_0_50": 1053
+  },
+  "review_required": 1072
+}

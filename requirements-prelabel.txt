@@ -1,0 +1,4 @@
+# Optional CPU/GPU open-vocabulary TRAIN proposal backend.
+torch==2.13.0
+transformers==5.14.1
+Pillow==12.1.1

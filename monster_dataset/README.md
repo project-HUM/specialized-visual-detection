@@ -15,8 +15,32 @@ Strict export fails if any selected annotation is pending, malformed, or marked
 `review_required`. The JSONL fields preserve ground position and uncertainty
 that YOLO cannot represent.
 
-`python perception_cli.py monster-review --split train` opens the interactive
-review UI. Drag the current image to add a source-coordinate box; the canonical
-position defaults to its bottom center. The UI shows VFR-aligned previous,
-current, and next frames, supports occlusion/visibility/review-required flags,
-and autosaves when navigating.
+Generate pending TRAIN proposals with:
+
+```powershell
+python perception_cli.py monster-prelabel --split train
+```
+
+The default backend uses the locally cached OWLv2 model with the prompts
+`pirate monster`, `pirate mushroom`, and `cartoon pirate monster`, followed by
+monster-size, fixed-UI, dynamic-inventory, and conservative duplicate filters.
+Use `--backend template` for the lighter capture-local template fallback. This
+is not a trained specialized detector or ground truth. Every proposal has
+`source=codex_prelabel`, remains `pending`, and has `review_required=true`.
+The command refuses validation/test, skips reviewed frames, and conservatively
+skips pending frames that already contain work. `prelabel_report.json` records
+proposal counts and confidence bands.
+
+`python perception_cli.py monster-review --split train --queue pending` opens
+the interactive review editor. It has VFR-aligned previous/current/next
+context, a large zoomable/pannable current frame, overlapping-box selection,
+drag add/move, four resize handles, Shift+click ground editing, delete, metadata
+keys, per-frame undo/redo, progress totals, and autosave with one `.bak` file.
+Press Enter/R to confirm and advance; confirmation alone changes the frame to
+`reviewed`, changes untouched proposal provenance to
+`human_confirmed_prelabel`, and clears proposal review flags. Use `E` for
+`needs_review`.
+
+Queue choices are `all`, `pending`, `needs_review`, and
+`proposal_review_required`. Validation review remains manual and unanchored by
+automatic proposals. The sealed test is rejected by proposal and review tools.

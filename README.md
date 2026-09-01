@@ -56,8 +56,10 @@ python -m pytest -q tests
 python perception_cli.py benchmark-runtime --frames 60
 python perception_cli.py discover-video
 python perception_cli.py monster-sample
+python -m pip install -r requirements-prelabel.txt
+python perception_cli.py monster-prelabel --split train
 python perception_cli.py monster-review-report
-python perception_cli.py monster-review --split train
+python perception_cli.py monster-review --split train --queue pending
 python perception_cli.py monster-contact-sheet --split train
 python perception_cli.py monster-temporal-context --split train
 python perception_cli.py monster-yolo-export --split train

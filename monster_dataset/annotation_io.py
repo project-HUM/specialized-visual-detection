@@ -1,10 +1,22 @@
 """Canonical annotation import and strict split-aware detector export."""
 from __future__ import annotations
 import csv
+import os
 import shutil
 from pathlib import Path
 from .schema import FrameAnnotation
 from .schema import write_jsonl
+
+
+def write_jsonl_with_backup(items: list[FrameAnnotation], path: Path) -> None:
+    """Atomically replace annotations while retaining one recoverable backup."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    backup = path.with_suffix(path.suffix + ".bak")
+    write_jsonl(items, temporary)
+    if path.is_file():
+        shutil.copy2(path, backup)
+    os.replace(temporary, path)
 
 def from_benchmark_csv(path: Path, image_root: Path) -> list[FrameAnnotation]:
     rows = list(csv.DictReader(path.open("r", encoding="utf-8-sig", newline="")))

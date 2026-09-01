@@ -28,6 +28,7 @@ from monster_dataset.schema import read_jsonl
 from monster_dataset.validation import write_report
 from monster_dataset.contact_sheet import write_contact_sheets, write_temporal_context
 from monster_dataset.review_app import MonsterReviewApp
+from monster_dataset.prelabel import Owlv2ProposalGenerator, TemplateProposalGenerator, prelabel_annotations
 
 
 HERE = Path(__file__).resolve().parent
@@ -144,6 +145,16 @@ def _parser() -> argparse.ArgumentParser:
     review.add_argument("--split", choices=("train","validation"), required=True)
     review.add_argument("--start-id")
     review.add_argument("--delta", type=float, default=.20)
+    review.add_argument("--queue", choices=("all", "pending", "needs_review", "proposal_review_required"), default="all")
+    prelabel = commands.add_parser("monster-prelabel", help="generate pending visual proposals for TRAIN only")
+    prelabel.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
+    prelabel.add_argument("--profile", type=Path, default=HERE / "session_profile" / "profile.json")
+    prelabel.add_argument("--split", choices=("train", "validation", "test"), default="train")
+    prelabel.add_argument("--backend", choices=("owlv2", "template"), default="owlv2")
+    prelabel.add_argument("--threshold", type=float, default=.30, help="OWLv2 text proposal threshold")
+    prelabel.add_argument("--replace-pending", action="store_true",
+                          help="replace existing annotations on pending TRAIN frames; never affects reviewed frames")
+    prelabel.add_argument("--report", type=Path, default=HERE / "monster_dataset" / "prelabel_report.json")
     monster_yolo = commands.add_parser("monster-yolo-export", help="export only reviewed canonical labels to YOLO text")
     monster_yolo.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
     monster_yolo.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "yolo_dataset")
@@ -503,7 +514,20 @@ def main() -> int:
                                          frame_ids=set(args.frame_id) if args.frame_id else None)
         print(json.dumps({"frames": len(outputs), "split": args.split, "output": str(args.output)}, indent=2))
     elif args.command == "monster-review":
-        MonsterReviewApp(args.annotations,args.video,split=args.split,start_id=args.start_id,delta_s=args.delta).run()
+        MonsterReviewApp(args.annotations,args.video,split=args.split,start_id=args.start_id,
+                         delta_s=args.delta,queue=args.queue).run()
+    elif args.command == "monster-prelabel":
+        if args.split != "train":
+            raise ValueError("Automatic pre-labeling is restricted to TRAIN; validation is manual and test is sealed")
+        generator = (Owlv2ProposalGenerator(threshold=args.threshold)
+                     if args.backend == "owlv2" else TemplateProposalGenerator(args.profile))
+        print(json.dumps(prelabel_annotations(read_jsonl(args.annotations), args.annotations,
+                                              split=args.split, generator=generator,
+                                              replace_pending=args.replace_pending,
+                                              report_path=args.report,
+                                              progress=lambda done, total: print(
+                                                  f"pre-labeled {done}/{total} TRAIN frames", file=sys.stderr, flush=True
+                                              )), indent=2))
     elif args.command == "monster-yolo-export":
         print(json.dumps(export_yolo(read_jsonl(args.annotations), args.output, split=args.split), indent=2))
     elif args.command == "monster-sync-splits":
