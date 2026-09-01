@@ -457,6 +457,7 @@ class MonsterTracker:
         by_id = {track.track_id: track for track in self._tracks}
         matched_tracks: set[int] = set()
         matched_detections: set[int] = set()
+        shared_only_detections: set[int] = set()
         associations: list[dict[str, Any]] = []
 
         # Decide each existing group locally. Unrelated detections elsewhere do
@@ -511,6 +512,11 @@ class MonsterTracker:
             if self._distinct_individual_support_count(
                 members, retained, available_detection_indices, timestamp
             ) >= 2:
+                # This proposal represents a shared region, while distinct
+                # observations already explain multiple members. It must not
+                # fall through and falsely refresh a remaining hidden member
+                # as though it were an individual observation.
+                shared_only_detections.add(detection_index)
                 continue
             member_ids = tuple(track.track_id for track in members)
             existing = next(
@@ -533,7 +539,7 @@ class MonsterTracker:
         # Ordinary association is deterministic by cost, then identity and detector order.
         pairs: list[tuple[float, int, int]] = []
         for detection_index, item in enumerate(retained):
-            if detection_index in matched_detections:
+            if detection_index in matched_detections or detection_index in shared_only_detections:
                 continue
             for track in self._tracks:
                 if track.track_id in matched_tracks:

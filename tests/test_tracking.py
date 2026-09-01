@@ -283,6 +283,57 @@ def test_three_tracks_can_share_one_supported_observation_then_recover():
     assert [track["track_id"] for track in recovered] == [1,2,3]
 
 
+def test_three_member_group_can_partially_split_into_visible_plus_two_member_group():
+    tracker=MonsterTracker(min_hits=2,base_match_distance=50,max_speed_px_s=100)
+    boxes=[[50,100,80,150],[110,100,140,150],[170,100,200,150]]
+    tracker.update([_detection(box) for box in boxes],0.0)
+    tracker.update([_detection(box) for box in boxes],0.1)
+
+    merged=tracker.update([_detection([70,95,182,155])],0.2)
+    assert {track["occlusion_group_id"] for track in merged} == {1}
+    assert {track["group_member_count"] for track in merged} == {3}
+
+    partially_split=tracker.update([
+        _detection([52,100,82,150]),
+        _detection([130,95,192,155]),
+    ],0.3)
+
+    by_id={track["track_id"]:track for track in partially_split}
+    assert set(by_id) == {1,2,3}
+    assert by_id[1]["state"] == "visible"
+    assert by_id[1]["observed"] is True
+    assert by_id[1]["occlusion_group_id"] is None
+    assert {by_id[2]["state"],by_id[3]["state"]} == {"occluded"}
+    assert by_id[2]["occlusion_group_id"] == by_id[3]["occlusion_group_id"]
+    assert by_id[2]["group_member_count"] == by_id[3]["group_member_count"] == 2
+    assert tracker.estimated_count() == 3
+    assert tracker.count_bounds() == (2,3)
+
+
+def test_broad_shared_proposal_does_not_falsely_refresh_hidden_third_track():
+    tracker=MonsterTracker(min_hits=2,base_match_distance=50,max_speed_px_s=100)
+    boxes=[[50,100,80,150],[110,100,140,150],[170,100,200,150]]
+    tracker.update([_detection(box) for box in boxes],0.0)
+    tracker.update([_detection(box) for box in boxes],0.1)
+    tracker.update([_detection([70,95,182,155])],0.2)
+
+    tracks=tracker.update([
+        _detection([52,100,82,150],.90),
+        _detection([112,100,142,150],.88),
+        _detection([45,92,205,158],.60),
+    ],0.3,include_tentative=True)
+
+    by_id={track["track_id"]:track for track in tracks}
+    assert by_id[1]["state"] == by_id[2]["state"] == "visible"
+    assert by_id[1]["observed"] is True and by_id[2]["observed"] is True
+    assert by_id[3]["observed"] is False
+    assert by_id[3]["state"] == "temporal_hold"
+    assert by_id[3]["last_fresh_visual_timestamp"] == .1
+    assert {track["track_id"] for track in tracks if track["confirmed"]} == {1,2,3}
+    assert tracker.estimated_count() == 3
+    assert tracker.count_bounds() == (2,3)
+
+
 def test_slight_motion_reversal_during_overlap_does_not_fragment_ids():
     tracker=MonsterTracker(min_hits=2,base_match_distance=45,max_speed_px_s=120)
     tracker.update([_detection([90,100,120,150]),_detection([160,100,190,150])],0.0)
