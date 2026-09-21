@@ -2,7 +2,9 @@
   "schema": "specialized-visual-detection.pilot.v1",
   "map_id": "forest-of-dead-trees-2",
   "selection": {
-    "count": 5,
+    "count": 7,
+    "original_random_count": 5,
+    "additional_requested_count": 2,
     "seed": 0,
     "minimum_separation_s": 30.0,
     "eligibility": "direct_minimap_marker",
@@ -75,6 +77,30 @@
         109.58823529411765
       ],
       "marker_area": 68
+    },
+    {
+      "frame_id": "pilot-0005",
+      "frame": 267,
+      "time_s": 9.960067,
+      "image": "maps/forest-of-dead-trees-2/dataset/reference_samples/lich/lich-early_000010.000.jpg",
+      "minimap_position": [
+        80.38028169014085,
+        123.4225352112676
+      ],
+      "marker_area": 71,
+      "selection_reason": "requested_clear_lich_reference"
+    },
+    {
+      "frame_id": "pilot-0006",
+      "frame": 122443,
+      "time_s": 4622.2969,
+      "image": "maps/forest-of-dead-trees-2/dataset/reference_samples/lich/lich-late_004623.000.jpg",
+      "minimap_position": [
+        110.7605633802817,
+        116.52112676056338
+      ],
+      "marker_area": 71,
+      "selection_reason": "requested_clear_lich_reference"
     }
   ]
 }

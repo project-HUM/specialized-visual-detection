@@ -26,6 +26,25 @@ VALID_QUEUES = {"all", "pending", "needs_review", "proposal_review_required"}
 HANDLE_NAMES = ("top_left", "top_right", "bottom_left", "bottom_right")
 
 
+def load_pilot_frame_indices(path: Path) -> dict[str, int]:
+    """Load exact source-frame anchors recorded by the pilot sampler."""
+    if not path.is_file():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != "specialized-visual-detection.pilot.v1":
+        raise ValueError(f"{path}: unsupported pilot manifest schema")
+    result: dict[str, int] = {}
+    for entry in payload.get("frames", []):
+        frame_id = entry.get("frame_id")
+        frame = entry.get("frame")
+        if not isinstance(frame_id, str) or not isinstance(frame, int) or frame < 0:
+            raise ValueError(f"{path}: every pilot frame requires a frame_id and non-negative frame")
+        if frame_id in result:
+            raise ValueError(f"{path}: duplicate pilot frame_id {frame_id!r}")
+        result[frame_id] = frame
+    return result
+
+
 @dataclass(frozen=True)
 class BoxPreset:
     preset_id: str
@@ -43,12 +62,13 @@ class BoxPreset:
 
 @dataclass(frozen=True)
 class ReviewSettings:
-    box_presets: tuple[BoxPreset, BoxPreset]
+    box_presets: tuple[BoxPreset, ...]
 
 
 DEFAULT_BOX_PRESETS = (
     BoxPreset("1", "Orange mob", 170.0, 121.0, 42.0),
     BoxPreset("2", "Blue mob", 181.0, 144.0, 205.0),
+    BoxPreset("3", "Preset 3", 170.0, 144.0, 305.0),
 )
 
 
@@ -57,8 +77,8 @@ def load_review_settings(path: Path) -> ReviewSettings:
         return ReviewSettings(DEFAULT_BOX_PRESETS)
     payload = json.loads(path.read_text(encoding="utf-8"))
     raw_presets = payload.get("box_presets")
-    if not isinstance(raw_presets, list) or len(raw_presets) != 2:
-        raise ValueError(f"{path}: box_presets must contain exactly two presets")
+    if not isinstance(raw_presets, list) or len(raw_presets) != 3:
+        raise ValueError(f"{path}: box_presets must contain exactly three presets")
     presets: list[BoxPreset] = []
     for index, raw in enumerate(raw_presets, 1):
         try:
@@ -69,7 +89,7 @@ def load_review_settings(path: Path) -> ReviewSettings:
         if not preset.name or preset.width < 4 or preset.height < 4:
             raise ValueError(f"{path}: preset {index} requires a name and width/height >= 4")
         presets.append(preset)
-    return ReviewSettings((presets[0], presets[1]))
+    return ReviewSettings(tuple(presets))
 
 
 def fixed_box_from_drag(start: tuple[float, float], end: tuple[float, float],
@@ -314,17 +334,20 @@ class ReviewSession:
             self.selected_index = candidates[(candidates.index(self.selected_index) + 1) % len(candidates)]
         return self.selected_index
 
-    def move_selected(self, dx: float, dy: float, *, keep_inside: bool = False) -> None:
+    def move_selected(self, dx: float, dy: float, *, keep_inside: bool = False) -> bool:
         if self.selected_index is None:
-            return
+            return False
         monster = self.current.monsters[self.selected_index]
         candidate = self.translated_box(monster.bbox_xyxy, dx, dy, keep_inside=keep_inside)
         x1, y1 = candidate[0], candidate[1]
         actual_dx, actual_dy = x1 - monster.bbox_xyxy[0], y1 - monster.bbox_xyxy[1]
+        if actual_dx == 0.0 and actual_dy == 0.0:
+            return False
         self._record()
         monster.bbox_xyxy = candidate
         monster.ground_position = [monster.ground_position[0] + actual_dx, monster.ground_position[1] + actual_dy]
         self._mark_corrected(monster)
+        return True
 
     def resize_selected(self, handle: str, point: tuple[float, float]) -> None:
         if self.selected_index is None or handle not in HANDLE_NAMES:
@@ -344,6 +367,19 @@ class ReviewSession:
         monster.bbox_xyxy = box
         monster.ground_position = [(box[0] + box[2]) / 2.0, box[3]]
         self._mark_corrected(monster)
+
+    def resize_selected_from_bottom_left(self, width: float, height: float) -> bool:
+        """Resize the selected box while keeping its left and bottom edges fixed."""
+        if self.selected_index is None:
+            return False
+        monster = self.current.monsters[self.selected_index]
+        x1, _, _, y2 = monster.bbox_xyxy
+        box = self._valid_box([x1, y2 - height, x1 + width, y2])
+        self._record()
+        monster.bbox_xyxy = box
+        monster.ground_position = [(box[0] + box[2]) / 2.0, box[3]]
+        self._mark_corrected(monster)
+        return True
 
     def delete_selected(self) -> bool:
         if self.selected_index is None:
@@ -433,7 +469,21 @@ class MonsterReviewApp:
         self.presets = {preset.preset_id: preset for preset in self.settings.box_presets}
         self.session = ReviewSession(read_jsonl(annotations), split=split, queue=queue,
                                      start_id=start_id, source_size=source_size)
-        self.timestamps = video_frame_timestamps(video)
+        self.pilot_frame_indices: dict[str, int] = {}
+        self.nominal_fps: float | None = None
+        if split == "pilot":
+            manifest = annotations.parent / "pilot_manifest.json"
+            self.pilot_frame_indices = load_pilot_frame_indices(manifest)
+            missing = [item.frame_id for item in self.session.items
+                       if item.frame_id not in self.pilot_frame_indices]
+            if missing:
+                raise ValueError(
+                    f"{manifest}: missing exact source-frame anchors for {', '.join(missing)}"
+                )
+            self.nominal_fps = self._nominal_video_fps(video)
+            self.timestamps: list[float] | None = None
+        else:
+            self.timestamps = video_frame_timestamps(video)
         self.viewport = Viewport(source_size=source_size)
         self.window = "Monster review"
         self.frame_cache: OrderedDict[int, np.ndarray] = OrderedDict()
@@ -442,15 +492,36 @@ class MonsterReviewApp:
         self.add_mode = False
         self.active_preset_id: str | None = None
         self.preset_rects: dict[str, tuple[int, int, int, int]] = {}
+        self.help_panel_rect = (0, 0, 0, 0)
+        self.help_scroll_lines = 0
+        self.help_max_scroll_lines = 0
+        self.dimension_status = ""
         self.canvas_size = (1440, 900)
 
-    def _frame_index(self, timestamp: float) -> int:
+    @staticmethod
+    def _nominal_video_fps(video: Path) -> float:
+        capture = cv2.VideoCapture(str(video))
+        if not capture.isOpened():
+            capture.release()
+            raise RuntimeError(f"Could not open video: {video}")
+        fps = float(capture.get(cv2.CAP_PROP_FPS))
+        capture.release()
+        if not np.isfinite(fps) or fps <= 0.0:
+            raise RuntimeError(f"Video has no usable nominal frame rate: {video}")
+        return fps
+
+    def _frame_index(self, timestamp: float, item: FrameAnnotation | None = None) -> int:
+        if item is not None and item.frame_id in self.pilot_frame_indices:
+            assert self.nominal_fps is not None
+            offset = round((timestamp - item.timestamp) * self.nominal_fps)
+            return max(0, self.pilot_frame_indices[item.frame_id] + offset)
+        assert self.timestamps is not None
         insertion = bisect.bisect_left(self.timestamps, timestamp)
         choices = [i for i in (insertion - 1, insertion) if 0 <= i < len(self.timestamps)]
         return min(choices, key=lambda i: abs(self.timestamps[i] - timestamp))
 
-    def _frame(self, timestamp: float) -> np.ndarray:
-        index = self._frame_index(timestamp)
+    def _frame(self, timestamp: float, item: FrameAnnotation | None = None) -> np.ndarray:
+        index = self._frame_index(timestamp, item)
         if index not in self.frame_cache:
             self.frame_cache[index] = read_video_frame(self.video, frame_index=index)
             while len(self.frame_cache) > 8:
@@ -463,7 +534,7 @@ class MonsterReviewApp:
             path = resolve_image_path(item.image_path, self.annotations_path)
             image = cv2.imread(str(path))
             if image is None:
-                image = self._frame(item.timestamp)
+                image = self._frame(item.timestamp, item)
             self.image_cache = {item.frame_id: image}
         return self.image_cache[item.frame_id]
 
@@ -627,9 +698,11 @@ class MonsterReviewApp:
             cv2.rectangle(canvas, (box[0], box[1]), (box[2], box[3]), color, 1)
 
     def _draw_preset_cards(self, canvas: np.ndarray, controls_x: int, controls_width: int,
-                           status_y: int) -> None:
+                           status_y: int) -> int:
         gap = 8
-        card_width = max(120, (controls_width - 3 * gap) // 2)
+        count = len(self.settings.box_presets)
+        available_width = max(1, controls_width - 20)
+        card_width = max(72, (available_width - (count - 1) * gap) // count)
         card_height = 54
         y = status_y - card_height - 8
         self.preset_rects = {}
@@ -641,8 +714,40 @@ class MonsterReviewApp:
             cv2.rectangle(canvas, (x, y), (x + card_width, y + card_height), (42, 42, 42), -1)
             cv2.rectangle(canvas, (x, y), (x + card_width, y + card_height),
                           (255, 255, 255) if selected else preset.color, 2 if selected else 1)
-            self._put(canvas, f"Ctrl+{preset.preset_id} {preset.name}", (x + 7, y + 20), .38, preset.color)
-            self._put(canvas, f"{preset.width:g} x {preset.height:g}  drag me", (x + 7, y + 42), .36)
+            self._put(canvas, f"Ctrl+{preset.preset_id}", (x + 6, y + 18), .36, preset.color)
+            self._put(canvas, preset.name[:12], (x + 6, y + 34), .32, preset.color)
+            self._put(canvas, f"{preset.width:g}x{preset.height:g}", (x + 6, y + 49), .31)
+        return y
+
+    def _draw_help_panel(self, canvas: np.ndarray, rect: tuple[int, int, int, int],
+                         lines: list[tuple[str, tuple[int, int, int]]]) -> None:
+        x, y, width, height = rect
+        self.help_panel_rect = rect
+        line_height = 27
+        header_height = 28
+        visible_lines = max(1, (height - header_height) // line_height)
+        self.help_max_scroll_lines = max(0, len(lines) - visible_lines)
+        self.help_scroll_lines = max(0, min(self.help_scroll_lines, self.help_max_scroll_lines))
+        cv2.rectangle(canvas, (x, y), (x + width, y + height), (27, 27, 27), -1)
+        self._put(canvas, "HOTKEYS / HELP  (wheel to scroll)", (x + 2, y + 18), .38,
+                  (170, 210, 255))
+        for visible_row, (line, color) in enumerate(
+                lines[self.help_scroll_lines:self.help_scroll_lines + visible_lines]):
+            self._put(canvas, line, (x + 2, y + header_height + 20 + visible_row * line_height),
+                      .42, color)
+        if self.help_max_scroll_lines:
+            track_x = x + width - 5
+            track_top = y + header_height
+            track_height = max(1, height - header_height)
+            thumb_height = max(18, round(track_height * visible_lines / len(lines)))
+            travel = max(0, track_height - thumb_height)
+            thumb_top = track_top + round(
+                travel * self.help_scroll_lines / self.help_max_scroll_lines
+            )
+            cv2.rectangle(canvas, (track_x, track_top), (track_x + 3, y + height - 1),
+                          (55, 55, 55), -1)
+            cv2.rectangle(canvas, (track_x, thumb_top),
+                          (track_x + 3, thumb_top + thumb_height), (180, 180, 180), -1)
 
     def _preset_at(self, point: tuple[int, int]) -> str | None:
         for preset_id, (x, y, width, height) in self.preset_rects.items():
@@ -659,7 +764,7 @@ class MonsterReviewApp:
         contexts = (("PREVIOUS", max(0.0, item.timestamp - self.delta_s)),
                     ("CURRENT CONTEXT", item.timestamp), ("NEXT", item.timestamp + self.delta_s))
         for index, (label, timestamp) in enumerate(contexts):
-            self._draw_thumbnail(canvas, self._frame(timestamp), (index * thumb_width, 0,
+            self._draw_thumbnail(canvas, self._frame(timestamp, item), (index * thumb_width, 0,
                                  thumb_width if index < 2 else width - index * thumb_width, top), label)
         self._draw_main_image(canvas, self._current_image())
         self._draw_annotations(canvas)
@@ -670,47 +775,65 @@ class MonsterReviewApp:
             mode_text = f"PRESET {preset.preset_id}: {preset.name} {preset.width:g}x{preset.height:g}"
         else:
             mode_text = "FREE ADD" if self.add_mode else "DEFAULT"
+        normal = (225, 225, 225)
         lines = [
-            f"{self.session.split.upper()}  {self.session.queue}",
-            f"frame {self.session.index + 1} / {len(self.session.items)}",
-            f"{item.frame_id}  t={item.timestamp:.3f}",
-            f"status: {item.review_status.upper()}",
-            f"MODE: {mode_text}",
-            f"reviewed {progress['reviewed']}  pending {progress['pending']}",
-            f"needs review {progress['needs_review']}",
-            f"current proposals/boxes: {len(item.monsters)}", "",
-            "Enter/R confirm + next   E needs review",
-            "Left/Right: previous/next",
-            "A: free Add mode   Esc: default/quit",
-            "Ctrl+1/2 or drag preset card",
-            "drag empty: add   drag box: move",
-            "corner handles: resize   Del: delete",
-            "Shift+click: ground point   Tab: cycle",
-            "O: occluded   U: review flag",
-            "1..5: visibility   0: clear boxes",
-            "wheel: zoom   middle drag: pan   F: fit",
-            "Ctrl+Z/Y: undo/redo   S: save",
-            "Q/Esc: save and quit",
+            (f"{self.session.split.upper()}  {self.session.queue}", normal),
+            (f"frame {self.session.index + 1} / {len(self.session.items)}", normal),
+            (f"{item.frame_id}  t={item.timestamp:.3f}", normal),
+            (f"status: {item.review_status.upper()}", (100, 220, 255)),
+            (f"MODE: {mode_text}", (80, 255, 120) if (self.add_mode or self.active_preset_id) else normal),
+            (f"reviewed {progress['reviewed']}  pending {progress['pending']}", normal),
+            (f"needs review {progress['needs_review']}", normal),
+            (f"current proposals/boxes: {len(item.monsters)}", normal),
+            ("", normal),
+            ("Enter/R confirm + next   E needs review", normal),
+            ("Left/Right: previous/next", normal),
+            ("A: free Add mode   Esc: default/quit", normal),
+            ("Ctrl+1/2/3 or drag preset card", normal),
+            ("Shift+Left/Right (or L/R): width -/+", normal),
+            ("Shift+Down/Up (or D/U): height -/+", normal),
+            ("resize anchor: bottom-left stays fixed", normal),
+            ("Ctrl+Left/Right/Up/Down: move box", normal),
+            ("Ctrl+L/R/U/D: move box one pixel", normal),
+            ("drag empty: add   drag box: move", normal),
+            ("corner handles: resize   Del: delete", normal),
+            ("Shift+click: ground point   Tab: cycle", normal),
+            ("O: occluded   U: review flag", normal),
+            ("1..5: visibility   0: clear boxes", normal),
+            ("wheel image: zoom   middle drag: pan", normal),
+            ("F: fit   Ctrl+Z/Y: undo/redo   S: save", normal),
+            ("Q/Esc: save and quit", normal),
+            ("", normal),
+            ("Preset dimensions:", (170, 210, 255)),
+            ("edit dataset/review_settings.json", normal),
+            ("change width/height, then reopen", normal),
         ]
-        for row, line in enumerate(lines):
-            self._put(canvas, line, (controls_x, top + 27 + row * 27), .44,
-                      ((80, 255, 120) if row == 4 and (self.add_mode or self.active_preset_id) else
-                       (100, 220, 255) if row == 3 else (225, 225, 225)))
         status_y = height - status_height
-        self._draw_preset_cards(canvas, controls_x, controls_width, status_y)
+        preset_y = self._draw_preset_cards(canvas, controls_x, controls_width, status_y)
+        self._draw_help_panel(canvas, (controls_x, top, controls_width - 16,
+                                       max(1, preset_y - top - 8)), lines)
         cv2.rectangle(canvas, (0, status_y), (width, height), (12, 12, 12), -1)
         selected = "none" if self.session.selected_index is None else f"M{self.session.selected_index + 1}"
         mode = f"{mode_text} (Esc to default)" if (self.add_mode or self.active_preset_id) else "DEFAULT (A for free Add)"
         self._put(canvas, f"Mode: {mode}    Selected: {selected}    zoom: {self.viewport.zoom:.2f}x    autosave: on",
                   (12, status_y + 28), .5)
-        self._put(canvas, "Preset boxes retain their card hue | pink dashed = pending | white = selected free box",
-                  (12, status_y + 58), .46, (190, 190, 190))
+        footer = (self.dimension_status or
+                  "Preset boxes retain their card hue | pink dashed = pending | white = selected free box")
+        self._put(canvas, footer, (12, status_y + 58), .46, (190, 190, 190))
         return canvas
 
     def _mouse(self, event: int, x: int, y: int, flags: int, _param: object) -> None:
         point = (x, y)
         if event == cv2.EVENT_MOUSEWHEEL and self.viewport.contains_display(point):
             self.viewport.zoom_at(point, 1.25 if flags > 0 else .8)
+            return
+        help_x, help_y, help_width, help_height = getattr(self, "help_panel_rect", (0, 0, 0, 0))
+        if (event == cv2.EVENT_MOUSEWHEEL and
+                help_x <= x < help_x + help_width and help_y <= y < help_y + help_height):
+            direction = -3 if flags > 0 else 3
+            maximum = getattr(self, "help_max_scroll_lines", 0)
+            current = getattr(self, "help_scroll_lines", 0)
+            self.help_scroll_lines = max(0, min(maximum, current + direction))
             return
         if event == cv2.EVENT_MBUTTONDOWN and self.viewport.contains_display(point):
             self.interaction = {"kind": "pan", "current": point}
@@ -816,9 +939,103 @@ class MonsterReviewApp:
             return False
         return bool(ctypes.windll.user32.GetAsyncKeyState(0x11) & 0x8000)
 
-    def _handle_key(self, key: int, *, control_pressed: bool | None = None) -> bool:
+    @staticmethod
+    def _shift_pressed() -> bool:
+        if os.name != "nt":
+            return False
+        return bool(ctypes.windll.user32.GetAsyncKeyState(0x10) & 0x8000)
+
+    def _dimension_target_preset_id(self) -> str | None:
+        if self.active_preset_id in self.presets:
+            return self.active_preset_id
+        if self.session.selected_index is not None:
+            selected = self.session.current.monsters[self.session.selected_index]
+            if selected.box_preset in self.presets:
+                return selected.box_preset
+        return None
+
+    @staticmethod
+    def _setting_number(value: float) -> int | float:
+        return int(value) if float(value).is_integer() else value
+
+    def _persist_review_settings(self) -> None:
+        payload = {
+            "box_presets": [
+                {
+                    "name": preset.name,
+                    "width": self._setting_number(preset.width),
+                    "height": self._setting_number(preset.height),
+                    "hue": self._setting_number(preset.hue),
+                }
+                for preset in self.settings.box_presets
+            ]
+        }
+        temporary = self.settings_path.with_suffix(self.settings_path.suffix + ".tmp")
+        temporary.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(self.settings_path)
+
+    def _adjust_preset_dimensions(self, delta_width: float, delta_height: float) -> bool:
+        preset_id = self._dimension_target_preset_id()
+        if preset_id is None:
+            self.dimension_status = "Select a preset (Ctrl+1/2/3) or a preset box before resizing"
+            return False
+        current = self.presets[preset_id]
+        width = max(4.0, current.width + delta_width)
+        height = max(4.0, current.height + delta_height)
+        if width == current.width and height == current.height:
+            return False
+
+        selected_matches = False
+        if self.session.selected_index is not None:
+            selected = self.session.current.monsters[self.session.selected_index]
+            selected_matches = selected.box_preset == preset_id
+        if selected_matches:
+            try:
+                self.session.resize_selected_from_bottom_left(width, height)
+            except ValueError:
+                self.dimension_status = "Preset resize would move too much of the box outside the frame"
+                return False
+
+        replacement = BoxPreset(current.preset_id, current.name, width, height, current.hue)
+        updated = tuple(replacement if preset.preset_id == preset_id else preset
+                        for preset in self.settings.box_presets)
+        self.settings = ReviewSettings(updated)
+        self.presets[preset_id] = replacement
+        self._persist_review_settings()
+        self.dimension_status = (
+            f"Preset {preset_id} {current.name}: {width:g} x {height:g} px | bottom-left fixed"
+        )
+        return True
+
+    def _nudge_selected(self, dx: float, dy: float) -> bool:
+        if self.session.selected_index is None:
+            self.dimension_status = "Select a box before moving it"
+            return False
+        selected = self.session.current.monsters[self.session.selected_index]
+        try:
+            moved = self.session.move_selected(
+                dx, dy, keep_inside=self.session.box_fully_inside(selected.bbox_xyxy)
+            )
+        except ValueError:
+            moved = False
+        if not moved:
+            self.dimension_status = "Selected box is already at that frame boundary"
+            return False
+        directions = {
+            (-1.0, 0.0): "left",
+            (1.0, 0.0): "right",
+            (0.0, -1.0): "up",
+            (0.0, 1.0): "down",
+        }
+        self.dimension_status = f"Selected box moved {directions[(dx, dy)]} 1 source pixel"
+        return True
+
+    def _handle_key(self, key: int, *, control_pressed: bool | None = None,
+                    shift_pressed: bool | None = None) -> bool:
         """Handle one OpenCV key code; return False when the window should close."""
         low = key & 0xFF
+        control = self._control_pressed() if control_pressed is None else control_pressed
+        shift = self._shift_pressed() if shift_pressed is None else shift_pressed
         if low == 27:
             if self.add_mode or self.active_preset_id:
                 self.add_mode = False
@@ -834,12 +1051,49 @@ class MonsterReviewApp:
             self.add_mode = not self.add_mode or self.active_preset_id is not None
             self.active_preset_id = None
             self.interaction = None
-        elif (self._control_pressed() if control_pressed is None else control_pressed) and low in (ord("1"), ord("2")):
+        elif control and low in (ord("1"), ord("2"), ord("3")):
             self.active_preset_id = chr(low)
             self.add_mode = False
             self.interaction = None
+            preset = self.presets[self.active_preset_id]
+            self.dimension_status = (
+                f"Preset {preset.preset_id} {preset.name}: {preset.width:g} x {preset.height:g} px"
+            )
         elif low == ord("s"):
             self.save()
+        elif ((control and not shift and key in (
+                2424832, 2555904, 2490368, 2621440, 65361, 65363, 65362, 65364,
+                ord("l"), ord("L"), ord("r"), ord("R"),
+                ord("d"), ord("D"), ord("u"), ord("U"))) or
+              low in (4, 12, 18, 21)):
+            movements = {
+                2424832: (-1.0, 0.0), 65361: (-1.0, 0.0),
+                2555904: (1.0, 0.0), 65363: (1.0, 0.0),
+                2490368: (0.0, -1.0), 65362: (0.0, -1.0),
+                2621440: (0.0, 1.0), 65364: (0.0, 1.0),
+                ord("l"): (-1.0, 0.0), ord("L"): (-1.0, 0.0), 12: (-1.0, 0.0),
+                ord("r"): (1.0, 0.0), ord("R"): (1.0, 0.0), 18: (1.0, 0.0),
+                ord("u"): (0.0, -1.0), ord("U"): (0.0, -1.0), 21: (0.0, -1.0),
+                ord("d"): (0.0, 1.0), ord("D"): (0.0, 1.0), 4: (0.0, 1.0),
+            }
+            movement = movements[key] if key in movements else movements[low]
+            self._nudge_selected(*movement)
+        elif (shift or
+              key in (ord("L"), ord("R"), ord("D"), ord("U"))) and key in (
+                2424832, 2555904, 2490368, 2621440, 65361, 65363, 65362, 65364,
+                ord("l"), ord("L"), ord("r"), ord("R"),
+                ord("d"), ord("D"), ord("u"), ord("U")):
+            adjustments = {
+                2424832: (-1.0, 0.0), 65361: (-1.0, 0.0),
+                2555904: (1.0, 0.0), 65363: (1.0, 0.0),
+                2621440: (0.0, -1.0), 65364: (0.0, -1.0),
+                2490368: (0.0, 1.0), 65362: (0.0, 1.0),
+                ord("l"): (-1.0, 0.0), ord("L"): (-1.0, 0.0),
+                ord("r"): (1.0, 0.0), ord("R"): (1.0, 0.0),
+                ord("d"): (0.0, -1.0), ord("D"): (0.0, -1.0),
+                ord("u"): (0.0, 1.0), ord("U"): (0.0, 1.0),
+            }
+            self._adjust_preset_dimensions(*adjustments[key])
         elif key in (2424832, 65361):
             self.save(); self.session.navigate(-1); self.viewport.fit()
         elif key in (2555904, 65363):

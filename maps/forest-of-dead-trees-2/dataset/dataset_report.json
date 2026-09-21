@@ -1,22 +1,29 @@
 {
   "schema_version": 1,
-  "frames": 5,
+  "frames": 7,
   "reviewed_frames": 0,
-  "pending_frames": 5,
-  "positive_frames": 0,
-  "negative_frames": 5,
-  "monster_instances": 0,
+  "pending_frames": 7,
+  "positive_frames": 5,
+  "negative_frames": 2,
+  "monster_instances": 27,
   "occluded_instances": 0,
   "review_required_instances": 0,
   "count_distribution": {
-    "0": 5
+    "0": 2,
+    "1": 1,
+    "11": 1,
+    "2": 1,
+    "5": 1,
+    "8": 1
   },
-  "condition_distribution": {},
+  "condition_distribution": {
+    "lich_visible": 2
+  },
   "splits": {
     "pilot": {
-      "frames": 5,
+      "frames": 7,
       "reviewed": 0,
-      "pending": 5
+      "pending": 7
     },
     "train": {
       "frames": 0,
@@ -37,12 +44,12 @@
   "malformed_frames": {},
   "training_ready": false,
   "box_size": {
-    "mean_width": 0.0,
-    "mean_height": 0.0
+    "mean_width": 90.4074074074074,
+    "mean_height": 133.40740740740742
   },
   "pairwise_iou": {
-    "pairs": 0,
-    "max": 0.0,
-    "ge_0_5": 0
+    "pairs": 94,
+    "max": 0.6463728246490821,
+    "ge_0_5": 2
   }
 }

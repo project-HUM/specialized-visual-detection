@@ -50,13 +50,23 @@ boxes. The Left arrow revisits and revises completed frames, while the Right
 arrow continues through outstanding work without making the next launch start
 over.
 
-Two fixed-size mob box presets are configured in `review_settings.json`.
+Three fixed-size mob box presets are configured in `review_settings.json`.
 Edit each preset's visible name, source-pixel `width`/`height`, and hue in
-degrees, then reopen the GUI. Drag either colored preset card from the right
-panel and drop it at the monster center, or press `Ctrl+1` / `Ctrl+2` and drag
+degrees, then reopen the GUI. Drag any colored preset card from the right
+panel and drop it at the monster center, or press `Ctrl+1` / `Ctrl+2` / `Ctrl+3` and drag
 in the image; an in-image preset drag uses the drag direction while preserving
 the configured size. Plain `1` through `5` still set visibility. Preset-created
 annotations retain `box_preset` so their distinct hues survive save/reload.
+The right-side hotkey/help panel scrolls when the mouse wheel is over it; the
+mouse wheel over the image continues to control image zoom.
+Select a preset or one of its boxes, then use `Shift+Left`/`Shift+Right` for
+width and `Shift+Down`/`Shift+Up` for height. Each press changes one source
+pixel, keeps the box's bottom-left corner fixed, and immediately persists the
+preset dimensions to `review_settings.json`. `Shift+L`/`Shift+R` and
+`Shift+D`/`Shift+U` are equivalent letter shortcuts.
+Select any box and use `Ctrl+Left`/`Ctrl+Right`/`Ctrl+Up`/`Ctrl+Down` to move it
+one source pixel at a time; boxes that are already fully inside remain inside.
+The equivalent letter shortcuts are `Ctrl+L`/`Ctrl+R`/`Ctrl+U`/`Ctrl+D`.
 Canonical boxes may extend beyond the source frame when at least 1/16 of their
 area remains visible. The intended full box is preserved in JSONL and clipped
 to visible image bounds only when YOLO labels are exported. A preset placement

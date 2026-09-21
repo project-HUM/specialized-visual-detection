@@ -6,16 +6,16 @@
       "sha256": "7ccf239e5f141cd05a0fd26c5982f1cdd3797d5d61bb98c1241ddaa7bbd737c7"
     },
     "dataset/annotations.jsonl": {
-      "bytes": 1338,
-      "sha256": "8cd011c6ff7f4fcfd0dccd40bc0da26d9e85ff9219a0a107b6e4433a0a32f142"
+      "bytes": 9439,
+      "sha256": "3ab5e95fba56e56e68172fa8d2e50d4a6dbc2120a81a839f5f9c3d087eff6405"
     },
     "dataset/contacts/contact_001.jpg": {
       "bytes": 235333,
       "sha256": "d1e92129a82cf3b847a3a1a0ab100cd301a74a14278a49b8d76372c4523761a5"
     },
     "dataset/dataset_report.json": {
-      "bytes": 882,
-      "sha256": "ad4671a5f7bd2536e0467d8685fb93544e4bfb6a1cf057e069446c20a1004040"
+      "bytes": 1020,
+      "sha256": "992c2d8556c018682e593c0c0351b838308451af2d82120054b22e43ffbe6744"
     },
     "dataset/images/pilot-0000_000039.500.jpg": {
       "bytes": 263568,
@@ -38,8 +38,20 @@
       "sha256": "4af080a05c3b07185fed85c6bee9f5bd735032678b98e1fd56e75b0b73e0b241"
     },
     "dataset/pilot_manifest.json": {
-      "bytes": 2289,
-      "sha256": "79ff7584a1efc133f177b1756dbefb4f088d72cca0365b5051f66d623939eeb3"
+      "bytes": 3092,
+      "sha256": "da2b2b6156078df7cc74140dad5f839247a27de9807ba0693cacc85ebbf2569e"
+    },
+    "dataset/reference_samples/lich/lich-early_000010.000.jpg": {
+      "bytes": 576049,
+      "sha256": "a455431fd1cffacd46262823fec1600394d0a166553c6e2e60aa4b63894ec827"
+    },
+    "dataset/reference_samples/lich/lich-late_004623.000.jpg": {
+      "bytes": 606598,
+      "sha256": "45597f00cea7317834ec7697708e690055c10adc21c3dde0317f4c087b50d24d"
+    },
+    "dataset/reference_samples/lich/manifest.json": {
+      "bytes": 1396,
+      "sha256": "d42c89879860d49c125f078c0ab52c04b3fdadc52a4d921c2b819cf596991788"
     },
     "map.json": {
       "bytes": 1609,

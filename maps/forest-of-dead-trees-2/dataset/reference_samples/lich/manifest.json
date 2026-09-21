@@ -1,0 +1,34 @@
+{
+  "schema": "specialized-visual-detection.reference-samples.v1",
+  "map_id": "forest-of-dead-trees-2",
+  "subject": "lich_special_monster",
+  "status": "explicitly_promoted_to_pilot_annotation_queue",
+  "source": {
+    "video": "C:/projects/input-flag-inspector/saves_m/ForestOfDeadTreesSample2_Lich/screen.mp4",
+    "video_sha256": "c165388f4bf5b851795f1d85ab04bca743c32f344759751f12c2b2f80b4c096d"
+  },
+  "samples": [
+    {
+      "id": "lich-early",
+      "requested_interval_s": [0.0, 19.0],
+      "timestamp_s": 10.0,
+      "source_frame": 267,
+      "source_time_s": 9.960067,
+      "annotation_frame_id": "pilot-0005",
+      "image": "lich-early_000010.000.jpg",
+      "image_sha256": "a455431fd1cffacd46262823fec1600394d0a166553c6e2e60aa4b63894ec827",
+      "selection_note": "Full Lich sprite and staff are clearly visible near the center-right without overlap by another monster."
+    },
+    {
+      "id": "lich-late",
+      "requested_interval_s": [4617.0, 4665.0],
+      "timestamp_s": 4623.0,
+      "source_frame": 122443,
+      "source_time_s": 4622.2969,
+      "annotation_frame_id": "pilot-0006",
+      "image": "lich-late_004623.000.jpg",
+      "image_sha256": "45597f00cea7317834ec7697708e690055c10adc21c3dde0317f4c087b50d24d",
+      "selection_note": "Full Lich sprite and staff are clearly visible on the right platform without combat effects covering the body."
+    }
+  ]
+}

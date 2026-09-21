@@ -1,6 +1,22 @@
 {
   "box_presets": [
-    {"name": "Preset 1", "width": 170, "height": 121, "hue": 42},
-    {"name": "Preset 2", "width": 181, "height": 144, "hue": 205}
+    {
+      "name": "Zombie",
+      "width": 83,
+      "height": 131,
+      "hue": 42
+    },
+    {
+      "name": "Hero",
+      "width": 123,
+      "height": 144,
+      "hue": 205
+    },
+    {
+      "name": "Lich (special)",
+      "width": 160,
+      "height": 220,
+      "hue": 305
+    }
   ]
 }

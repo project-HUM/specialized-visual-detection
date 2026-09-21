@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import cv2
 import numpy as np
@@ -8,7 +9,8 @@ from monster_dataset.annotation_io import export_yolo, write_jsonl_with_backup
 from monster_dataset.contact_sheet import write_temporal_context
 from monster_dataset.review_app import (
     BoxPreset, display_box_to_source, fixed_box_centered_at, fixed_box_from_drag,
-    load_review_settings, source_box_to_display, MonsterReviewApp, ReviewSession, Viewport,
+    load_pilot_frame_indices, load_review_settings, source_box_to_display,
+    MonsterReviewApp, ReviewSession, Viewport,
 )
 from monster_dataset.prelabel import detect_dynamic_ui_panels, prelabel_annotations
 
@@ -21,6 +23,32 @@ class FakeProposalGenerator:
         return [MonsterAnnotation([100, 200, 180, 300], [140, 300],
                                   annotation_confidence=.8, review_required=True,
                                   source="codex_prelabel")]
+
+
+def test_pilot_review_uses_manifest_frame_anchor_without_full_video_probe(
+        tmp_path: Path, monkeypatch):
+    annotations = tmp_path / "annotations.jsonl"
+    write_jsonl([FrameAnnotation("pilot-0000", 10.0, "frame.jpg", split="pilot")], annotations)
+    manifest = tmp_path / "pilot_manifest.json"
+    manifest.write_text(
+        '{"schema":"specialized-visual-detection.pilot.v1",'
+        '"frames":[{"frame_id":"pilot-0000","frame":300,"time_s":10.0}]}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "monster_dataset.review_app.video_frame_timestamps",
+        lambda _video: pytest.fail("pilot review must not scan every video timestamp"),
+    )
+    monkeypatch.setattr(MonsterReviewApp, "_nominal_video_fps", staticmethod(lambda _video: 30.0))
+
+    app = MonsterReviewApp(annotations, tmp_path / "large.mp4", split="pilot", queue="pending")
+    item = app.session.current
+
+    assert load_pilot_frame_indices(manifest) == {"pilot-0000": 300}
+    assert app.timestamps is None
+    assert app._frame_index(item.timestamp, item) == 300
+    assert app._frame_index(item.timestamp - .2, item) == 294
+    assert app._frame_index(item.timestamp + .2, item) == 306
 
 def test_canonical_annotation_round_trip(tmp_path: Path):
     item=FrameAnnotation("f",1.25,"frame.jpg",[MonsterAnnotation([10,20,30,50],[20,50],occluded=True,visibility=.5)],category="heavy_effects")
@@ -213,18 +241,19 @@ def test_viewport_round_trip_survives_zoom_and_pan():
                                  (display_box[2], display_box[3]), viewport) == pytest.approx(box)
 
 
-def test_review_settings_load_two_user_configurable_fixed_box_presets(tmp_path: Path):
+def test_review_settings_load_three_user_configurable_fixed_box_presets(tmp_path: Path):
     settings_path = tmp_path / "review_settings.json"
     settings_path.write_text(
         '{"box_presets":['
         '{"name":"Short","width":120,"height":130,"hue":25},'
-        '{"name":"Tall","width":180,"height":210,"hue":210}]}'
+        '{"name":"Tall","width":180,"height":210,"hue":210},'
+        '{"name":"Wide","width":220,"height":110,"hue":310}]}'
     )
     settings = load_review_settings(settings_path)
     assert [(preset.name, preset.width, preset.height) for preset in settings.box_presets] == [
-        ("Short", 120, 130), ("Tall", 180, 210),
+        ("Short", 120, 130), ("Tall", 180, 210), ("Wide", 220, 110),
     ]
-    assert settings.box_presets[0].color != settings.box_presets[1].color
+    assert len({preset.color for preset in settings.box_presets}) == 3
 
 
 def test_fixed_box_helpers_preserve_preset_size_and_drag_direction():
@@ -267,6 +296,64 @@ def test_review_session_editor_operations_and_undo_redo():
     session.select_at((350, 350))
     assert session.delete_selected() is True
     assert len(session.current.monsters) == 1
+
+
+def test_preset_resize_keeps_selected_box_bottom_left_fixed_and_persists(tmp_path: Path):
+    settings_path = tmp_path / "review_settings.json"
+    settings_path.write_text(
+        '{"box_presets":['
+        '{"name":"Zombie","width":170,"height":121,"hue":42},'
+        '{"name":"Hero","width":181,"height":144,"hue":205},'
+        '{"name":"Lich","width":160,"height":220,"hue":305}]}',
+        encoding="utf-8",
+    )
+    lich = MonsterAnnotation([100, 100, 260, 320], [180, 320], box_preset="3")
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.settings_path = settings_path
+    app.settings = load_review_settings(settings_path)
+    app.presets = {preset.preset_id: preset for preset in app.settings.box_presets}
+    app.active_preset_id = "3"
+    app.dimension_status = ""
+    app.session = ReviewSession([FrameAnnotation("f", 0, "f.jpg", [lich])], split="train")
+    app.session.selected_index = 0
+
+    assert app._adjust_preset_dimensions(1, 0) is True
+    assert app.session.current.monsters[0].bbox_xyxy == [100, 100, 261, 320]
+    assert app.session.current.monsters[0].ground_position == [180.5, 320]
+    assert app._adjust_preset_dimensions(0, -1) is True
+    assert app.session.current.monsters[0].bbox_xyxy == [100, 101, 261, 320]
+
+    # Uppercase letter codes remain usable when Remote Desktop does not expose
+    # the modifier state through GetAsyncKeyState.
+    assert app._handle_key(ord("R"), control_pressed=False, shift_pressed=False) is True
+    assert app.session.current.monsters[0].bbox_xyxy == [100, 101, 262, 320]
+
+    persisted = json.loads(settings_path.read_text(encoding="utf-8"))
+    assert persisted["box_presets"][2]["width"] == 162
+    assert persisted["box_presets"][2]["height"] == 219
+
+
+def test_ctrl_arrows_and_letters_nudge_selected_box_and_keep_it_inside_frame():
+    monster = MonsterAnnotation([0, 100, 83, 231], [41.5, 231], box_preset="1")
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.session = ReviewSession([FrameAnnotation("f", 0, "f.jpg", [monster])], split="train")
+    app.session.selected_index = 0
+    app.dimension_status = ""
+
+    assert app._handle_key(2424832, control_pressed=True, shift_pressed=False) is True
+    assert monster.bbox_xyxy == [0, 100, 83, 231]
+    assert app._handle_key(2555904, control_pressed=True, shift_pressed=False) is True
+    assert monster.bbox_xyxy == [1, 100, 84, 231]
+    assert app._handle_key(21, control_pressed=False, shift_pressed=False) is True  # Ctrl+U
+    assert monster.bbox_xyxy == [1, 99, 84, 230]
+    assert app._handle_key(4, control_pressed=False, shift_pressed=False) is True  # Ctrl+D
+    assert monster.bbox_xyxy == [1, 100, 84, 231]
+
+    partial = MonsterAnnotation([-10, 100, 73, 231], [31.5, 231], box_preset="1")
+    app.session.current.monsters.append(partial)
+    app.session.selected_index = 1
+    assert app._handle_key(18, control_pressed=False, shift_pressed=False) is True  # Ctrl+R
+    assert partial.bbox_xyxy == [-9, 100, 74, 231]
 
 
 def test_add_mode_draws_new_box_over_existing_box_instead_of_selecting_it():
@@ -321,6 +408,12 @@ def test_review_keyboard_uses_arrows_for_navigation_and_a_toggles_add_mode():
     app.interaction = {"kind": "add"}
     app.add_mode = False
     app.active_preset_id = None
+    app.presets = {
+        "1": BoxPreset("1", "Zombie", 170, 121, 42),
+        "2": BoxPreset("2", "Hero", 181, 144, 205),
+        "3": BoxPreset("3", "Lich", 160, 220, 305),
+    }
+    app.dimension_status = ""
     saved = []
     app.save = lambda: saved.append(True)
 
@@ -331,6 +424,8 @@ def test_review_keyboard_uses_arrows_for_navigation_and_a_toggles_add_mode():
     assert app.session.index == 0
     assert app._handle_key(ord("1"), control_pressed=True) is True
     assert app.active_preset_id == "1" and app.add_mode is False
+    assert app._handle_key(ord("3"), control_pressed=True) is True
+    assert app.active_preset_id == "3" and app.add_mode is False
     assert app._handle_key(27) is True
     assert app.active_preset_id is None
     assert app._handle_key(2555904) is True
@@ -345,6 +440,21 @@ def test_review_keyboard_uses_arrows_for_navigation_and_a_toggles_add_mode():
     assert app.add_mode is False
     assert app._handle_key(27) is False
     assert saved
+
+
+def test_mouse_wheel_scrolls_help_panel_without_zooming_image():
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.viewport = Viewport(rect=(0, 0, 900, 600))
+    app.help_panel_rect = (1000, 100, 300, 400)
+    app.help_scroll_lines = 0
+    app.help_max_scroll_lines = 9
+
+    app._mouse(cv2.EVENT_MOUSEWHEEL, 1100, 200, -1, None)
+    assert app.help_scroll_lines == 3
+    assert app.viewport.zoom == 1.0
+
+    app._mouse(cv2.EVENT_MOUSEWHEEL, 1100, 200, 1, None)
+    assert app.help_scroll_lines == 0
 
 
 def test_review_session_confirm_needs_review_and_clear():
