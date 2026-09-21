@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-VALID_SPLITS = {"train", "validation", "test"}
+VALID_SPLITS = {"pilot", "train", "validation", "test"}
 VALID_REVIEW_STATUSES = {"pending", "reviewed", "needs_review"}
 MINIMUM_VISIBLE_BOX_FRACTION = 0.0625
 

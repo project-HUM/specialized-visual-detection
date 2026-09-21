@@ -1,0 +1,6 @@
+{
+  "box_presets": [
+    {"name": "Preset 1", "width": 170, "height": 121, "hue": 42},
+    {"name": "Preset 2", "width": 181, "height": 144, "hue": 205}
+  ]
+}

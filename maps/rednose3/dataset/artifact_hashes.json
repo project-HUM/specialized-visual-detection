@@ -1,0 +1,22 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "IMPLEMENTATION_NOTE.md": {
+      "bytes": 3522,
+      "sha256": "15ce15afaa11f5191c0f54dfb60a61b9790984f95c4308dd6fba368714a226c9"
+    },
+    "dataset/annotations.jsonl": {
+      "bytes": 546252,
+      "sha256": "21fb9b2f450905efcc20bba0aa6732c822cb3de4d93d21ce256fdb0b25137daa"
+    },
+    "dataset/contacts/contact_001.jpg": {
+      "bytes": 880271,
+      "sha256": "af7c86877a09e245097f1268325651abe58ce8ae539d5b90ed14604f0a5f656e"
+    },
+    "dataset/dataset_report.json": {
+      "bytes": 1144,
+      "sha256": "5418e479d1862829c5c7e6dd4dd5da81df300f55352507343a93aefd3f4dd75a"
+    }
+  },
+  "schema_version": 1
+}

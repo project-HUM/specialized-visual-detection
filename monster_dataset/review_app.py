@@ -157,16 +157,33 @@ def source_box_to_display(box: list[float], viewport: Viewport) -> list[float]:
     return [first[0], first[1], second[0], second[1]]
 
 
+def valid_source_box(box: list[float], source_size: tuple[int, int]) -> list[float]:
+    x1, x2 = sorted((float(box[0]), float(box[2])))
+    y1, y2 = sorted((float(box[1]), float(box[3])))
+    if x2 - x1 < 4.0 or y2 - y1 < 4.0:
+        raise ValueError("Monster box must be at least 4 source pixels in each dimension")
+    area = (x2 - x1) * (y2 - y1)
+    visible_width = max(0.0, min(x2, source_size[0]) - max(x1, 0.0))
+    visible_height = max(0.0, min(y2, source_size[1]) - max(y1, 0.0))
+    if visible_width * visible_height / area < MINIMUM_VISIBLE_BOX_FRACTION:
+        raise ValueError(
+            f"Monster box must retain at least {MINIMUM_VISIBLE_BOX_FRACTION:g} of its area in frame"
+        )
+    return [x1, y1, x2, y2]
+
+
 class ReviewSession:
     """Rendering-independent annotation state, including per-frame undo/redo."""
 
     def __init__(self, items: list[FrameAnnotation], *, split: str, queue: str = "all",
-                 start_id: str | None = None):
-        if split not in {"train", "validation"}:
-            raise ValueError("Interactive review is limited to train and validation")
+                 start_id: str | None = None,
+                 source_size: tuple[int, int] = SOURCE_SIZE):
+        if split not in {"pilot", "train", "validation"}:
+            raise ValueError("Interactive review is limited to train and validation, plus isolated pilot data")
         if queue not in VALID_QUEUES:
             raise ValueError(f"queue must be one of {sorted(VALID_QUEUES)}")
         self.all_items = items
+        self.source_size = source_size
         split_items = [item for item in items if item.split == split]
         predicates = {
             "all": lambda item: True,
@@ -237,40 +254,26 @@ class ReviewSession:
         self._restore(stack.pop())
         return True
 
-    @staticmethod
-    def _valid_box(box: list[float]) -> list[float]:
-        x1, x2 = sorted((float(box[0]), float(box[2])))
-        y1, y2 = sorted((float(box[1]), float(box[3])))
-        if x2 - x1 < 4.0 or y2 - y1 < 4.0:
-            raise ValueError("Monster box must be at least 4 source pixels in each dimension")
-        area = (x2 - x1) * (y2 - y1)
-        visible_width = max(0.0, min(x2, SOURCE_SIZE[0]) - max(x1, 0.0))
-        visible_height = max(0.0, min(y2, SOURCE_SIZE[1]) - max(y1, 0.0))
-        if visible_width * visible_height / area < MINIMUM_VISIBLE_BOX_FRACTION:
-            raise ValueError(
-                f"Monster box must retain at least {MINIMUM_VISIBLE_BOX_FRACTION:g} of its area in frame"
-            )
-        return [x1, y1, x2, y2]
+    def _valid_box(self, box: list[float]) -> list[float]:
+        return valid_source_box(box, self.source_size)
 
     @staticmethod
     def _mark_corrected(monster: MonsterAnnotation) -> None:
         if monster.source in {"codex_prelabel", "human_confirmed_prelabel"}:
             monster.source = "human_corrected_prelabel"
 
-    @staticmethod
-    def box_fully_inside(box: list[float]) -> bool:
+    def box_fully_inside(self, box: list[float]) -> bool:
         return (box[0] >= 0.0 and box[1] >= 0.0 and
-                box[2] <= SOURCE_SIZE[0] and box[3] <= SOURCE_SIZE[1])
+                box[2] <= self.source_size[0] and box[3] <= self.source_size[1])
 
-    @classmethod
-    def translated_box(cls, box: list[float], dx: float, dy: float, *,
+    def translated_box(self, box: list[float], dx: float, dy: float, *,
                        keep_inside: bool = False) -> list[float]:
         width, height = box[2] - box[0], box[3] - box[1]
         x1, y1 = box[0] + dx, box[1] + dy
         if keep_inside:
-            x1 = max(0.0, min(SOURCE_SIZE[0] - width, x1))
-            y1 = max(0.0, min(SOURCE_SIZE[1] - height, y1))
-        return cls._valid_box([x1, y1, x1 + width, y1 + height])
+            x1 = max(0.0, min(self.source_size[0] - width, x1))
+            y1 = max(0.0, min(self.source_size[1] - height, y1))
+        return self._valid_box([x1, y1, x1 + width, y1 + height])
 
     def add_box(self, box: list[float], *, box_preset: str | None = None) -> int:
         box = self._valid_box(box)
@@ -418,18 +421,20 @@ class ReviewSession:
 
 class MonsterReviewApp:
     def __init__(self, annotations: Path, video: Path, *, split: str, start_id: str | None = None,
-                 delta_s: float = .2, queue: str = "all"):
-        if split not in {"train", "validation"}:
-            raise ValueError("Interactive review is limited to train and validation")
+                 delta_s: float = .2, queue: str = "all",
+                 source_size: tuple[int, int] = SOURCE_SIZE):
+        if split not in {"pilot", "train", "validation"}:
+            raise ValueError("Interactive review is limited to train and validation, plus isolated pilot data")
         self.annotations_path = annotations
         self.video = video
         self.delta_s = delta_s
         self.settings_path = annotations.parent / "review_settings.json"
         self.settings = load_review_settings(self.settings_path)
         self.presets = {preset.preset_id: preset for preset in self.settings.box_presets}
-        self.session = ReviewSession(read_jsonl(annotations), split=split, queue=queue, start_id=start_id)
+        self.session = ReviewSession(read_jsonl(annotations), split=split, queue=queue,
+                                     start_id=start_id, source_size=source_size)
         self.timestamps = video_frame_timestamps(video)
-        self.viewport = Viewport()
+        self.viewport = Viewport(source_size=source_size)
         self.window = "Monster review"
         self.frame_cache: OrderedDict[int, np.ndarray] = OrderedDict()
         self.image_cache: dict[str, np.ndarray] = {}
@@ -489,8 +494,8 @@ class MonsterReviewApp:
 
     def _draw_main_image(self, canvas: np.ndarray, image: np.ndarray) -> None:
         ox, oy = self.viewport.offset
-        image_to_source_x = SOURCE_SIZE[0] / image.shape[1]
-        image_to_source_y = SOURCE_SIZE[1] / image.shape[0]
+        image_to_source_x = self.viewport.source_size[0] / image.shape[1]
+        image_to_source_y = self.viewport.source_size[1] / image.shape[0]
         matrix = np.asarray([[self.viewport.scale * image_to_source_x, 0.0, ox],
                              [0.0, self.viewport.scale * image_to_source_y, oy]], dtype=np.float32)
         warped = cv2.warpAffine(image, matrix, self.canvas_size, flags=cv2.INTER_LINEAR,
@@ -532,10 +537,11 @@ class MonsterReviewApp:
                 return name
         return None
 
-    @staticmethod
-    def _box_valid(box: list[float]) -> bool:
+    def _box_valid(self, box: list[float]) -> bool:
         try:
-            ReviewSession._valid_box(box)
+            source_size = (self.session.source_size if hasattr(self, "session")
+                           else getattr(getattr(self, "viewport", None), "source_size", SOURCE_SIZE))
+            valid_source_box(box, source_size)
             return True
         except ValueError:
             return False
@@ -552,10 +558,10 @@ class MonsterReviewApp:
         raw = [original[0] + dx, original[1] + dy,
                original[2] + dx, original[3] + dy]
         if (update_lock and action.get("is_preset") and
-                ReviewSession.box_fully_inside(raw)):
+                self.session.box_fully_inside(raw)):
             action["containment_locked"] = True
         if action.get("containment_locked"):
-            candidate = ReviewSession.translated_box(original, dx, dy, keep_inside=True)
+            candidate = self.session.translated_box(original, dx, dy, keep_inside=True)
         else:
             candidate = raw
         return candidate, self._box_valid(candidate)
@@ -758,7 +764,7 @@ class MonsterReviewApp:
                     "kind": "move", "start": point, "current": point,
                     "source_start": source, "original_box": list(monster.bbox_xyxy),
                     "is_preset": is_preset,
-                    "containment_locked": is_preset and ReviewSession.box_fully_inside(monster.bbox_xyxy),
+                    "containment_locked": is_preset and self.session.box_fully_inside(monster.bbox_xyxy),
                 }
             else:
                 self.interaction = {"kind": "add", "start": point, "current": point,

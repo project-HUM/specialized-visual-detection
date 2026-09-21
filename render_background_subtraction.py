@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import cv2
 import numpy as np
 
 from perception.core import FrameAnalyzer, _scene, read_video_frame, video_frame_timestamps
+from perception.workspace import MapWorkspace
 
 
 HERE = Path(__file__).resolve().parent
@@ -136,31 +138,44 @@ def render_sample(
 
 
 def main() -> int:
+    selector = argparse.ArgumentParser(add_help=False)
+    selector.add_argument("--map", default=os.environ.get("SVD_MAP", "rednose3"))
+    selected, _ = selector.parse_known_args()
+    workspace = MapWorkspace.load(HERE, selected.map)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--video", type=Path, default=HERE.parent / "screen.mp4")
-    parser.add_argument("--profile", type=Path, default=HERE / "session_profile" / "profile.json")
+    parser.add_argument("--map", default=workspace.map_id)
+    parser.add_argument("--video", type=Path, default=workspace.video)
+    parser.add_argument("--profile", type=Path, default=workspace.path("profile"))
     parser.add_argument(
         "--coverage",
         type=Path,
-        default=HERE.parent / "background_reconstruction" / "map_aligned_coverage.png",
+        default=workspace.capture_dir / "background_reconstruction" / "map_aligned_coverage.png",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=HERE / "proof" / "background_subtraction_with_unstable.png",
+        default=workspace.path("proof") / "background_subtraction_with_unstable.png",
     )
     parser.add_argument(
         "--cutout-output",
         type=Path,
-        default=HERE / "proof" / "unstable_residual_cutouts.png",
+        default=workspace.path("proof") / "unstable_residual_cutouts.png",
     )
     parser.add_argument(
         "--cutout-dir",
         type=Path,
-        default=HERE / "proof" / "unstable_residual_cases",
+        default=workspace.path("proof") / "unstable_residual_cases",
     )
-    parser.add_argument("--timestamps", type=float, nargs="+", default=(30.859, 112.989, 116.263, 1747.055))
+    parser.add_argument(
+        "--timestamps", type=float, nargs="+",
+        default=workspace.config.get("diagnostics", {}).get("background_subtraction_timestamps"),
+    )
     args = parser.parse_args()
+    if not args.timestamps:
+        raise ValueError(
+            f"Map {workspace.map_id!r} has no background-subtraction timestamps configured; "
+            "pass --timestamps"
+        )
 
     timestamps = video_frame_timestamps(args.video)
     analyzer = FrameAnalyzer(args.profile)

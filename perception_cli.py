@@ -22,7 +22,9 @@ from perception.core import EventTimeline, sha256_file, video_frame_timestamps
 from perception.render import draw_observation, write_per_frame_csv
 from perception.specialized_detector import YoloMonsterDetector
 from perception.monster_evaluation import evaluate_monsters
+from perception.workspace import MapWorkspace
 from monster_dataset.sampler import discover_recordings, sample_from_benchmark
+from monster_dataset.pilot import sample_pilot
 from monster_dataset.annotation_io import export_yolo, sync_splits_from_benchmark
 from monster_dataset.schema import read_jsonl
 from monster_dataset.validation import write_report
@@ -32,26 +34,24 @@ from monster_dataset.prelabel import Owlv2ProposalGenerator, TemplateProposalGen
 
 
 HERE = Path(__file__).resolve().parent
-# Standalone model repo can point at any capture without copying the source
-# video/background assets. Keep the original capture-local default when the
-# environment variable is absent.
-CAPTURE = Path(os.environ.get("PERCEPTION_CAPTURE_DIR", str(HERE.parent))).resolve()
 
 
-def _parser() -> argparse.ArgumentParser:
+def _parser(workspace: MapWorkspace) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--map", default=workspace.map_id,
+                        help="map workspace id under maps/ (default: rednose3)")
     commands = parser.add_subparsers(dest="command", required=True)
 
     profile = commands.add_parser("build-profile")
-    profile.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
-    profile.add_argument("--events", type=Path, default=CAPTURE / "events.csv")
-    profile.add_argument("--background", type=Path, default=CAPTURE / "background_reconstruction")
-    profile.add_argument("--hints", type=Path, default=HERE / "calibration_hints.json")
-    profile.add_argument("--output", type=Path, default=HERE / "session_profile")
+    profile.add_argument("--video", type=Path, default=workspace.video)
+    profile.add_argument("--events", type=Path, default=workspace.events)
+    profile.add_argument("--background", type=Path, default=workspace.capture_dir / "background_reconstruction")
+    profile.add_argument("--hints", type=Path, default=workspace.path("calibration_hints"))
+    profile.add_argument("--output", type=Path, default=workspace.path("profile_dir"))
 
     image = commands.add_parser("image")
     image.add_argument("input", type=Path)
-    image.add_argument("--profile", type=Path, default=HERE / "session_profile" / "profile.json")
+    image.add_argument("--profile", type=Path, default=workspace.path("profile"))
     image.add_argument("--timestamp", type=float)
     image.add_argument("--events", type=Path)
     image.add_argument("--json", type=Path)
@@ -59,11 +59,11 @@ def _parser() -> argparse.ArgumentParser:
     _add_detector_arguments(image)
 
     video = commands.add_parser("video")
-    video.add_argument("input", type=Path, nargs="?", default=CAPTURE / "screen.mp4")
-    video.add_argument("--profile", type=Path, default=HERE / "session_profile" / "profile.json")
-    video.add_argument("--events", type=Path, default=CAPTURE / "events.csv")
+    video.add_argument("input", type=Path, nargs="?", default=workspace.video)
+    video.add_argument("--profile", type=Path, default=workspace.path("profile"))
+    video.add_argument("--events", type=Path, default=workspace.events)
     video.add_argument("--start", type=float, default=0.0)
-    video.add_argument("--end", type=float, default=2163.8)
+    video.add_argument("--end", type=float, default=workspace.video_end_s)
     video.add_argument("--sample-fps", type=float, default=2.0)
     video.add_argument("--jsonl", type=Path, required=True)
     video.add_argument("--csv", type=Path)
@@ -72,102 +72,114 @@ def _parser() -> argparse.ArgumentParser:
     _add_detector_arguments(video)
 
     manifest = commands.add_parser("benchmark-manifest")
-    manifest.add_argument("--events", type=Path, default=CAPTURE / "events.csv")
-    manifest.add_argument("--output", type=Path, default=HERE / "benchmark" / "annotations.csv")
+    manifest.add_argument("--events", type=Path, default=workspace.events)
+    manifest.add_argument("--output", type=Path, default=workspace.path("benchmark_annotations"))
     manifest.add_argument("--count", type=int, default=360)
 
     extract = commands.add_parser("extract-benchmark")
-    extract.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
-    extract.add_argument("--annotations", type=Path, default=HERE / "benchmark" / "annotations.csv")
-    extract.add_argument("--output", type=Path, default=HERE / "benchmark" / "frames")
+    extract.add_argument("--video", type=Path, default=workspace.video)
+    extract.add_argument("--annotations", type=Path, default=workspace.path("benchmark_annotations"))
+    extract.add_argument("--output", type=Path, default=workspace.path("benchmark_frames"))
 
     evaluation = commands.add_parser("evaluate")
-    evaluation.add_argument("--annotations", type=Path, default=HERE / "benchmark" / "annotations.csv")
+    evaluation.add_argument("--annotations", type=Path, default=workspace.path("benchmark_annotations"))
     evaluation.add_argument("--observations", type=Path, required=True)
-    evaluation.add_argument("--output", type=Path, default=HERE / "evaluation")
+    evaluation.add_argument("--output", type=Path, default=workspace.path("evaluation"))
     evaluation.add_argument("--split", choices=("train", "validation", "test"), default="test")
 
     bench = commands.add_parser("benchmark-runtime")
-    bench.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
-    bench.add_argument("--profile", type=Path, default=HERE / "session_profile" / "profile.json")
+    bench.add_argument("--video", type=Path, default=workspace.video)
+    bench.add_argument("--profile", type=Path, default=workspace.path("profile"))
     bench.add_argument("--start", type=float, default=100.0)
     bench.add_argument("--frames", type=int, default=30)
-    bench.add_argument("--output", type=Path, default=HERE / "evaluation" / "runtime.json")
+    bench.add_argument("--output", type=Path, default=workspace.path("evaluation") / "runtime.json")
     _add_detector_arguments(bench)
 
     summary = commands.add_parser("summarize")
     summary.add_argument("--observations", type=Path, required=True)
-    summary.add_argument("--annotations", type=Path, default=HERE / "benchmark" / "annotations.csv")
-    summary.add_argument("--output", type=Path, default=HERE / "evaluation" / "metrics.json")
+    summary.add_argument("--annotations", type=Path, default=workspace.path("benchmark_annotations"))
+    summary.add_argument("--output", type=Path, default=workspace.path("evaluation") / "metrics.json")
 
     hashes = commands.add_parser("hash-artifacts")
     hashes.add_argument("paths", nargs="+", type=Path)
-    hashes.add_argument("--output", type=Path, default=HERE / "artifact_hashes.json")
+    hashes.add_argument("--output", type=Path, default=workspace.map_dir / "artifact_hashes.json")
 
     normalize = commands.add_parser("normalize-observations")
     normalize.add_argument("--input", type=Path, required=True)
-    normalize.add_argument("--events", type=Path, default=CAPTURE / "events.csv")
+    normalize.add_argument("--events", type=Path, default=workspace.events)
     normalize.add_argument("--output", type=Path, required=True)
     normalize.add_argument("--csv", type=Path)
 
     rerender = commands.add_parser("render-observations")
-    rerender.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
+    rerender.add_argument("--video", type=Path, default=workspace.video)
     rerender.add_argument("--observations", type=Path, required=True)
     rerender.add_argument("--output", type=Path, required=True)
     rerender.add_argument("--fps", type=float, default=0.5)
     rerender.add_argument("--width", type=int, default=960)
 
     discover = commands.add_parser("discover-video", help="list plausible capture recordings, excluding proof artifacts")
-    discover.add_argument("--capture", type=Path, default=CAPTURE)
+    discover.add_argument("--capture", type=Path, default=workspace.capture_dir)
 
     monster_sample = commands.add_parser("monster-sample", help="extract the deterministic benchmark as a canonical monster dataset")
-    monster_sample.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
-    monster_sample.add_argument("--benchmark", type=Path, default=HERE / "benchmark" / "annotations.csv")
-    monster_sample.add_argument("--images", type=Path, default=HERE / "monster_dataset" / "images")
-    monster_sample.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
+    monster_sample.add_argument("--video", type=Path, default=workspace.video)
+    monster_sample.add_argument("--benchmark", type=Path, default=workspace.path("benchmark_annotations"))
+    monster_sample.add_argument("--images", type=Path, default=workspace.path("dataset_images"))
+    monster_sample.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    pilot = commands.add_parser("monster-pilot-sample", help="sample an isolated pilot from direct minimap detections")
+    pilot.add_argument("--video", type=Path, default=workspace.video)
+    pilot.add_argument("--positions", type=Path, default=workspace.external_path("geometry", "positions")
+                       if "geometry" in workspace.config else None)
+    pilot.add_argument("--images", type=Path, default=workspace.path("dataset_images"))
+    pilot.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    pilot.add_argument("--manifest", type=Path, default=workspace.path("pilot_manifest")
+                       if "pilot_manifest" in workspace.config.get("paths", {}) else workspace.map_dir / "dataset/pilot_manifest.json")
+    pilot.add_argument("--count", type=int, default=5)
+    pilot.add_argument("--seed", type=int, default=0)
+    pilot.add_argument("--minimum-separation", type=float, default=30.0)
+    pilot.add_argument("--replace", action="store_true")
     monster_report = commands.add_parser("monster-review-report", aliases=["monster-report"], help="validate and summarize monster annotations")
-    monster_report.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    monster_report.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "dataset_report.json")
+    monster_report.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    monster_report.add_argument("--output", type=Path, default=workspace.path("dataset_report"))
     monster_contact = commands.add_parser("monster-contact-sheet", help="render contact sheets for annotation review")
-    monster_contact.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    monster_contact.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "contacts")
-    monster_contact.add_argument("--split", choices=("train", "validation"), required=True)
+    monster_contact.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    monster_contact.add_argument("--output", type=Path, default=workspace.path("contacts"))
+    monster_contact.add_argument("--split", choices=("pilot", "train", "validation"), required=True)
     temporal = commands.add_parser("monster-temporal-context", help="render previous/current/next review strips")
-    temporal.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
-    temporal.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    temporal.add_argument("--split", choices=("train", "validation"), required=True)
+    temporal.add_argument("--video", type=Path, default=workspace.video)
+    temporal.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    temporal.add_argument("--split", choices=("pilot", "train", "validation"), required=True)
     temporal.add_argument("--delta", type=float, default=0.20)
     temporal.add_argument("--frame-id", action="append", help="render only selected frame IDs; repeat as needed")
-    temporal.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "temporal_context")
+    temporal.add_argument("--output", type=Path, default=workspace.path("temporal_context"))
     review = commands.add_parser("monster-review", help="interactive train/validation box review with temporal context")
-    review.add_argument("--video", type=Path, default=CAPTURE / "screen.mp4")
-    review.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    review.add_argument("--split", choices=("train","validation"), required=True)
+    review.add_argument("--video", type=Path, default=workspace.video)
+    review.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    review.add_argument("--split", choices=("pilot","train","validation"), required=True)
     review.add_argument("--start-id")
     review.add_argument("--delta", type=float, default=.20)
     review.add_argument("--queue", choices=("all", "pending", "needs_review", "proposal_review_required"), default="all")
     prelabel = commands.add_parser("monster-prelabel", help="generate pending visual proposals for TRAIN only")
-    prelabel.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    prelabel.add_argument("--profile", type=Path, default=HERE / "session_profile" / "profile.json")
+    prelabel.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    prelabel.add_argument("--profile", type=Path, default=workspace.path("profile"))
     prelabel.add_argument("--split", choices=("train", "validation", "test"), default="train")
     prelabel.add_argument("--backend", choices=("owlv2", "template"), default="owlv2")
     prelabel.add_argument("--threshold", type=float, default=.30, help="OWLv2 text proposal threshold")
     prelabel.add_argument("--replace-pending", action="store_true",
                           help="replace existing annotations on pending TRAIN frames; never affects reviewed frames")
-    prelabel.add_argument("--report", type=Path, default=HERE / "monster_dataset" / "prelabel_report.json")
+    prelabel.add_argument("--report", type=Path, default=workspace.path("prelabel_report"))
     monster_yolo = commands.add_parser("monster-yolo-export", help="export only reviewed canonical labels to YOLO text")
-    monster_yolo.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    monster_yolo.add_argument("--output", type=Path, default=HERE / "monster_dataset" / "yolo_dataset")
+    monster_yolo.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    monster_yolo.add_argument("--output", type=Path, default=workspace.path("yolo_dataset"))
     monster_yolo.add_argument("--split", choices=("train", "validation"), required=True)
     sync_splits = commands.add_parser("monster-sync-splits", help="migrate split metadata without reading sealed images")
-    sync_splits.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
-    sync_splits.add_argument("--benchmark", type=Path, default=HERE / "benchmark" / "annotations.csv")
+    sync_splits.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
+    sync_splits.add_argument("--benchmark", type=Path, default=workspace.path("benchmark_annotations"))
     monster_evaluate = commands.add_parser("monster-evaluate", help="evaluate detector and tracker separately on reviewed development labels")
-    monster_evaluate.add_argument("--annotations", type=Path, default=HERE / "monster_dataset" / "annotations.jsonl")
+    monster_evaluate.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
     monster_evaluate.add_argument("--observations", type=Path, required=True)
     monster_evaluate.add_argument("--split", choices=("train", "validation"), default="validation")
     monster_evaluate.add_argument("--radius", type=float, default=64.0)
-    monster_evaluate.add_argument("--output", type=Path, default=HERE / "evaluation" / "specialized_monster")
+    monster_evaluate.add_argument("--output", type=Path, default=workspace.path("evaluation") / "specialized_monster")
     return parser
 
 def _add_detector_arguments(parser: argparse.ArgumentParser) -> None:
@@ -207,7 +219,7 @@ def _frame_at(path: Path, timestamp: float | None) -> np.ndarray:
 def _run_video(args: argparse.Namespace) -> None:
     timestamps = video_frame_timestamps(args.input)
     start_index = bisect.bisect_left(timestamps, args.start)
-    end_index = bisect.bisect_right(timestamps, args.end)
+    end_index = len(timestamps) if args.end is None else bisect.bisect_right(timestamps, args.end)
     minimum_step = 1.0 / args.sample_fps
     selected: list[int] = []
     next_time = args.start
@@ -225,7 +237,7 @@ def _run_video(args: argparse.Namespace) -> None:
     writer = None
     if args.annotated:
         args.annotated.parent.mkdir(parents=True, exist_ok=True)
-        out_height = round(1080 * args.annotated_width / 1920)
+        out_height = round(args.source_size[1] * args.annotated_width / args.source_size[0])
         writer = cv2.VideoWriter(str(args.annotated), cv2.VideoWriter_fourcc(*"mp4v"), args.sample_fps,
                                  (args.annotated_width, out_height))
         if not writer.isOpened():
@@ -252,7 +264,7 @@ def _run_video(args: argparse.Namespace) -> None:
             observations.append(observation)
             if writer is not None:
                 annotated = draw_observation(frame, observation)
-                annotated = cv2.resize(annotated, (args.annotated_width, round(1080 * args.annotated_width / 1920)), interpolation=cv2.INTER_AREA)
+                annotated = cv2.resize(annotated, (args.annotated_width, out_height), interpolation=cv2.INTER_AREA)
                 writer.write(annotated)
             if order == 0 or (order + 1) % 100 == 0 or order + 1 == len(selected):
                 print(f"processed {order + 1}/{len(selected)} frames", flush=True)
@@ -287,7 +299,7 @@ def _benchmark_runtime(args: argparse.Namespace) -> dict:
         peak_memory = None
     result = {
         "schema_version": 1,
-        "resolution": "1920x1080",
+        "resolution": f"{args.source_size[0]}x{args.source_size[1]}",
         "frames": len(samples),
         "mean_ms": float(np.mean(samples) * 1000),
         "p50_ms": float(np.percentile(samples, 50) * 1000),
@@ -426,7 +438,7 @@ def _render_observations(args: argparse.Namespace) -> dict:
     first, last = min(by_frame), max(by_frame)
     capture = cv2.VideoCapture(str(args.video))
     capture.set(cv2.CAP_PROP_POS_FRAMES, first)
-    height = round(1080 * args.width / 1920)
+    height = round(args.source_size[1] * args.width / args.source_size[0])
     writer = cv2.VideoWriter(str(args.output), cv2.VideoWriter_fourcc(*"mp4v"), args.fps, (args.width, height))
     if not writer.isOpened():
         raise RuntimeError(f"Could not open {args.output}")
@@ -448,10 +460,23 @@ def _render_observations(args: argparse.Namespace) -> dict:
     return {"frames": written, "output": str(args.output)}
 
 
+def _selected_workspace(argv: list[str] | None = None) -> MapWorkspace:
+    selector = argparse.ArgumentParser(add_help=False)
+    selector.add_argument("--map", default=os.environ.get("SVD_MAP", "rednose3"))
+    selected, _ = selector.parse_known_args(argv)
+    return MapWorkspace.load(HERE, selected.map)
+
+
 def main() -> int:
-    args = _parser().parse_args()
+    workspace = _selected_workspace()
+    args = _parser(workspace).parse_args()
+    args.source_size = workspace.source_size
     if args.command == "build-profile":
-        profile = build_session_profile(args.video, args.events, args.background, output_dir=args.output, calibration_hints=args.hints)
+        profile = build_session_profile(
+            args.video, args.events, args.background, output_dir=args.output,
+            calibration_hints=args.hints, profile_id_prefix=workspace.map_id,
+            expected_source_size=workspace.source_size,
+        )
         print(json.dumps({"profile": str(profile.profile_path), "quality": profile.calibration_quality}, indent=2))
     elif args.command == "image":
         frame = _frame_at(args.input, args.timestamp)
@@ -484,7 +509,7 @@ def main() -> int:
             "schema_version": 1,
             "algorithm": "sha256",
             "files": {
-                str(path.resolve().relative_to(CAPTURE.resolve())).replace("\\", "/"): {
+                str(path.resolve().relative_to(workspace.map_dir)).replace("\\", "/"): {
                     "bytes": path.stat().st_size,
                     "sha256": sha256_file(path),
                 }
@@ -503,10 +528,23 @@ def main() -> int:
     elif args.command == "monster-sample":
         items = sample_from_benchmark(args.video, args.benchmark, args.images, output_jsonl=args.annotations)
         print(json.dumps({"frames": len(items), "annotations": str(args.annotations), "images": str(args.images)}, indent=2))
+    elif args.command == "monster-pilot-sample":
+        if args.positions is None:
+            raise ValueError(f"Map {workspace.map_id!r} has no direct geometry positions configured")
+        print(json.dumps(sample_pilot(
+            args.video, args.positions, args.images, args.annotations, args.manifest,
+            repo_root=workspace.repo_root, map_id=workspace.map_id,
+            minimap_crop=workspace.minimap_crop, source_size=workspace.source_size,
+            count=args.count, seed=args.seed,
+            minimum_separation_s=args.minimum_separation, replace=args.replace,
+        ), indent=2))
     elif args.command in {"monster-review-report", "monster-report"}:
-        print(json.dumps(write_report(read_jsonl(args.annotations), args.output), indent=2))
+        print(json.dumps(write_report(read_jsonl(args.annotations), args.output,
+                                      source_size=workspace.source_size), indent=2))
     elif args.command == "monster-contact-sheet":
-        outputs = write_contact_sheets(read_jsonl(args.annotations), args.output, split=args.split)
+        outputs = write_contact_sheets(read_jsonl(args.annotations), args.output, split=args.split,
+                                       source_size=workspace.source_size,
+                                       annotations_path=args.annotations)
         print(json.dumps({"sheets": len(outputs), "output": str(args.output)}, indent=2))
     elif args.command == "monster-temporal-context":
         outputs = write_temporal_context(read_jsonl(args.annotations), args.video, args.output,
@@ -515,12 +553,18 @@ def main() -> int:
         print(json.dumps({"frames": len(outputs), "split": args.split, "output": str(args.output)}, indent=2))
     elif args.command == "monster-review":
         MonsterReviewApp(args.annotations,args.video,split=args.split,start_id=args.start_id,
-                         delta_s=args.delta,queue=args.queue).run()
+                         delta_s=args.delta,queue=args.queue,
+                         source_size=workspace.source_size).run()
     elif args.command == "monster-prelabel":
         if args.split != "train":
             raise ValueError("Automatic pre-labeling is restricted to TRAIN; validation is manual and test is sealed")
-        generator = (Owlv2ProposalGenerator(threshold=args.threshold)
-                     if args.backend == "owlv2" else TemplateProposalGenerator(args.profile))
+        if args.backend == "owlv2" and not workspace.prompts:
+            raise ValueError(f"Map {workspace.map_id!r} has no reviewed OWLv2 prompts configured")
+        generator = (Owlv2ProposalGenerator(
+            threshold=args.threshold, prompts=workspace.prompts,
+            source_size=workspace.source_size, fixed_ui_rects=workspace.fixed_ui_rects)
+            if args.backend == "owlv2" else TemplateProposalGenerator(
+                args.profile, fixed_ui_rects=workspace.fixed_ui_rects))
         print(json.dumps(prelabel_annotations(read_jsonl(args.annotations), args.annotations,
                                               split=args.split, generator=generator,
                                               replace_pending=args.replace_pending,
@@ -529,7 +573,9 @@ def main() -> int:
                                                   f"pre-labeled {done}/{total} TRAIN frames", file=sys.stderr, flush=True
                                               )), indent=2))
     elif args.command == "monster-yolo-export":
-        print(json.dumps(export_yolo(read_jsonl(args.annotations), args.output, split=args.split), indent=2))
+        print(json.dumps(export_yolo(read_jsonl(args.annotations), args.output, split=args.split,
+                                     source_size=workspace.source_size,
+                                     image_root=workspace.repo_root), indent=2))
     elif args.command == "monster-sync-splits":
         print(json.dumps(sync_splits_from_benchmark(read_jsonl(args.annotations),args.benchmark,args.annotations),indent=2))
     elif args.command == "monster-evaluate":

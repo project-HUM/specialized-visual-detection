@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "map_id": "forest-of-dead-trees-2",
+  "capture_dir": "C:/projects/input-flag-inspector/saves_m/ForestOfDeadTreesSample2_Lich",
+  "video": "C:/projects/input-flag-inspector/saves_m/ForestOfDeadTreesSample2_Lich/screen.mp4",
+  "video_sha256": "c165388f4bf5b851795f1d85ab04bca743c32f344759751f12c2b2f80b4c096d",
+  "decoded_frames": 124300,
+  "duration_s": 4693.4215,
+  "source_size": [1920, 1080],
+  "geometry_manifest": "C:/projects/map-info-extractor/forest-of-dead-trees-2-output/forest_of_dead_trees_2_geometry.v1.json",
+  "note": "Set PERCEPTION_CAPTURE_DIR only to override this selected map capture."
+}

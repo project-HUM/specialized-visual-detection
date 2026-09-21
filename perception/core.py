@@ -1,4 +1,4 @@
-"""Capture-local visual perception for the pirate-ship recording.
+"""Capture-local visual perception for a configured map recording.
 
 This is a conservative baseline, not a general MapleStory recognizer.  It
 registers the map layer, matches session-specific character and monster
@@ -660,6 +660,8 @@ def build_session_profile(
     *,
     output_dir: Path | str | None = None,
     calibration_hints: Path | str | None = None,
+    profile_id_prefix: str = "capture",
+    expected_source_size: tuple[int, int] = (1920, 1080),
 ) -> SessionProfile:
     """Build a versioned, capture-local profile.
 
@@ -678,8 +680,12 @@ def build_session_profile(
         first = np.asarray(video_or_frames[0])
         source_hash = hashlib.sha256(first.tobytes()).hexdigest()
     height, width = first.shape[:2]
-    if (width, height) != (1920, 1080):
-        raise ValueError(f"This capture-local profile requires 1920x1080 input, got {width}x{height}")
+    if (width, height) != expected_source_size:
+        expected_width, expected_height = expected_source_size
+        raise ValueError(
+            f"This map profile requires {expected_width}x{expected_height} input, "
+            f"got {width}x{height}"
+        )
     base = Path(output_dir).resolve() if output_dir else Path.cwd() / "session_profile"
     assets = base / "assets"
     assets.mkdir(parents=True, exist_ok=True)
@@ -744,7 +750,7 @@ def build_session_profile(
     }
     profile = SessionProfile(
         version=PROFILE_VERSION,
-        profile_id=f"pirate-ship-{source_hash[:12]}",
+        profile_id=f"{profile_id_prefix}-{source_hash[:12]}",
         source_width=width,
         source_height=height,
         scene_top=scene_top,

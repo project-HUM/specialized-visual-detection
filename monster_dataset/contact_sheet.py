@@ -6,15 +6,24 @@ from .schema import FrameAnnotation
 from perception.core import read_video_frame, video_frame_timestamps
 
 def write_contact_sheets(items: list[FrameAnnotation], output_dir: Path, *, split: str,
-                         columns: int=5, cell_size: tuple[int,int]=(320,180)) -> list[Path]:
-    if split not in {"train","validation"}: raise ValueError("Review sheets are limited to train and validation")
+                         columns: int=5, cell_size: tuple[int,int]=(320,180),
+                         source_size: tuple[int, int] = (1920, 1080),
+                         annotations_path: Path | None = None) -> list[Path]:
+    if split not in {"pilot","train","validation"}: raise ValueError("Review sheets are limited to pilot, train, and validation")
     items=[item for item in items if item.split==split]
     output_dir.mkdir(parents=True,exist_ok=True); outputs=[]
     for start in range(0,len(items),columns*4):
         cells=[]
         for item in items[start:start+columns*4]:
-            image=cv2.imread(item.image_path); image=cv2.resize(image,cell_size) if image is not None else np.zeros((cell_size[1],cell_size[0],3),np.uint8)
-            scale_x,scale_y=cell_size[0]/1920.,cell_size[1]/1080.
+            path = Path(item.image_path)
+            if not path.is_file() and annotations_path is not None:
+                for parent in annotations_path.resolve().parents:
+                    candidate = parent / path
+                    if candidate.is_file():
+                        path = candidate
+                        break
+            image=cv2.imread(str(path)); image=cv2.resize(image,cell_size) if image is not None else np.zeros((cell_size[1],cell_size[0],3),np.uint8)
+            scale_x,scale_y=cell_size[0]/source_size[0],cell_size[1]/source_size[1]
             for monster in item.monsters:
                 x1,y1,x2,y2=monster.bbox_xyxy; color=(255,80,210) if monster.source=="codex_prelabel" else (0,255,0)
                 cv2.rectangle(image,(round(x1*scale_x),round(y1*scale_y)),(round(x2*scale_x),round(y2*scale_y)),color,2)
@@ -32,8 +41,8 @@ def write_temporal_context(items: list[FrameAnnotation], video: Path, output_dir
     Only development splits are accepted so this utility cannot accidentally
     reveal sealed-test context during tuning.
     """
-    if split not in {"train", "validation"}:
-        raise ValueError("Temporal review context is limited to train and validation")
+    if split not in {"pilot", "train", "validation"}:
+        raise ValueError("Temporal review context is limited to train and validation, plus isolated pilot data")
     selected = [item for item in items if item.split == split and (not frame_ids or item.frame_id in frame_ids)]
     presentation_timestamps = video_frame_timestamps(video)
     output_dir.mkdir(parents=True, exist_ok=True)

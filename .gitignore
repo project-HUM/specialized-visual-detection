@@ -1,6 +1,10 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+maps/*/dataset/smoke*
+maps/*/dataset/runs/
+maps/*/dataset/*.bak
+maps/*/dataset/prelabel_contacts/
 monster_dataset/smoke*
 monster_dataset/runs/
 monster_dataset/*.bak

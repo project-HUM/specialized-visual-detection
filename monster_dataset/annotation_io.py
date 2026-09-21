@@ -25,7 +25,14 @@ def from_benchmark_csv(path: Path, image_root: Path) -> list[FrameAnnotation]:
                             split=row["split"], category=row.get("category", "unspecified"),
                             review_status=row.get("review_status", "pending"), notes=row.get("notes", "")) for row in rows]
 
-def validate_for_export(items: list[FrameAnnotation], split: str) -> list[FrameAnnotation]:
+def _image_path(image_path: str, image_root: Path) -> Path:
+    candidate = Path(image_path)
+    return candidate if candidate.is_absolute() else image_root / candidate
+
+
+def validate_for_export(items: list[FrameAnnotation], split: str, *,
+                        source_size: tuple[int, int] = (1920, 1080),
+                        image_root: Path = Path.cwd()) -> list[FrameAnnotation]:
     if split not in {"train", "validation"}:
         raise ValueError("Detector development export permits only train or validation; sealed test is protected")
     selected = [item for item in items if item.split == split]
@@ -37,8 +44,8 @@ def validate_for_export(items: list[FrameAnnotation], split: str) -> list[FrameA
             failures.append(f"{item.frame_id}: review_status={item.review_status}")
         if any(monster.review_required for monster in item.monsters):
             failures.append(f"{item.frame_id}: contains review_required monster")
-        failures.extend(f"{item.frame_id}: {error}" for error in item.validate())
-        if not Path(item.image_path).is_file():
+        failures.extend(f"{item.frame_id}: {error}" for error in item.validate(*source_size))
+        if not _image_path(item.image_path, image_root).is_file():
             failures.append(f"{item.frame_id}: image does not exist: {item.image_path}")
     if failures:
         preview = "\n".join(failures[:20])
@@ -46,8 +53,10 @@ def validate_for_export(items: list[FrameAnnotation], split: str) -> list[FrameA
         raise ValueError(f"Refusing {split} export; annotations are not training-ready:\n{preview}{suffix}")
     return selected
 
-def export_yolo(items: list[FrameAnnotation], output_dir: Path, *, split: str) -> dict[str, int | str]:
-    selected = validate_for_export(items, split)
+def export_yolo(items: list[FrameAnnotation], output_dir: Path, *, split: str,
+                source_size: tuple[int, int] = (1920, 1080),
+                image_root: Path = Path.cwd()) -> dict[str, int | str]:
+    selected = validate_for_export(items, split, source_size=source_size, image_root=image_root)
     labels_dir, images_dir = output_dir / "labels" / split, output_dir / "images" / split
     labels_dir.mkdir(parents=True, exist_ok=True); images_dir.mkdir(parents=True, exist_ok=True)
     instances = 0
@@ -55,12 +64,14 @@ def export_yolo(items: list[FrameAnnotation], output_dir: Path, *, split: str) -
         lines: list[str] = []
         for monster in item.monsters:
             x1, y1, x2, y2 = monster.bbox_xyxy
-            x1, x2 = max(0.0, min(1920.0, x1)), max(0.0, min(1920.0, x2))
-            y1, y2 = max(0.0, min(1080.0, y1)), max(0.0, min(1080.0, y2))
-            lines.append(f"0 {((x1+x2)/2)/1920:.6f} {((y1+y2)/2)/1080:.6f} {(x2-x1)/1920:.6f} {(y2-y1)/1080:.6f}")
+            width, height = source_size
+            x1, x2 = max(0.0, min(float(width), x1)), max(0.0, min(float(width), x2))
+            y1, y2 = max(0.0, min(float(height), y1)), max(0.0, min(float(height), y2))
+            lines.append(f"0 {((x1+x2)/2)/width:.6f} {((y1+y2)/2)/height:.6f} {(x2-x1)/width:.6f} {(y2-y1)/height:.6f}")
             instances += 1
         (labels_dir / f"{item.frame_id}.txt").write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
-        shutil.copy2(item.image_path, images_dir / f"{item.frame_id}{Path(item.image_path).suffix.lower()}")
+        source = _image_path(item.image_path, image_root)
+        shutil.copy2(source, images_dir / f"{item.frame_id}{source.suffix.lower()}")
     (output_dir / "dataset.yaml").write_text(
         f"path: {output_dir.resolve().as_posix()}\ntrain: images/train\nval: images/validation\nnames:\n  0: monster\n",
         encoding="utf-8",

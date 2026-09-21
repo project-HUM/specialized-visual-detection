@@ -5,8 +5,8 @@ export. Training is intentionally blocked until every selected frame is
 visually reviewed:
 
 ```powershell
-python perception_cli.py monster-prelabel --split train
-python perception_cli.py monster-review --split train --queue pending
+python perception_cli.py --map rednose3 monster-prelabel --split train
+python perception_cli.py --map rednose3 monster-review --split train --queue pending
 ```
 
 TRAIN proposals are review aids, never ground truth. Human confirmation is
@@ -16,11 +16,11 @@ without automatic prediction anchoring, and the sealed test stays untouched.
 After TRAIN and validation review is complete:
 
 ```powershell
-python perception_cli.py monster-review-report
-python perception_cli.py monster-yolo-export --split train
-python perception_cli.py monster-yolo-export --split validation
+python perception_cli.py --map rednose3 monster-review-report
+python perception_cli.py --map rednose3 monster-yolo-export --split train
+python perception_cli.py --map rednose3 monster-yolo-export --split validation
 python -m pip install -r requirements-training.txt
-python train_specialized_detector.py --imgsz 640 768 960 --epochs 40
+python train_specialized_detector.py --map rednose3 --imgsz 640 768 960 --epochs 40
 ```
 
 Training device selection is automatic unless `--device cpu` or `--device 0`

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "frames": 5,
+  "reviewed_frames": 0,
+  "pending_frames": 5,
+  "positive_frames": 0,
+  "negative_frames": 5,
+  "monster_instances": 0,
+  "occluded_instances": 0,
+  "review_required_instances": 0,
+  "count_distribution": {
+    "0": 5
+  },
+  "condition_distribution": {},
+  "splits": {
+    "pilot": {
+      "frames": 5,
+      "reviewed": 0,
+      "pending": 5
+    },
+    "train": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    },
+    "validation": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    },
+    "test": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    }
+  },
+  "malformed_frames": {},
+  "training_ready": false,
+  "box_size": {
+    "mean_width": 0.0,
+    "mean_height": 0.0
+  },
+  "pairwise_iou": {
+    "pairs": 0,
+    "max": 0.0,
+    "ge_0_5": 0
+  }
+}

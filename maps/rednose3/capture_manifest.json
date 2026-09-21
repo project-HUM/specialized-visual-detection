@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "map_id": "rednose3",
   "capture_dir": "C:/projects/map-info-extractor/InputFlagInspector_2026-08-28_01-29-59",
   "video": "C:/projects/map-info-extractor/InputFlagInspector_2026-08-28_01-29-59/screen.mp4",
   "events": "C:/projects/map-info-extractor/InputFlagInspector_2026-08-28_01-29-59/events.csv",

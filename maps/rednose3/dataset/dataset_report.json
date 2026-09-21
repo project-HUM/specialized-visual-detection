@@ -26,6 +26,11 @@
   },
   "condition_distribution": {},
   "splits": {
+    "pilot": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    },
     "train": {
       "frames": 216,
       "reviewed": 26,

@@ -1,0 +1,41 @@
+{
+  "schema": "specialized-visual-detection.map.v1",
+  "map_id": "rednose3",
+  "display_name": "REDNOSE3",
+  "source_size": [1920, 1080],
+  "capture": {
+    "directory": "C:/projects/map-info-extractor/InputFlagInspector_2026-08-28_01-29-59",
+    "video": "screen.mp4",
+    "events": "events.csv",
+    "end_s": 2163.8
+  },
+  "minimap": {"crop_xywh": [14, 147, 326, 180]},
+  "fixed_ui_rects": [
+    [0, 0, 1920, 30], [0, 0, 380, 350], [1510, 0, 1920, 245],
+    [0, 330, 110, 790], [0, 820, 1620, 1080], [1620, 920, 1920, 1080]
+  ],
+  "prelabel": {
+    "prompts": ["pirate monster", "pirate mushroom", "cartoon pirate monster"]
+  },
+  "diagnostics": {
+    "background_subtraction_timestamps": [30.859, 112.989, 116.263, 1747.055]
+  },
+  "paths": {
+    "capture_manifest": "capture_manifest.json",
+    "calibration_hints": "calibration_hints.json",
+    "profile_dir": "session_profile",
+    "profile": "session_profile/profile.json",
+    "benchmark_annotations": "benchmark/annotations.csv",
+    "benchmark_frames": "benchmark/frames",
+    "annotations": "dataset/annotations.jsonl",
+    "dataset_images": "dataset/images",
+    "dataset_report": "dataset/dataset_report.json",
+    "prelabel_report": "dataset/prelabel_report.json",
+    "contacts": "dataset/contacts",
+    "temporal_context": "dataset/temporal_context",
+    "yolo_dataset": "dataset/yolo_dataset",
+    "training_runs": "dataset/runs/v0",
+    "evaluation": "evaluation",
+    "proof": "proof"
+  }
+}

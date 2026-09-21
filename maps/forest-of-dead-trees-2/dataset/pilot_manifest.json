@@ -1,0 +1,80 @@
+{
+  "schema": "specialized-visual-detection.pilot.v1",
+  "map_id": "forest-of-dead-trees-2",
+  "selection": {
+    "count": 5,
+    "seed": 0,
+    "minimum_separation_s": 30.0,
+    "eligibility": "direct_minimap_marker",
+    "ui_filter": "none"
+  },
+  "source": {
+    "video": "C:\\projects\\input-flag-inspector\\saves_m\\ForestOfDeadTreesSample2_Lich\\screen.mp4",
+    "video_sha256": "c165388f4bf5b851795f1d85ab04bca743c32f344759751f12c2b2f80b4c096d",
+    "positions": "C:\\projects\\map-info-extractor\\forest-of-dead-trees-2-output\\positions.csv",
+    "positions_sha256": "5fa231c56d5bbe98e2684d75df878d7be4cde2e947a8d0da89a5ca83f0509198",
+    "minimap_crop_xywh": [
+      14,
+      147,
+      326,
+      180
+    ]
+  },
+  "frames": [
+    {
+      "frame_id": "pilot-0000",
+      "frame": 1051,
+      "time_s": 39.499867,
+      "image": "maps/forest-of-dead-trees-2/dataset/images/pilot-0000_000039.500.jpg",
+      "minimap_position": [
+        249.53623188405797,
+        117.53623188405797
+      ],
+      "marker_area": 69
+    },
+    {
+      "frame_id": "pilot-0001",
+      "frame": 68057,
+      "time_s": 2569.665233,
+      "image": "maps/forest-of-dead-trees-2/dataset/images/pilot-0001_002569.665.jpg",
+      "minimap_position": [
+        188.625,
+        61.47222222222222
+      ],
+      "marker_area": 72
+    },
+    {
+      "frame_id": "pilot-0002",
+      "frame": 70576,
+      "time_s": 2665.021967,
+      "image": "maps/forest-of-dead-trees-2/dataset/images/pilot-0002_002665.022.jpg",
+      "minimap_position": [
+        184.65217391304347,
+        59.47826086956522
+      ],
+      "marker_area": 69
+    },
+    {
+      "frame_id": "pilot-0003",
+      "frame": 102543,
+      "time_s": 3872.216167,
+      "image": "maps/forest-of-dead-trees-2/dataset/images/pilot-0003_003872.216.jpg",
+      "minimap_position": [
+        155.59459459459458,
+        56.5945945945946
+      ],
+      "marker_area": 74
+    },
+    {
+      "frame_id": "pilot-0004",
+      "frame": 105024,
+      "time_s": 3965.572533,
+      "image": "maps/forest-of-dead-trees-2/dataset/images/pilot-0004_003965.573.jpg",
+      "minimap_position": [
+        123.5,
+        109.58823529411765
+      ],
+      "marker_area": 68
+    }
+  ]
+}

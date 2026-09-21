@@ -1,0 +1,50 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "capture_manifest.json": {
+      "bytes": 634,
+      "sha256": "7ccf239e5f141cd05a0fd26c5982f1cdd3797d5d61bb98c1241ddaa7bbd737c7"
+    },
+    "dataset/annotations.jsonl": {
+      "bytes": 1338,
+      "sha256": "8cd011c6ff7f4fcfd0dccd40bc0da26d9e85ff9219a0a107b6e4433a0a32f142"
+    },
+    "dataset/contacts/contact_001.jpg": {
+      "bytes": 235333,
+      "sha256": "d1e92129a82cf3b847a3a1a0ab100cd301a74a14278a49b8d76372c4523761a5"
+    },
+    "dataset/dataset_report.json": {
+      "bytes": 882,
+      "sha256": "ad4671a5f7bd2536e0467d8685fb93544e4bfb6a1cf057e069446c20a1004040"
+    },
+    "dataset/images/pilot-0000_000039.500.jpg": {
+      "bytes": 263568,
+      "sha256": "2dde59ae71fa9dc6d98033408d1e7cbd84a462480bca49df5073c10524e9746d"
+    },
+    "dataset/images/pilot-0001_002569.665.jpg": {
+      "bytes": 196863,
+      "sha256": "dd23e3fa86e9a82172cf56a64459969d2d6a5aebee8b219528ad3ea12da51af7"
+    },
+    "dataset/images/pilot-0002_002665.022.jpg": {
+      "bytes": 196615,
+      "sha256": "953d9c98b4b92deb85983e639113a873c07ad18421c20d773ed5a9a4ef20dc17"
+    },
+    "dataset/images/pilot-0003_003872.216.jpg": {
+      "bytes": 187715,
+      "sha256": "3d1fc9e06a792a4d7266aef1b49c878aa12d1e48a0513d814edaf74ee8cdb4b3"
+    },
+    "dataset/images/pilot-0004_003965.573.jpg": {
+      "bytes": 246158,
+      "sha256": "4af080a05c3b07185fed85c6bee9f5bd735032678b98e1fd56e75b0b73e0b241"
+    },
+    "dataset/pilot_manifest.json": {
+      "bytes": 2289,
+      "sha256": "79ff7584a1efc133f177b1756dbefb4f088d72cca0365b5051f66d623939eeb3"
+    },
+    "map.json": {
+      "bytes": 1609,
+      "sha256": "a2c4e29e8c55da844431adc59e4a63605455533f637701d245ebcba9299f0205"
+    }
+  },
+  "schema_version": 1
+}

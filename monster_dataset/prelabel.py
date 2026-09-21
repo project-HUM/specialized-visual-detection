@@ -22,7 +22,8 @@ class ProposalGenerator(Protocol):
     def propose(self, image: np.ndarray, timestamp: float) -> list[MonsterAnnotation]: ...
 
 
-def detect_dynamic_ui_panels(image: np.ndarray) -> list[tuple[float, float, float, float]]:
+def detect_dynamic_ui_panels(image: np.ndarray, *,
+                             source_size: tuple[int, int] = (1920, 1080)) -> list[tuple[float, float, float, float]]:
     """Find tall inventory-like panels from paired long vertical borders."""
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 80, 180)
@@ -35,7 +36,7 @@ def detect_dynamic_ui_panels(image: np.ndarray) -> list[tuple[float, float, floa
         if abs(int(x2) - int(x1)) <= 4 and abs(int(y2) - int(y1)) >= 160:
             vertical.append((round((int(x1) + int(x2)) / 2), min(int(y1), int(y2)), max(int(y1), int(y2))))
     panels: list[tuple[float, float, float, float]] = []
-    width_scale, height_scale = 1920.0 / image.shape[1], 1080.0 / image.shape[0]
+    width_scale, height_scale = source_size[0] / image.shape[1], source_size[1] / image.shape[0]
     for left_x, left_top, left_bottom in vertical:
         if left_x < image.shape[1] * .60:
             continue
@@ -58,9 +59,10 @@ def resolve_image_path(image_path: str, annotations_path: Path) -> Path:
     candidate = Path(image_path)
     if candidate.is_file():
         return candidate
-    repository_relative = annotations_path.resolve().parent.parent / candidate
-    if repository_relative.is_file():
-        return repository_relative
+    for parent in annotations_path.resolve().parents:
+        repository_relative = parent / candidate
+        if repository_relative.is_file():
+            return repository_relative
     raise FileNotFoundError(f"Could not read annotation image: {image_path}")
 
 
@@ -69,8 +71,10 @@ class TemplateProposalGenerator:
 
     mechanism = "capture_local_template_bank"
 
-    def __init__(self, profile_path: Path):
+    def __init__(self, profile_path: Path, *,
+                 fixed_ui_rects: tuple[tuple[int, int, int, int], ...] = FIXED_UI_RECTS):
         self.profile = SessionProfile.load(profile_path)
+        self.fixed_ui_rects = fixed_ui_rects
         templates = [cv2.imread(str(self.profile.asset(path)), cv2.IMREAD_GRAYSCALE)
                      for path in self.profile.monster_templates]
         if not templates or any(template is None for template in templates):
@@ -93,16 +97,16 @@ class TemplateProposalGenerator:
         scene = cv2.resize(crop, target, interpolation=cv2.INTER_AREA)
         return scene, self.profile.scale, float(self.profile.scene_top)
 
-    @staticmethod
-    def _inside_fixed_ui(point: tuple[float, float]) -> bool:
+    def _inside_fixed_ui(self, point: tuple[float, float]) -> bool:
         x, y = point
         return any(left <= x <= right and top <= y <= bottom
-                   for left, top, right, bottom in FIXED_UI_RECTS)
+                   for left, top, right, bottom in self.fixed_ui_rects)
 
     def propose(self, image: np.ndarray, timestamp: float) -> list[MonsterAnnotation]:
         scene, scale, scene_top = self._scene(image)
         normalized: list[dict] = []
-        dynamic_ui = detect_dynamic_ui_panels(image)
+        dynamic_ui = detect_dynamic_ui_panels(
+            image, source_size=(self.profile.source_width, self.profile.source_height))
         for index, detection in enumerate(self.detector.detect(scene, timestamp)):
             x1, y1, x2, y2 = detection.bbox
             box = [x1 / scale, y1 / scale + scene_top,
@@ -148,11 +152,13 @@ class TemplateProposalGenerator:
 class Owlv2ProposalGenerator:
     """Open-vocabulary visual proposals using the locally cached OWLv2 model."""
 
-    mechanism = "owlv2_text_pirate_monster"
+    mechanism = "owlv2_text_prompt"
 
     def __init__(self, *, model_name: str = "google/owlv2-base-patch16-ensemble",
-                 threshold: float = .30, prompts: list[str] | None = None,
-                 local_files_only: bool = True):
+                  threshold: float = .30, prompts: list[str] | None = None,
+                  local_files_only: bool = True,
+                  source_size: tuple[int, int] = (1920, 1080),
+                  fixed_ui_rects: tuple[tuple[int, int, int, int], ...] = FIXED_UI_RECTS):
         try:
             import torch
             from transformers import Owlv2ForObjectDetection, Owlv2Processor
@@ -161,29 +167,30 @@ class Owlv2ProposalGenerator:
         self.torch = torch
         self.threshold = threshold
         self.prompts = prompts or ["pirate monster", "pirate mushroom", "cartoon pirate monster"]
+        self.source_size = source_size
+        self.fixed_ui_rects = fixed_ui_rects
         self.processor = Owlv2Processor.from_pretrained(model_name, local_files_only=local_files_only)
         self.model = Owlv2ForObjectDetection.from_pretrained(model_name, local_files_only=local_files_only)
         self.model.eval()
 
-    @staticmethod
-    def _plausible_box(box: list[float], image_width: int, image_height: int) -> bool:
+    def _plausible_box(self, box: list[float], image_width: int, image_height: int) -> bool:
         width, height = box[2] - box[0], box[3] - box[1]
-        source_width, source_height = width * 1920.0 / image_width, height * 1080.0 / image_height
+        source_width = width * self.source_size[0] / image_width
+        source_height = height * self.source_size[1] / image_height
         if not (45.0 <= source_width <= 320.0 and 45.0 <= source_height <= 280.0):
             return False
         aspect = source_width / max(source_height, 1.0)
         return .32 <= aspect <= 2.5
 
-    @staticmethod
-    def _inside_fixed_ui(point: tuple[float, float]) -> bool:
+    def _inside_fixed_ui(self, point: tuple[float, float]) -> bool:
         x, y = point
         return any(left <= x <= right and top <= y <= bottom
-                   for left, top, right, bottom in FIXED_UI_RECTS)
+                   for left, top, right, bottom in self.fixed_ui_rects)
 
     def propose(self, image: np.ndarray, timestamp: float) -> list[MonsterAnnotation]:
         from PIL import Image
 
-        dynamic_ui = detect_dynamic_ui_panels(image)
+        dynamic_ui = detect_dynamic_ui_panels(image, source_size=self.source_size)
         rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(rgb)
         text_labels = [self.prompts]
@@ -195,7 +202,8 @@ class Owlv2ProposalGenerator:
             outputs=outputs, target_sizes=target_sizes, threshold=self.threshold,
             text_labels=text_labels,
         )[0]
-        scale_x, scale_y = 1920.0 / image.shape[1], 1080.0 / image.shape[0]
+        scale_x = self.source_size[0] / image.shape[1]
+        scale_y = self.source_size[1] / image.shape[0]
         normalized: list[dict] = []
         labels = processed.get("text_labels") or []
         for index, (box_tensor, score_tensor, label) in enumerate(zip(
@@ -217,7 +225,7 @@ class Owlv2ProposalGenerator:
         proposals: list[MonsterAnnotation] = []
         for item in retained:
             box = [round(max(0.0, min(float(limit), float(value))), 2)
-                   for value, limit in zip(item["box"], (1920, 1080, 1920, 1080))]
+                   for value, limit in zip(item["box"], (*self.source_size, *self.source_size))]
             if box[2] <= box[0] or box[3] <= box[1]:
                 continue
             confidence = max(0.0, min(1.0, float(item["score"])))
