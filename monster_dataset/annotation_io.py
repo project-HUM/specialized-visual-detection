@@ -55,6 +55,8 @@ def export_yolo(items: list[FrameAnnotation], output_dir: Path, *, split: str) -
         lines: list[str] = []
         for monster in item.monsters:
             x1, y1, x2, y2 = monster.bbox_xyxy
+            x1, x2 = max(0.0, min(1920.0, x1)), max(0.0, min(1920.0, x2))
+            y1, y2 = max(0.0, min(1080.0, y1)), max(0.0, min(1080.0, y2))
             lines.append(f"0 {((x1+x2)/2)/1920:.6f} {((y1+y2)/2)/1080:.6f} {(x2-x1)/1920:.6f} {(y2-y1)/1080:.6f}")
             instances += 1
         (labels_dir / f"{item.frame_id}.txt").write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")

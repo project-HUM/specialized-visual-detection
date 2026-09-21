@@ -1,0 +1,16 @@
+{
+  "box_presets": [
+    {
+      "name": "Orange mob",
+      "width": 170,
+      "height": 121,
+      "hue": 42
+    },
+    {
+      "name": "Blue mob",
+      "width": 181,
+      "height": 144,
+      "hue": 205
+    }
+  ]
+}

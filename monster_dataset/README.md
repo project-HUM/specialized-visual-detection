@@ -39,7 +39,31 @@ keys, per-frame undo/redo, progress totals, and autosave with one `.bak` file.
 Press Enter/R to confirm and advance; confirmation alone changes the frame to
 `reviewed`, changes untouched proposal provenance to
 `human_confirmed_prelabel`, and clears proposal review flags. Use `E` for
-`needs_review`.
+`needs_review`. Navigate only with the Left/Right arrow keys. `A` toggles a
+visibly indicated Add Box mode in which every left-button drag creates a new
+box even over an existing box; press `A` again or `Esc` to return to Default
+mode. In Default mode, `Esc` saves and quits, as does `Q` from either mode.
+The `proposal_review_required` queue places reviewed frames before the
+outstanding queue and opens at that boundary. All non-reviewed frames remain in
+the queue, including `needs_review` frames and frames containing only manual
+boxes. The Left arrow revisits and revises completed frames, while the Right
+arrow continues through outstanding work without making the next launch start
+over.
+
+Two fixed-size mob box presets are configured in `review_settings.json`.
+Edit each preset's visible name, source-pixel `width`/`height`, and hue in
+degrees, then reopen the GUI. Drag either colored preset card from the right
+panel and drop it at the monster center, or press `Ctrl+1` / `Ctrl+2` and drag
+in the image; an in-image preset drag uses the drag direction while preserving
+the configured size. Plain `1` through `5` still set visibility. Preset-created
+annotations retain `box_preset` so their distinct hues survive save/reload.
+Canonical boxes may extend beyond the source frame when at least 1/16 of their
+area remains visible. The intended full box is preserved in JSONL and clipped
+to visible image bounds only when YOLO labels are exported. A preset placement
+preview is red while it is outside that valid region. Existing boxes preview
+their destination while being moved. A preset box that starts partially out of
+frame may be moved inward, but once it is fully inside, that drag and future
+drags keep it contained by the frame borders.
 
 Queue choices are `all`, `pending`, `needs_review`, and
 `proposal_review_required`. Validation review remains manual and unanchored by

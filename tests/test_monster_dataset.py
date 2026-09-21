@@ -7,7 +7,8 @@ from monster_dataset.validation import report
 from monster_dataset.annotation_io import export_yolo, write_jsonl_with_backup
 from monster_dataset.contact_sheet import write_temporal_context
 from monster_dataset.review_app import (
-    display_box_to_source, source_box_to_display, MonsterReviewApp, ReviewSession, Viewport,
+    BoxPreset, display_box_to_source, fixed_box_centered_at, fixed_box_from_drag,
+    load_review_settings, source_box_to_display, MonsterReviewApp, ReviewSession, Viewport,
 )
 from monster_dataset.prelabel import detect_dynamic_ui_panels, prelabel_annotations
 
@@ -26,6 +27,13 @@ def test_canonical_annotation_round_trip(tmp_path: Path):
     path=tmp_path/"annotations.jsonl"; write_jsonl([item],path); loaded=read_jsonl(path)
     assert loaded[0].monsters[0].ground_position == [20,50]
     assert loaded[0].monsters[0].occluded is True
+
+
+def test_partially_off_frame_monster_box_requires_one_sixteenth_visible_area():
+    accepted = MonsterAnnotation([-150, 100, 10, 260], [-70, 260], box_preset="1")
+    rejected = MonsterAnnotation([-151, 100, 9, 260], [-71, 260], box_preset="1")
+    assert accepted.validate() == []
+    assert any("at least 0.0625" in error for error in rejected.validate())
 
 
 def test_atomic_annotation_write_retains_one_previous_backup(tmp_path: Path):
@@ -49,6 +57,63 @@ def test_export_is_split_aware_and_sealed_test_is_protected(tmp_path: Path):
     assert result["frames"]==1 and result["instances"]==1
     with pytest.raises(ValueError,match="sealed test"):
         export_yolo([reviewed],tmp_path/"yolo",split="test")
+
+
+def test_yolo_export_clips_partially_off_frame_box(tmp_path: Path):
+    image = tmp_path / "frame.jpg"
+    cv2.imwrite(str(image), np.zeros((20, 20, 3), np.uint8))
+    monster = MonsterAnnotation([-140, 100, 20, 260], [-60, 260], box_preset="1")
+    reviewed = FrameAnnotation("partial", 0, str(image), [monster], split="train",
+                               review_status="reviewed")
+    output = tmp_path / "yolo"
+    export_yolo([reviewed], output, split="train")
+    values = [float(value) for value in (output / "labels/train/partial.txt").read_text().split()[1:]]
+    assert values == pytest.approx([10 / 1920, 180 / 1080, 20 / 1920, 160 / 1080], abs=1e-6)
+
+
+def test_preset_box_becomes_frame_contained_after_it_moves_fully_inside():
+    preset = BoxPreset("1", "Orange mob", 170, 121, 42)
+    monster = MonsterAnnotation([-80, 100, 90, 221], [5, 221], box_preset="1")
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.session = ReviewSession([FrameAnnotation("f", 0, "f.jpg", [monster])], split="train")
+    app.session.selected_index = 0
+    app.viewport = Viewport(rect=(0, 0, 960, 540))
+    app.presets = {"1": preset}
+    action = {
+        "kind": "move", "source_start": (0, 160), "original_box": list(monster.bbox_xyxy),
+        "is_preset": True, "containment_locked": False,
+    }
+
+    inside, valid = app._move_preview(action, (100, 80), update_lock=True)
+    assert valid is True
+    assert inside == [120, 100, 290, 221]
+    assert action["containment_locked"] is True
+
+    clamped, valid = app._move_preview(action, (-100, 80), update_lock=True)
+    assert valid is True
+    assert clamped == [0, 100, 170, 221]
+
+
+def test_move_preview_tracks_cursor_without_mutating_annotation_and_flags_invalid_position():
+    monster = MonsterAnnotation([100, 100, 270, 221], [185, 221], box_preset="1")
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.session = ReviewSession([FrameAnnotation("f", 0, "f.jpg", [monster])], split="train")
+    app.session.selected_index = 0
+    app.viewport = Viewport(rect=(0, 0, 960, 540))
+    app.presets = {"1": BoxPreset("1", "Orange mob", 170, 121, 42)}
+    action = {
+        "kind": "move", "source_start": (150, 150), "original_box": list(monster.bbox_xyxy),
+        "is_preset": False, "containment_locked": False,
+    }
+
+    preview, valid = app._move_preview(action, (100, 100))
+    assert preview == [150, 150, 320, 271]
+    assert valid is True
+    assert monster.bbox_xyxy == [100, 100, 270, 221]
+
+    invalid_preview, valid = app._move_preview(action, (-1000, 100))
+    assert invalid_preview[2] < 0
+    assert valid is False
 
 def test_malformed_annotation_blocks_export(tmp_path: Path):
     image=tmp_path/"frame.jpg"; cv2.imwrite(str(image),np.zeros((540,960,3),np.uint8))
@@ -148,6 +213,34 @@ def test_viewport_round_trip_survives_zoom_and_pan():
                                  (display_box[2], display_box[3]), viewport) == pytest.approx(box)
 
 
+def test_review_settings_load_two_user_configurable_fixed_box_presets(tmp_path: Path):
+    settings_path = tmp_path / "review_settings.json"
+    settings_path.write_text(
+        '{"box_presets":['
+        '{"name":"Short","width":120,"height":130,"hue":25},'
+        '{"name":"Tall","width":180,"height":210,"hue":210}]}'
+    )
+    settings = load_review_settings(settings_path)
+    assert [(preset.name, preset.width, preset.height) for preset in settings.box_presets] == [
+        ("Short", 120, 130), ("Tall", 180, 210),
+    ]
+    assert settings.box_presets[0].color != settings.box_presets[1].color
+
+
+def test_fixed_box_helpers_preserve_preset_size_and_drag_direction():
+    preset = BoxPreset("1", "Mob", 160, 170, 40)
+    assert fixed_box_from_drag((10, 20), (30, 40), preset) == [10, 20, 170, 190]
+    assert fixed_box_from_drag((10, 20), (-30, -40), preset) == [-150, -150, 10, 20]
+    assert fixed_box_centered_at((100, 200), preset) == [20, 115, 180, 285]
+
+
+def test_preset_preview_is_red_until_enough_of_box_is_inside_frame():
+    preset = BoxPreset("1", "Orange mob", 170, 121, 42)
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    assert app._preset_preview_color([-165, 100, 5, 221], preset) == (0, 0, 255)
+    assert app._preset_preview_color([-159, 100, 11, 221], preset) == preset.color
+
+
 def test_review_session_editor_operations_and_undo_redo():
     proposal = MonsterAnnotation([100, 100, 200, 240], [150, 240],
                                  source="codex_prelabel", review_required=True,
@@ -176,6 +269,84 @@ def test_review_session_editor_operations_and_undo_redo():
     assert len(session.current.monsters) == 1
 
 
+def test_add_mode_draws_new_box_over_existing_box_instead_of_selecting_it():
+    existing = MonsterAnnotation([100, 100, 300, 300], [200, 300])
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.session = ReviewSession([FrameAnnotation("f", 0, "f.jpg", [existing])], split="train")
+    app.viewport = Viewport(rect=(0, 0, 960, 540))
+    app.interaction = None
+    app.add_mode = True
+    app.active_preset_id = None
+    app.preset_rects = {}
+
+    app._mouse(cv2.EVENT_LBUTTONDOWN, 80, 80, 0, None)
+    assert app.interaction is not None and app.interaction["kind"] == "add"
+    assert app.session.selected_index is None
+    app._mouse(cv2.EVENT_LBUTTONUP, 120, 120, 0, None)
+
+    assert len(app.session.current.monsters) == 2
+    assert app.session.current.monsters[1].bbox_xyxy == [160, 160, 240, 240]
+
+
+def test_dragging_preset_card_onto_image_creates_fixed_hued_box():
+    preset1 = BoxPreset("1", "Mob type 1", 160, 170, 42)
+    preset2 = BoxPreset("2", "Mob type 2", 180, 145, 205)
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.session = ReviewSession([FrameAnnotation("f", 0, "f.jpg")], split="train")
+    app.viewport = Viewport(rect=(0, 0, 960, 540))
+    app.interaction = None
+    app.add_mode = False
+    app.active_preset_id = None
+    app.presets = {"1": preset1, "2": preset2}
+    app.preset_rects = {"1": (1000, 100, 120, 50), "2": (1130, 100, 120, 50)}
+
+    app._mouse(cv2.EVENT_LBUTTONDOWN, 1010, 110, 0, None)
+    app._mouse(cv2.EVENT_MOUSEMOVE, 100, 100, 0, None)
+    app._mouse(cv2.EVENT_LBUTTONUP, 100, 100, 0, None)
+
+    monster = app.session.current.monsters[0]
+    assert monster.bbox_xyxy == [120, 115, 280, 285]
+    assert monster.box_preset == "1"
+    assert app._box_color(monster, False) == preset1.color
+    assert app._box_color(monster, True) == preset1.color
+    assert app._box_color(MonsterAnnotation([0, 0, 10, 10], [5, 10], box_preset="2"), False) == preset2.color
+
+
+def test_review_keyboard_uses_arrows_for_navigation_and_a_toggles_add_mode():
+    items = [FrameAnnotation("first", 0, "first.jpg"),
+             FrameAnnotation("second", 1, "second.jpg")]
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.session = ReviewSession(items, split="train")
+    app.viewport = Viewport()
+    app.interaction = {"kind": "add"}
+    app.add_mode = False
+    app.active_preset_id = None
+    saved = []
+    app.save = lambda: saved.append(True)
+
+    assert app._handle_key(ord("a")) is True
+    assert app.add_mode is True and app.interaction is None
+    assert app.session.index == 0
+    assert app._handle_key(ord("d")) is True
+    assert app.session.index == 0
+    assert app._handle_key(ord("1"), control_pressed=True) is True
+    assert app.active_preset_id == "1" and app.add_mode is False
+    assert app._handle_key(27) is True
+    assert app.active_preset_id is None
+    assert app._handle_key(2555904) is True
+    assert app.session.index == 1
+
+    assert app._handle_key(ord("a")) is True
+    assert app.add_mode is True
+    app._handle_key(ord("a"))
+    assert app.add_mode is False
+    app._handle_key(ord("a"))
+    assert app._handle_key(27) is True
+    assert app.add_mode is False
+    assert app._handle_key(27) is False
+    assert saved
+
+
 def test_review_session_confirm_needs_review_and_clear():
     monster = MonsterAnnotation([10, 10, 50, 80], [30, 80], source="codex_prelabel", review_required=True)
     session = ReviewSession([FrameAnnotation("f", 0, "f.jpg", [monster])], split="train")
@@ -199,6 +370,29 @@ def test_review_queues_filter_without_changing_canonical_items():
     ]
     assert [item.frame_id for item in ReviewSession(items, split="train", queue="pending").items] == ["p"]
     assert [item.frame_id for item in ReviewSession(items, split="train", queue="needs_review").items] == ["n"]
+
+
+def test_proposal_review_queue_starts_at_next_work_with_reviewed_history_before_it():
+    reviewed = FrameAnnotation("reviewed", 0, "reviewed.jpg", split="train",
+                               review_status="reviewed")
+    manual_needs_review = FrameAnnotation(
+        "manual-needs-review", .5, "manual.jpg",
+        [MonsterAnnotation([10, 10, 50, 80], [30, 80], source="visual_review")],
+        split="train", review_status="needs_review",
+    )
+    proposal = MonsterAnnotation([10, 10, 50, 80], [30, 80],
+                                 source="codex_prelabel", review_required=True)
+    pending = FrameAnnotation("next-work", 1, "pending.jpg", [proposal], split="train")
+    later = FrameAnnotation("later", 2, "later.jpg", split="train", review_status="reviewed")
+    session = ReviewSession([reviewed, manual_needs_review, pending, later], split="train",
+                            queue="proposal_review_required")
+
+    assert [item.frame_id for item in session.items] == [
+        "reviewed", "later", "manual-needs-review", "next-work",
+    ]
+    assert session.current.frame_id == "manual-needs-review"
+    assert session.navigate(-1) is True
+    assert session.current.frame_id == "later"
 
 
 def test_dynamic_inventory_panel_detection_masks_paired_tall_borders():

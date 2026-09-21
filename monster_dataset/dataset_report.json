@@ -1,35 +1,35 @@
 {
   "schema_version": 1,
   "frames": 360,
-  "reviewed_frames": 0,
-  "pending_frames": 360,
-  "positive_frames": 213,
-  "negative_frames": 147,
-  "monster_instances": 1072,
-  "occluded_instances": 0,
-  "review_required_instances": 1072,
+  "reviewed_frames": 26,
+  "pending_frames": 334,
+  "positive_frames": 216,
+  "negative_frames": 144,
+  "monster_instances": 2171,
+  "occluded_instances": 1604,
+  "review_required_instances": 1899,
   "count_distribution": {
-    "0": 147,
-    "1": 11,
-    "10": 6,
-    "11": 3,
-    "12": 1,
-    "15": 1,
-    "2": 17,
-    "3": 32,
-    "4": 39,
-    "5": 36,
-    "6": 29,
-    "7": 13,
-    "8": 15,
-    "9": 10
+    "0": 144,
+    "10": 34,
+    "11": 44,
+    "12": 32,
+    "13": 10,
+    "14": 6,
+    "15": 3,
+    "16": 1,
+    "4": 2,
+    "5": 4,
+    "6": 4,
+    "7": 11,
+    "8": 26,
+    "9": 39
   },
   "condition_distribution": {},
   "splits": {
     "train": {
       "frames": 216,
-      "reviewed": 0,
-      "pending": 216
+      "reviewed": 26,
+      "pending": 190
     },
     "validation": {
       "frames": 72,
@@ -45,12 +45,12 @@
   "malformed_frames": {},
   "training_ready": false,
   "box_size": {
-    "mean_width": 141.48525186567164,
-    "mean_height": 135.2739645522388
+    "mean_width": 159.54226304123313,
+    "mean_height": 169.03189552008587
   },
   "pairwise_iou": {
-    "pairs": 2801,
-    "max": 0.7442274315669788,
-    "ge_0_5": 17
+    "pairs": 10298,
+    "max": 0.7940806045340048,
+    "ge_0_5": 18
   }
 }

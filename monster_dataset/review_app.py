@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import bisect
 import copy
+import ctypes
+import json
+import os
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,13 +17,72 @@ from perception.core import read_video_frame, video_frame_timestamps
 
 from .annotation_io import write_jsonl_with_backup
 from .prelabel import resolve_image_path
-from .schema import FrameAnnotation, MonsterAnnotation, read_jsonl
+from .schema import MINIMUM_VISIBLE_BOX_FRACTION, FrameAnnotation, MonsterAnnotation, read_jsonl
 
 SOURCE_SIZE = (1920, 1080)
 CURRENT_ORIGIN = (0, 270)
 CURRENT_SIZE = (960, 540)
 VALID_QUEUES = {"all", "pending", "needs_review", "proposal_review_required"}
 HANDLE_NAMES = ("top_left", "top_right", "bottom_left", "bottom_right")
+
+
+@dataclass(frozen=True)
+class BoxPreset:
+    preset_id: str
+    name: str
+    width: float
+    height: float
+    hue: float
+
+    @property
+    def color(self) -> tuple[int, int, int]:
+        hsv = np.uint8([[[round((self.hue % 360.0) / 2.0), 210, 255]]])
+        bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)[0, 0]
+        return tuple(int(channel) for channel in bgr)
+
+
+@dataclass(frozen=True)
+class ReviewSettings:
+    box_presets: tuple[BoxPreset, BoxPreset]
+
+
+DEFAULT_BOX_PRESETS = (
+    BoxPreset("1", "Orange mob", 170.0, 121.0, 42.0),
+    BoxPreset("2", "Blue mob", 181.0, 144.0, 205.0),
+)
+
+
+def load_review_settings(path: Path) -> ReviewSettings:
+    if not path.is_file():
+        return ReviewSettings(DEFAULT_BOX_PRESETS)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    raw_presets = payload.get("box_presets")
+    if not isinstance(raw_presets, list) or len(raw_presets) != 2:
+        raise ValueError(f"{path}: box_presets must contain exactly two presets")
+    presets: list[BoxPreset] = []
+    for index, raw in enumerate(raw_presets, 1):
+        try:
+            preset = BoxPreset(str(index), str(raw["name"]), float(raw["width"]),
+                               float(raw["height"]), float(raw["hue"]))
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError(f"{path}: invalid box preset {index}: {error}") from error
+        if not preset.name or preset.width < 4 or preset.height < 4:
+            raise ValueError(f"{path}: preset {index} requires a name and width/height >= 4")
+        presets.append(preset)
+    return ReviewSettings((presets[0], presets[1]))
+
+
+def fixed_box_from_drag(start: tuple[float, float], end: tuple[float, float],
+                        preset: BoxPreset) -> list[float]:
+    """Use drag direction to place a fixed-size box from its starting corner."""
+    x2 = start[0] + (preset.width if end[0] >= start[0] else -preset.width)
+    y2 = start[1] + (preset.height if end[1] >= start[1] else -preset.height)
+    return [min(start[0], x2), min(start[1], y2), max(start[0], x2), max(start[1], y2)]
+
+
+def fixed_box_centered_at(center: tuple[float, float], preset: BoxPreset) -> list[float]:
+    return [center[0] - preset.width / 2.0, center[1] - preset.height / 2.0,
+            center[0] + preset.width / 2.0, center[1] + preset.height / 2.0]
 
 
 @dataclass
@@ -116,12 +178,25 @@ class ReviewSession:
                 )
             ),
         }
-        self.items = [item for item in split_items if predicates[queue](item)]
+        # Put reviewed history before the outstanding proposal queue. The GUI
+        # opens at the boundary: Left revisits completed work, while Right
+        # continues through frames that still need review.
+        if queue == "proposal_review_required":
+            reviewed_items = [item for item in split_items if item.review_status == "reviewed"]
+            # Keep every non-reviewed frame, including manually created boxes
+            # and needs_review frames that no longer contain Codex proposals.
+            outstanding_items = [item for item in split_items if item.review_status != "reviewed"]
+            self.items = reviewed_items + outstanding_items
+            default_index = len(reviewed_items) if outstanding_items else len(self.items) - 1
+        else:
+            self.items = [item for item in split_items if predicates[queue](item)]
+            default_index = 0
         if not self.items:
             raise ValueError(f"No {split} annotations in queue {queue!r}")
         self.split = split
         self.queue = queue
-        self.index = next((i for i, item in enumerate(self.items) if item.frame_id == start_id), 0)
+        self.index = next((i for i, item in enumerate(self.items) if item.frame_id == start_id),
+                          default_index)
         self.selected_index: int | None = None
         self.last_hit_candidates: list[int] = []
         self.undo_stacks: dict[str, list[tuple[list[MonsterAnnotation], str]]] = {}
@@ -164,10 +239,17 @@ class ReviewSession:
 
     @staticmethod
     def _valid_box(box: list[float]) -> list[float]:
-        x1, x2 = sorted((max(0.0, min(SOURCE_SIZE[0], box[0])), max(0.0, min(SOURCE_SIZE[0], box[2]))))
-        y1, y2 = sorted((max(0.0, min(SOURCE_SIZE[1], box[1])), max(0.0, min(SOURCE_SIZE[1], box[3]))))
+        x1, x2 = sorted((float(box[0]), float(box[2])))
+        y1, y2 = sorted((float(box[1]), float(box[3])))
         if x2 - x1 < 4.0 or y2 - y1 < 4.0:
             raise ValueError("Monster box must be at least 4 source pixels in each dimension")
+        area = (x2 - x1) * (y2 - y1)
+        visible_width = max(0.0, min(x2, SOURCE_SIZE[0]) - max(x1, 0.0))
+        visible_height = max(0.0, min(y2, SOURCE_SIZE[1]) - max(y1, 0.0))
+        if visible_width * visible_height / area < MINIMUM_VISIBLE_BOX_FRACTION:
+            raise ValueError(
+                f"Monster box must retain at least {MINIMUM_VISIBLE_BOX_FRACTION:g} of its area in frame"
+            )
         return [x1, y1, x2, y2]
 
     @staticmethod
@@ -175,12 +257,27 @@ class ReviewSession:
         if monster.source in {"codex_prelabel", "human_confirmed_prelabel"}:
             monster.source = "human_corrected_prelabel"
 
-    def add_box(self, box: list[float]) -> int:
+    @staticmethod
+    def box_fully_inside(box: list[float]) -> bool:
+        return (box[0] >= 0.0 and box[1] >= 0.0 and
+                box[2] <= SOURCE_SIZE[0] and box[3] <= SOURCE_SIZE[1])
+
+    @classmethod
+    def translated_box(cls, box: list[float], dx: float, dy: float, *,
+                       keep_inside: bool = False) -> list[float]:
+        width, height = box[2] - box[0], box[3] - box[1]
+        x1, y1 = box[0] + dx, box[1] + dy
+        if keep_inside:
+            x1 = max(0.0, min(SOURCE_SIZE[0] - width, x1))
+            y1 = max(0.0, min(SOURCE_SIZE[1] - height, y1))
+        return cls._valid_box([x1, y1, x1 + width, y1 + height])
+
+    def add_box(self, box: list[float], *, box_preset: str | None = None) -> int:
         box = self._valid_box(box)
         self._record()
         self.current.monsters.append(MonsterAnnotation(
             box, [(box[0] + box[2]) / 2.0, box[3]], source="visual_review",
-            review_required=False, annotation_confidence=1.0,
+            review_required=False, annotation_confidence=1.0, box_preset=box_preset,
         ))
         self.selected_index = len(self.current.monsters) - 1
         return self.selected_index
@@ -214,17 +311,15 @@ class ReviewSession:
             self.selected_index = candidates[(candidates.index(self.selected_index) + 1) % len(candidates)]
         return self.selected_index
 
-    def move_selected(self, dx: float, dy: float) -> None:
+    def move_selected(self, dx: float, dy: float, *, keep_inside: bool = False) -> None:
         if self.selected_index is None:
             return
         monster = self.current.monsters[self.selected_index]
-        width = monster.bbox_xyxy[2] - monster.bbox_xyxy[0]
-        height = monster.bbox_xyxy[3] - monster.bbox_xyxy[1]
-        x1 = max(0.0, min(SOURCE_SIZE[0] - width, monster.bbox_xyxy[0] + dx))
-        y1 = max(0.0, min(SOURCE_SIZE[1] - height, monster.bbox_xyxy[1] + dy))
+        candidate = self.translated_box(monster.bbox_xyxy, dx, dy, keep_inside=keep_inside)
+        x1, y1 = candidate[0], candidate[1]
         actual_dx, actual_dy = x1 - monster.bbox_xyxy[0], y1 - monster.bbox_xyxy[1]
         self._record()
-        monster.bbox_xyxy = [x1, y1, x1 + width, y1 + height]
+        monster.bbox_xyxy = candidate
         monster.ground_position = [monster.ground_position[0] + actual_dx, monster.ground_position[1] + actual_dy]
         self._mark_corrected(monster)
 
@@ -329,6 +424,9 @@ class MonsterReviewApp:
         self.annotations_path = annotations
         self.video = video
         self.delta_s = delta_s
+        self.settings_path = annotations.parent / "review_settings.json"
+        self.settings = load_review_settings(self.settings_path)
+        self.presets = {preset.preset_id: preset for preset in self.settings.box_presets}
         self.session = ReviewSession(read_jsonl(annotations), split=split, queue=queue, start_id=start_id)
         self.timestamps = video_frame_timestamps(video)
         self.viewport = Viewport()
@@ -336,6 +434,9 @@ class MonsterReviewApp:
         self.frame_cache: OrderedDict[int, np.ndarray] = OrderedDict()
         self.image_cache: dict[str, np.ndarray] = {}
         self.interaction: dict | None = None
+        self.add_mode = False
+        self.active_preset_id: str | None = None
+        self.preset_rects: dict[str, tuple[int, int, int, int]] = {}
         self.canvas_size = (1440, 900)
 
     def _frame_index(self, timestamp: float) -> int:
@@ -408,6 +509,8 @@ class MonsterReviewApp:
             cv2.line(canvas, (x2, start), (x2, min(start + 7, y2)), color, thickness)
 
     def _box_color(self, monster: MonsterAnnotation, selected: bool) -> tuple[int, int, int]:
+        if monster.box_preset in self.presets:
+            return self.presets[monster.box_preset].color
         if selected:
             return (255, 255, 255)
         if monster.source == "codex_prelabel":
@@ -429,16 +532,55 @@ class MonsterReviewApp:
                 return name
         return None
 
+    @staticmethod
+    def _box_valid(box: list[float]) -> bool:
+        try:
+            ReviewSession._valid_box(box)
+            return True
+        except ValueError:
+            return False
+
+    def _preset_preview_color(self, box: list[float], preset: BoxPreset) -> tuple[int, int, int]:
+        return preset.color if self._box_valid(box) else (0, 0, 255)
+
+    def _move_preview(self, action: dict, point: tuple[int, int], *,
+                      update_lock: bool = False) -> tuple[list[float], bool]:
+        current = self.viewport.display_to_source(point, clamp=False)
+        start = action["source_start"]
+        dx, dy = current[0] - start[0], current[1] - start[1]
+        original = action["original_box"]
+        raw = [original[0] + dx, original[1] + dy,
+               original[2] + dx, original[3] + dy]
+        if (update_lock and action.get("is_preset") and
+                ReviewSession.box_fully_inside(raw)):
+            action["containment_locked"] = True
+        if action.get("containment_locked"):
+            candidate = ReviewSession.translated_box(original, dx, dy, keep_inside=True)
+        else:
+            candidate = raw
+        return candidate, self._box_valid(candidate)
+
     def _draw_annotations(self, canvas: np.ndarray) -> None:
         for index, monster in enumerate(self.session.current.monsters):
             selected = index == self.session.selected_index
-            box = [round(value) for value in source_box_to_display(monster.bbox_xyxy, self.viewport)]
+            draw_box = monster.bbox_xyxy
+            draw_ground = monster.ground_position
             color = self._box_color(monster, selected)
+            moving = (selected and self.interaction is not None and
+                      self.interaction["kind"] == "move")
+            if moving:
+                draw_box, valid = self._move_preview(self.interaction, self.interaction["current"])
+                dx = draw_box[0] - self.interaction["original_box"][0]
+                dy = draw_box[1] - self.interaction["original_box"][1]
+                draw_ground = [monster.ground_position[0] + dx, monster.ground_position[1] + dy]
+                if not valid:
+                    color = (0, 0, 255)
+            box = [round(value) for value in source_box_to_display(draw_box, self.viewport)]
             if monster.review_required:
-                self._dashed_rectangle(canvas, box, color, 3 if selected else 2)
+                self._dashed_rectangle(canvas, box, color, 2 if selected else 1)
             else:
-                cv2.rectangle(canvas, (box[0], box[1]), (box[2], box[3]), color, 3 if selected else 2)
-            ground = self.viewport.source_to_display(tuple(monster.ground_position))
+                cv2.rectangle(canvas, (box[0], box[1]), (box[2], box[3]), color, 2 if selected else 1)
+            ground = self.viewport.source_to_display(tuple(draw_ground))
             cv2.drawMarker(canvas, (round(ground[0]), round(ground[1])), color, cv2.MARKER_CROSS, 12, 2)
             tags = []
             if monster.source == "codex_prelabel":
@@ -447,6 +589,8 @@ class MonsterReviewApp:
                 tags.append("corrected")
             else:
                 tags.append("human")
+            if monster.box_preset:
+                tags.append(f"preset {monster.box_preset}")
             if monster.occluded:
                 tags.append("OCCLUDED")
             if monster.review_required:
@@ -455,19 +599,55 @@ class MonsterReviewApp:
                      else f"M{index + 1} {'P' + format(monster.annotation_confidence, '.2f') if monster.source == 'codex_prelabel' else tags[0]}")
             self._put(canvas, label, (box[0], max(self.viewport.rect[1] + 16, box[1] - 5)),
                       .42, color, 1)
-            if selected:
+            if selected and not moving:
                 for handle in self._handles(index).values():
-                    cv2.rectangle(canvas, (round(handle[0]) - 5, round(handle[1]) - 5),
-                                  (round(handle[0]) + 5, round(handle[1]) + 5), color, -1)
-        if self.interaction and self.interaction["kind"] == "add":
-            preview = display_box_to_source(self.interaction["start"], self.interaction["current"], self.viewport)
+                    cv2.rectangle(canvas, (round(handle[0]) - 4, round(handle[1]) - 4),
+                                  (round(handle[0]) + 4, round(handle[1]) + 4), color, -1)
+        if self.interaction and self.interaction["kind"] in {"add", "preset_add", "preset_drag"}:
+            if self.interaction["kind"] == "add":
+                preview = display_box_to_source(self.interaction["start"], self.interaction["current"], self.viewport)
+                color = (255, 255, 255)
+            else:
+                preset = self.presets[self.interaction["preset_id"]]
+                if self.interaction["kind"] == "preset_add":
+                    start = self.viewport.display_to_source(self.interaction["start"])
+                    current = self.viewport.display_to_source(self.interaction["current"], clamp=False)
+                    preview = fixed_box_from_drag(start, current, preset)
+                else:
+                    current = self.viewport.display_to_source(self.interaction["current"], clamp=False)
+                    preview = fixed_box_centered_at(current, preset)
+                color = self._preset_preview_color(preview, preset)
             box = [round(value) for value in source_box_to_display(preview, self.viewport)]
-            cv2.rectangle(canvas, (box[0], box[1]), (box[2], box[3]), (255, 255, 255), 1)
+            cv2.rectangle(canvas, (box[0], box[1]), (box[2], box[3]), color, 1)
+
+    def _draw_preset_cards(self, canvas: np.ndarray, controls_x: int, controls_width: int,
+                           status_y: int) -> None:
+        gap = 8
+        card_width = max(120, (controls_width - 3 * gap) // 2)
+        card_height = 54
+        y = status_y - card_height - 8
+        self.preset_rects = {}
+        for index, preset in enumerate(self.settings.box_presets):
+            x = controls_x + index * (card_width + gap)
+            rect = (x, y, card_width, card_height)
+            self.preset_rects[preset.preset_id] = rect
+            selected = self.active_preset_id == preset.preset_id
+            cv2.rectangle(canvas, (x, y), (x + card_width, y + card_height), (42, 42, 42), -1)
+            cv2.rectangle(canvas, (x, y), (x + card_width, y + card_height),
+                          (255, 255, 255) if selected else preset.color, 2 if selected else 1)
+            self._put(canvas, f"Ctrl+{preset.preset_id} {preset.name}", (x + 7, y + 20), .38, preset.color)
+            self._put(canvas, f"{preset.width:g} x {preset.height:g}  drag me", (x + 7, y + 42), .36)
+
+    def _preset_at(self, point: tuple[int, int]) -> str | None:
+        for preset_id, (x, y, width, height) in self.preset_rects.items():
+            if x <= point[0] < x + width and y <= point[1] < y + height:
+                return preset_id
+        return None
 
     def _canvas(self) -> np.ndarray:
         width, height = self.canvas_size
         canvas = np.full((height, width, 3), 22, np.uint8)
-        top, status_height, _controls_width, main_width = self._layout()
+        top, status_height, controls_width, main_width = self._layout()
         item = self.session.current
         thumb_width = width // 3
         contexts = (("PREVIOUS", max(0.0, item.timestamp - self.delta_s)),
@@ -479,16 +659,24 @@ class MonsterReviewApp:
         self._draw_annotations(canvas)
         controls_x = main_width + 12
         progress = self.session.progress()
+        if self.active_preset_id:
+            preset = self.presets[self.active_preset_id]
+            mode_text = f"PRESET {preset.preset_id}: {preset.name} {preset.width:g}x{preset.height:g}"
+        else:
+            mode_text = "FREE ADD" if self.add_mode else "DEFAULT"
         lines = [
             f"{self.session.split.upper()}  {self.session.queue}",
             f"frame {self.session.index + 1} / {len(self.session.items)}",
             f"{item.frame_id}  t={item.timestamp:.3f}",
             f"status: {item.review_status.upper()}",
+            f"MODE: {mode_text}",
             f"reviewed {progress['reviewed']}  pending {progress['pending']}",
             f"needs review {progress['needs_review']}",
             f"current proposals/boxes: {len(item.monsters)}", "",
             "Enter/R confirm + next   E needs review",
-            "A/Left previous   D/Right next",
+            "Left/Right: previous/next",
+            "A: free Add mode   Esc: default/quit",
+            "Ctrl+1/2 or drag preset card",
             "drag empty: add   drag box: move",
             "corner handles: resize   Del: delete",
             "Shift+click: ground point   Tab: cycle",
@@ -500,13 +688,16 @@ class MonsterReviewApp:
         ]
         for row, line in enumerate(lines):
             self._put(canvas, line, (controls_x, top + 27 + row * 27), .44,
-                      (100, 220, 255) if row == 3 else (225, 225, 225))
+                      ((80, 255, 120) if row == 4 and (self.add_mode or self.active_preset_id) else
+                       (100, 220, 255) if row == 3 else (225, 225, 225)))
         status_y = height - status_height
+        self._draw_preset_cards(canvas, controls_x, controls_width, status_y)
         cv2.rectangle(canvas, (0, status_y), (width, height), (12, 12, 12), -1)
         selected = "none" if self.session.selected_index is None else f"M{self.session.selected_index + 1}"
-        self._put(canvas, f"Selected: {selected}    zoom: {self.viewport.zoom:.2f}x    autosave: on (single .bak)",
+        mode = f"{mode_text} (Esc to default)" if (self.add_mode or self.active_preset_id) else "DEFAULT (A for free Add)"
+        self._put(canvas, f"Mode: {mode}    Selected: {selected}    zoom: {self.viewport.zoom:.2f}x    autosave: on",
                   (12, status_y + 28), .5)
-        self._put(canvas, "Pink dashed = pending proposal | orange = human-corrected | green = human-created | white = selected",
+        self._put(canvas, "Preset boxes retain their card hue | pink dashed = pending | white = selected free box",
                   (12, status_y + 58), .46, (190, 190, 190))
         return canvas
 
@@ -523,6 +714,8 @@ class MonsterReviewApp:
                 previous = self.interaction["current"]
                 self.viewport.pan_display(x - previous[0], y - previous[1])
             self.interaction["current"] = point
+            if self.interaction["kind"] == "move":
+                self._move_preview(self.interaction, point, update_lock=True)
             return
         if event == cv2.EVENT_MBUTTONUP and self.interaction and self.interaction["kind"] == "pan":
             self.interaction = None
@@ -532,8 +725,24 @@ class MonsterReviewApp:
             self.session.select_at(source)
             self.session.delete_selected()
             return
+        if event == cv2.EVENT_LBUTTONDOWN:
+            preset_id = self._preset_at(point)
+            if preset_id is not None:
+                self.active_preset_id = preset_id
+                self.add_mode = False
+                self.interaction = {"kind": "preset_drag", "preset_id": preset_id,
+                                    "start": point, "current": point}
+                return
         if event == cv2.EVENT_LBUTTONDOWN and self.viewport.contains_display(point):
             source = self.viewport.display_to_source(point)
+            if self.active_preset_id:
+                self.interaction = {"kind": "preset_add", "preset_id": self.active_preset_id,
+                                    "start": point, "current": point, "source_start": source}
+                return
+            if self.add_mode:
+                self.interaction = {"kind": "add", "start": point, "current": point,
+                                    "source_start": source}
+                return
             if flags & cv2.EVENT_FLAG_SHIFTKEY and self.session.selected_index is not None:
                 self.session.set_ground(source)
                 return
@@ -542,8 +751,18 @@ class MonsterReviewApp:
                 self.interaction = {"kind": "resize", "start": point, "current": point, "handle": handle}
                 return
             selected = self.session.select_at(source)
-            self.interaction = {"kind": "move" if selected is not None else "add",
-                                "start": point, "current": point, "source_start": source}
+            if selected is not None:
+                monster = self.session.current.monsters[selected]
+                is_preset = monster.box_preset in self.presets
+                self.interaction = {
+                    "kind": "move", "start": point, "current": point,
+                    "source_start": source, "original_box": list(monster.bbox_xyxy),
+                    "is_preset": is_preset,
+                    "containment_locked": is_preset and ReviewSession.box_fully_inside(monster.bbox_xyxy),
+                }
+            else:
+                self.interaction = {"kind": "add", "start": point, "current": point,
+                                    "source_start": source}
             return
         if event == cv2.EVENT_LBUTTONUP and self.interaction and self.interaction["kind"] != "pan":
             action = self.interaction
@@ -552,10 +771,25 @@ class MonsterReviewApp:
             try:
                 if action["kind"] == "add":
                     self.session.add_box(display_box_to_source(action["start"], point, self.viewport))
+                elif action["kind"] == "preset_add":
+                    preset = self.presets[action["preset_id"]]
+                    start = self.viewport.display_to_source(action["start"])
+                    end = self.viewport.display_to_source(point, clamp=False)
+                    self.session.add_box(fixed_box_from_drag(start, end, preset),
+                                         box_preset=preset.preset_id)
+                elif action["kind"] == "preset_drag":
+                    preset = self.presets[action["preset_id"]]
+                    center = self.viewport.display_to_source(point, clamp=False)
+                    self.session.add_box(fixed_box_centered_at(center, preset),
+                                         box_preset=preset.preset_id)
                 elif action["kind"] == "move":
-                    source_start = action["source_start"]
                     if abs(point[0] - action["start"][0]) + abs(point[1] - action["start"][1]) >= 3:
-                        self.session.move_selected(source_end[0] - source_start[0], source_end[1] - source_start[1])
+                        candidate, valid = self._move_preview(action, point, update_lock=True)
+                        if valid:
+                            original = action["original_box"]
+                            self.session.move_selected(candidate[0] - original[0],
+                                                       candidate[1] - original[1],
+                                                       keep_inside=action.get("containment_locked", False))
                 elif action["kind"] == "resize":
                     self.session.resize_selected(action["handle"], source_end)
             except ValueError:
@@ -570,6 +804,65 @@ class MonsterReviewApp:
         self.session.navigate(1)
         self.viewport.fit()
 
+    @staticmethod
+    def _control_pressed() -> bool:
+        if os.name != "nt":
+            return False
+        return bool(ctypes.windll.user32.GetAsyncKeyState(0x11) & 0x8000)
+
+    def _handle_key(self, key: int, *, control_pressed: bool | None = None) -> bool:
+        """Handle one OpenCV key code; return False when the window should close."""
+        low = key & 0xFF
+        if low == 27:
+            if self.add_mode or self.active_preset_id:
+                self.add_mode = False
+                self.active_preset_id = None
+                self.interaction = None
+                return True
+            self.save()
+            return False
+        if low == ord("q"):
+            self.save()
+            return False
+        if low == ord("a"):
+            self.add_mode = not self.add_mode or self.active_preset_id is not None
+            self.active_preset_id = None
+            self.interaction = None
+        elif (self._control_pressed() if control_pressed is None else control_pressed) and low in (ord("1"), ord("2")):
+            self.active_preset_id = chr(low)
+            self.add_mode = False
+            self.interaction = None
+        elif low == ord("s"):
+            self.save()
+        elif key in (2424832, 65361):
+            self.save(); self.session.navigate(-1); self.viewport.fit()
+        elif key in (2555904, 65363):
+            self.save(); self.session.navigate(1); self.viewport.fit()
+        elif low in (13, 10, ord("r")):
+            self.session.confirm(); self._advance()
+        elif low == ord("e"):
+            self.session.mark_needs_review(); self._advance()
+        elif key in (3014656,) or low in (8, 127):
+            self.session.delete_selected()
+        elif low == ord("o"):
+            self.session.toggle_occluded()
+        elif low == ord("u"):
+            self.session.toggle_review_required()
+        elif low in (ord("1"), ord("2"), ord("3"), ord("4"), ord("5")):
+            self.session.set_visibility({ord("1"): 1.0, ord("2"): .75, ord("3"): .5,
+                                         ord("4"): .25, ord("5"): 0.0}[low])
+        elif low == ord("0"):
+            self.session.clear()
+        elif low == ord("f"):
+            self.viewport.fit()
+        elif low == 9:
+            self.session.cycle_selection()
+        elif low == 26:
+            self.session.undo()
+        elif low == 25:
+            self.session.redo()
+        return True
+
     def run(self) -> None:
         cv2.namedWindow(self.window, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(self.window, *self.canvas_size)
@@ -583,39 +876,18 @@ class MonsterReviewApp:
                 pass
             cv2.imshow(self.window, self._canvas())
             key = cv2.waitKeyEx(30)
-            low = key & 0xFF
-            if key == -1:
-                continue
-            if low in (ord("q"), 27):
+            try:
+                window_closed = cv2.getWindowProperty(self.window, cv2.WND_PROP_VISIBLE) < 1
+            except cv2.error:
+                window_closed = True
+            if window_closed:
                 self.save()
                 break
-            if low == ord("s"):
-                self.save()
-            elif low == ord("a") or key in (81, 2424832):
-                self.save(); self.session.navigate(-1); self.viewport.fit()
-            elif low == ord("d") or key in (83, 2555904):
-                self.save(); self.session.navigate(1); self.viewport.fit()
-            elif low in (13, 10, ord("r")):
-                self.session.confirm(); self._advance()
-            elif low == ord("e"):
-                self.session.mark_needs_review(); self._advance()
-            elif key in (3014656,) or low in (8, 127):
-                self.session.delete_selected()
-            elif low == ord("o"):
-                self.session.toggle_occluded()
-            elif low == ord("u"):
-                self.session.toggle_review_required()
-            elif low in (ord("1"), ord("2"), ord("3"), ord("4"), ord("5")):
-                self.session.set_visibility({ord("1"): 1.0, ord("2"): .75, ord("3"): .5,
-                                             ord("4"): .25, ord("5"): 0.0}[low])
-            elif low == ord("0"):
-                self.session.clear()
-            elif low == ord("f"):
-                self.viewport.fit()
-            elif low == 9:
-                self.session.cycle_selection()
-            elif low == 26:
-                self.session.undo()
-            elif low == 25:
-                self.session.redo()
-        cv2.destroyWindow(self.window)
+            if key == -1:
+                continue
+            if not self._handle_key(key):
+                break
+        try:
+            cv2.destroyWindow(self.window)
+        except cv2.error:
+            pass

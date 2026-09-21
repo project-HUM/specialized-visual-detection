@@ -8,6 +8,7 @@ from typing import Any
 
 VALID_SPLITS = {"train", "validation", "test"}
 VALID_REVIEW_STATUSES = {"pending", "reviewed", "needs_review"}
+MINIMUM_VISIBLE_BOX_FRACTION = 0.0625
 
 @dataclass
 class MonsterAnnotation:
@@ -18,6 +19,7 @@ class MonsterAnnotation:
     annotation_confidence: float = 1.0
     review_required: bool = False
     source: str = "visual_review"
+    box_preset: str | None = None
 
     def validate(self, width: int = 1920, height: int = 1080) -> list[str]:
         errors: list[str] = []
@@ -28,8 +30,14 @@ class MonsterAnnotation:
         x1, y1, x2, y2 = (float(v) for v in self.bbox_xyxy)
         if x2 <= x1 or y2 <= y1:
             errors.append("bbox_xyxy must have positive extent")
-        if x1 < 0 or y1 < 0 or x2 > width or y2 > height:
-            errors.append(f"bbox_xyxy must be inside {width}x{height}")
+        box_area = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+        visible_width = max(0.0, min(x2, width) - max(x1, 0.0))
+        visible_height = max(0.0, min(y2, height) - max(y1, 0.0))
+        visible_fraction = visible_width * visible_height / box_area if box_area else 0.0
+        if visible_fraction < MINIMUM_VISIBLE_BOX_FRACTION:
+            errors.append(
+                f"bbox_xyxy must retain at least {MINIMUM_VISIBLE_BOX_FRACTION:g} of its area inside {width}x{height}"
+            )
         if not 0.0 <= float(self.visibility) <= 1.0:
             errors.append("visibility must be within [0, 1]")
         if not 0.0 <= float(self.annotation_confidence) <= 1.0:
@@ -40,6 +48,8 @@ class MonsterAnnotation:
                 errors.append("ground_position must lie within the monster box")
         if not self.source:
             errors.append("source must be non-empty")
+        if self.box_preset is not None and (not isinstance(self.box_preset, str) or not self.box_preset):
+            errors.append("box_preset must be null or a non-empty string")
         return errors
 
 @dataclass
