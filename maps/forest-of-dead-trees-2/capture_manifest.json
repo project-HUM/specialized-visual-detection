@@ -7,6 +7,6 @@
   "decoded_frames": 124300,
   "duration_s": 4693.4215,
   "source_size": [1920, 1080],
-  "geometry_manifest": "C:/projects/map-info-extractor/forest-of-dead-trees-2-output/forest_of_dead_trees_2_geometry.v1.json",
+  "geometry_manifest": "C:/projects/map-info-extractor/forest-of-dead-trees-2-output/forest_of_dead_trees_2_geometry.v2.json",
   "note": "Set PERCEPTION_CAPTURE_DIR only to override this selected map capture."
 }

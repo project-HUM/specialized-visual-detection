@@ -16,7 +16,7 @@
   ],
   "prelabel": {"prompts": []},
   "geometry": {
-    "manifest": "C:/projects/map-info-extractor/forest-of-dead-trees-2-output/forest_of_dead_trees_2_geometry.v1.json",
+    "manifest": "C:/projects/map-info-extractor/forest-of-dead-trees-2-output/forest_of_dead_trees_2_geometry.v2.json",
     "positions": "C:/projects/map-info-extractor/forest-of-dead-trees-2-output/positions.csv"
   },
   "paths": {

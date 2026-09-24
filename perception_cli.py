@@ -56,7 +56,7 @@ def _parser(workspace: MapWorkspace) -> argparse.ArgumentParser:
     image.add_argument("--events", type=Path)
     image.add_argument("--json", type=Path)
     image.add_argument("--annotated", type=Path)
-    _add_detector_arguments(image)
+    _add_detector_arguments(image, workspace)
 
     video = commands.add_parser("video")
     video.add_argument("input", type=Path, nargs="?", default=workspace.video)
@@ -69,7 +69,7 @@ def _parser(workspace: MapWorkspace) -> argparse.ArgumentParser:
     video.add_argument("--csv", type=Path)
     video.add_argument("--annotated", type=Path)
     video.add_argument("--annotated-width", type=int, default=960)
-    _add_detector_arguments(video)
+    _add_detector_arguments(video, workspace)
 
     manifest = commands.add_parser("benchmark-manifest")
     manifest.add_argument("--events", type=Path, default=workspace.events)
@@ -93,7 +93,7 @@ def _parser(workspace: MapWorkspace) -> argparse.ArgumentParser:
     bench.add_argument("--start", type=float, default=100.0)
     bench.add_argument("--frames", type=int, default=30)
     bench.add_argument("--output", type=Path, default=workspace.path("evaluation") / "runtime.json")
-    _add_detector_arguments(bench)
+    _add_detector_arguments(bench, workspace)
 
     summary = commands.add_parser("summarize")
     summary.add_argument("--observations", type=Path, required=True)
@@ -154,10 +154,12 @@ def _parser(workspace: MapWorkspace) -> argparse.ArgumentParser:
     review = commands.add_parser("monster-review", help="interactive train/validation box review with temporal context")
     review.add_argument("--video", type=Path, default=workspace.video)
     review.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
-    review.add_argument("--split", choices=("pilot","train","validation"), required=True)
+    review.add_argument("--split", choices=("all", "pilot", "train", "validation"), required=True)
     review.add_argument("--start-id")
+    review.add_argument("--frame-id-prefix", action="append", default=[],
+                        help="limit review to frame IDs beginning with this prefix; repeatable")
     review.add_argument("--delta", type=float, default=.20)
-    review.add_argument("--queue", choices=("all", "pending", "needs_review", "proposal_review_required"), default="all")
+    review.add_argument("--queue", choices=("all", "reviewed", "pending", "needs_review", "proposal_review_required"), default="all")
     prelabel = commands.add_parser("monster-prelabel", help="generate pending visual proposals for TRAIN only")
     prelabel.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
     prelabel.add_argument("--profile", type=Path, default=workspace.path("profile"))
@@ -171,6 +173,10 @@ def _parser(workspace: MapWorkspace) -> argparse.ArgumentParser:
     monster_yolo.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
     monster_yolo.add_argument("--output", type=Path, default=workspace.path("yolo_dataset"))
     monster_yolo.add_argument("--split", choices=("train", "validation"), required=True)
+    monster_yolo.add_argument(
+        "--preset-class", action="append", default=[], metavar="ID=NAME",
+        help="map a box preset to a YOLO class; repeat in desired class-ID order",
+    )
     sync_splits = commands.add_parser("monster-sync-splits", help="migrate split metadata without reading sealed images")
     sync_splits.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
     sync_splits.add_argument("--benchmark", type=Path, default=workspace.path("benchmark_annotations"))
@@ -182,23 +188,78 @@ def _parser(workspace: MapWorkspace) -> argparse.ArgumentParser:
     monster_evaluate.add_argument("--output", type=Path, default=workspace.path("evaluation") / "specialized_monster")
     return parser
 
-def _add_detector_arguments(parser: argparse.ArgumentParser) -> None:
+def _add_detector_arguments(parser: argparse.ArgumentParser, workspace: MapWorkspace) -> None:
     parser.add_argument("--monster-backend", choices=("template", "yolo"), default="template")
     parser.add_argument("--monster-weights", type=Path)
     parser.add_argument("--monster-confidence", type=float, default=.21)
     parser.add_argument(
-        "--monster-nms-iou", type=float, default=.90,
-        help="permissive YOLO NMS; tracker-side multi-signal dedup is authoritative",
+        "--monster-nms-iou", type=float, default=.80,
+        help="default YOLO NMS IoU, including Zombie (default: 0.80)",
     )
+    parser.add_argument("--monster-hero-nms-iou", type=float, default=.50)
+    parser.add_argument("--monster-lich-nms-iou", type=float, default=.50)
     parser.add_argument("--monster-imgsz", type=int, default=768)
     parser.add_argument("--monster-device")
+    parser.add_argument(
+        "--monster-box-presets", type=Path,
+        default=workspace.map_dir / "dataset" / "review_settings.json",
+        help="class-ordered fixed detection sizes (default: map dataset/review_settings.json)",
+    )
+    parser.add_argument(
+        "--monster-fixed-boxes", action="store_true",
+        help="replace YOLO boxes with class-ordered registered preset sizes",
+    )
+
+
+def _preset_classes(values: list[str]) -> dict[str, str] | None:
+    if not values:
+        return None
+    result: dict[str, str] = {}
+    for value in values:
+        preset_id, separator, name = value.partition("=")
+        preset_id, name = preset_id.strip(), name.strip()
+        if not separator or not preset_id or not name:
+            raise ValueError(f"Invalid --preset-class {value!r}; expected ID=NAME")
+        if preset_id in result:
+            raise ValueError(f"Duplicate --preset-class ID {preset_id!r}")
+        result[preset_id] = name
+    return result
+
+
+def _class_box_sizes(path: Path) -> dict[int, tuple[float, float]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    presets = payload.get("box_presets")
+    if not isinstance(presets, list) or not presets:
+        raise ValueError(f"{path}: box_presets must be a non-empty list")
+    sizes: dict[int, tuple[float, float]] = {}
+    for class_id, preset in enumerate(presets):
+        try:
+            width, height = float(preset["width"]), float(preset["height"])
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError(f"{path}: invalid box preset {class_id + 1}: {error}") from error
+        if width <= 0 or height <= 0:
+            raise ValueError(f"{path}: box preset {class_id + 1} dimensions must be positive")
+        sizes[class_id] = (width, height)
+    return sizes
 
 def _monster_detector(args: argparse.Namespace):
     if args.monster_backend == "template": return None
     if args.monster_weights is None: raise ValueError("--monster-weights is required for --monster-backend yolo")
+    class_box_sizes = None
+    if args.monster_fixed_boxes:
+        if not args.monster_box_presets.is_file():
+            raise ValueError(
+                f"Registered YOLO box sizes not found: {args.monster_box_presets}; "
+                "provide --monster-box-presets or omit --monster-fixed-boxes"
+            )
+        class_box_sizes = _class_box_sizes(args.monster_box_presets)
     return YoloMonsterDetector(args.monster_weights,confidence=args.monster_confidence,
                                nms_iou=args.monster_nms_iou,input_resolution=args.monster_imgsz,
-                               device=args.monster_device)
+                               device=args.monster_device,
+                               class_nms_iou={1: args.monster_hero_nms_iou,
+                                              2: args.monster_lich_nms_iou},
+                               class_box_sizes=class_box_sizes,
+                               box_size_reference=args.source_size if class_box_sizes else None)
 
 
 def _frame_at(path: Path, timestamp: float | None) -> np.ndarray:
@@ -554,6 +615,7 @@ def main() -> int:
     elif args.command == "monster-review":
         MonsterReviewApp(args.annotations,args.video,split=args.split,start_id=args.start_id,
                          delta_s=args.delta,queue=args.queue,
+                         frame_id_prefixes=tuple(args.frame_id_prefix),
                          source_size=workspace.source_size).run()
     elif args.command == "monster-prelabel":
         if args.split != "train":
@@ -575,7 +637,8 @@ def main() -> int:
     elif args.command == "monster-yolo-export":
         print(json.dumps(export_yolo(read_jsonl(args.annotations), args.output, split=args.split,
                                      source_size=workspace.source_size,
-                                     image_root=workspace.repo_root), indent=2))
+                                     image_root=workspace.repo_root,
+                                     preset_classes=_preset_classes(args.preset_class)), indent=2))
     elif args.command == "monster-sync-splits":
         print(json.dumps(sync_splits_from_benchmark(read_jsonl(args.annotations),args.benchmark,args.annotations),indent=2))
     elif args.command == "monster-evaluate":

@@ -1,38 +1,77 @@
 {
   "schema_version": 1,
-  "frames": 7,
-  "reviewed_frames": 0,
-  "pending_frames": 7,
-  "positive_frames": 5,
-  "negative_frames": 2,
-  "monster_instances": 27,
+  "frames": 61,
+  "reviewed_frames": 21,
+  "pending_frames": 40,
+  "positive_frames": 60,
+  "negative_frames": 1,
+  "monster_instances": 401,
   "occluded_instances": 0,
-  "review_required_instances": 0,
+  "review_required_instances": 240,
   "count_distribution": {
-    "0": 2,
-    "1": 1,
-    "11": 1,
-    "2": 1,
-    "5": 1,
-    "8": 1
+    "0": 1,
+    "1": 2,
+    "10": 1,
+    "11": 3,
+    "12": 2,
+    "14": 5,
+    "2": 5,
+    "3": 6,
+    "4": 5,
+    "5": 8,
+    "6": 5,
+    "7": 7,
+    "8": 4,
+    "9": 7
   },
   "condition_distribution": {
-    "lich_visible": 2
+    "airborne_hero_edge_case": 1,
+    "aura_overlap": 1,
+    "bottom_right_ui_cutoff": 1,
+    "clear_lich_center_portal_damage": 1,
+    "clear_lich_far_left_dense_zombies": 1,
+    "clear_lich_left_with_zombies": 1,
+    "dense_center_lich": 1,
+    "dense_late_combat": 1,
+    "diagnostic_extreme_edge_lich": 1,
+    "elevated_left_lich": 1,
+    "invalid_minimap": 1,
+    "left_lich_portal_damage": 1,
+    "lich_absent_comparison": 3,
+    "lich_below_airborne_hero": 1,
+    "lich_visible": 26,
+    "lich_window_00m00s_00m19s": 2,
+    "lich_window_01h16m57s_01h17m45s": 2,
+    "low_confidence_bottom_edge_lich": 1,
+    "low_confidence_duplicate_edge_lich": 1,
+    "low_confidence_effect_obscured_lich": 1,
+    "low_left_lich_open_scene": 1,
+    "manual_from_scratch": 15,
+    "negative_frame": 1,
+    "no_lich_sparse_negative": 1,
+    "no_lich_wide_negative": 1,
+    "partial_edge_labels": 5,
+    "portal_damage_overlap": 1,
+    "random_valid_minimap": 10,
+    "sample4_lotta_lich": 40,
+    "snowy_platform_false_positive": 1,
+    "ui_dialog": 1,
+    "valid_minimap": 40
   },
   "splits": {
     "pilot": {
-      "frames": 7,
-      "reviewed": 0,
-      "pending": 7
-    },
-    "train": {
-      "frames": 0,
-      "reviewed": 0,
+      "frames": 1,
+      "reviewed": 1,
       "pending": 0
     },
+    "train": {
+      "frames": 55,
+      "reviewed": 15,
+      "pending": 40
+    },
     "validation": {
-      "frames": 0,
-      "reviewed": 0,
+      "frames": 5,
+      "reviewed": 5,
       "pending": 0
     },
     "test": {
@@ -44,12 +83,12 @@
   "malformed_frames": {},
   "training_ready": false,
   "box_size": {
-    "mean_width": 90.4074074074074,
-    "mean_height": 133.40740740740742
+    "mean_width": 92.27680798004988,
+    "mean_height": 139.0773067331671
   },
   "pairwise_iou": {
-    "pairs": 94,
-    "max": 0.6463728246490821,
-    "ge_0_5": 2
+    "pairs": 1516,
+    "max": 0.9227229429679217,
+    "ge_0_5": 10
   }
 }

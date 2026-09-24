@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 maps/*/dataset/smoke*
 maps/*/dataset/runs/
+maps/*/dataset/yolo_dataset/
 maps/*/dataset/*.bak
 maps/*/dataset/prelabel_contacts/
 monster_dataset/smoke*

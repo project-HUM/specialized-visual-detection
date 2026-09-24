@@ -4,8 +4,10 @@ from __future__ import annotations
 import bisect
 import copy
 import ctypes
+import hashlib
 import json
 import os
+import tempfile
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,8 +24,57 @@ from .schema import MINIMUM_VISIBLE_BOX_FRACTION, FrameAnnotation, MonsterAnnota
 SOURCE_SIZE = (1920, 1080)
 CURRENT_ORIGIN = (0, 270)
 CURRENT_SIZE = (960, 540)
-VALID_QUEUES = {"all", "pending", "needs_review", "proposal_review_required"}
+VALID_QUEUES = {"all", "reviewed", "pending", "needs_review", "proposal_review_required"}
 HANDLE_NAMES = ("top_left", "top_right", "bottom_left", "bottom_right")
+MOVE_GRAB_PADDING = 12
+
+
+class ReviewInstanceLock:
+    """Prevent concurrent reviewers from overwriting one canonical annotation file."""
+
+    def __init__(self, annotations: Path):
+        identity = str(annotations.resolve()).casefold().encode("utf-8")
+        digest = hashlib.sha256(identity).hexdigest()[:20]
+        self.path = Path(tempfile.gettempdir()) / f"specialized-visual-detection-review-{digest}.lock"
+        self.handle = None
+
+    def __enter__(self) -> "ReviewInstanceLock":
+        self.handle = self.path.open("a+b")
+        self.handle.seek(0, os.SEEK_END)
+        if self.handle.tell() == 0:
+            self.handle.write(b"\0")
+            self.handle.flush()
+        self.handle.seek(0)
+        try:
+            if os.name == "nt":
+                import msvcrt
+                msvcrt.locking(self.handle.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(self.handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as error:
+            self.handle.close()
+            self.handle = None
+            raise RuntimeError(
+                "Another monster reviewer already has this annotations file open. "
+                "Close it before launching a different review batch."
+            ) from error
+        return self
+
+    def __exit__(self, _error_type, _error, _traceback) -> None:
+        if self.handle is None:
+            return
+        self.handle.seek(0)
+        try:
+            if os.name == "nt":
+                import msvcrt
+                msvcrt.locking(self.handle.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(self.handle.fileno(), fcntl.LOCK_UN)
+        finally:
+            self.handle.close()
+            self.handle = None
 
 
 def load_pilot_frame_indices(path: Path) -> dict[str, int]:
@@ -41,6 +92,25 @@ def load_pilot_frame_indices(path: Path) -> dict[str, int]:
             raise ValueError(f"{path}: every pilot frame requires a frame_id and non-negative frame")
         if frame_id in result:
             raise ValueError(f"{path}: duplicate pilot frame_id {frame_id!r}")
+        result[frame_id] = frame
+    return result
+
+
+def load_codex_review_frame_indices(path: Path) -> dict[str, int]:
+    """Load exact source-frame anchors for a Codex manual review batch."""
+    if not path.is_file():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != "specialized-visual-detection.codex-manual-review-batch.v1":
+        raise ValueError(f"{path}: unsupported Codex review manifest schema")
+    result: dict[str, int] = {}
+    for entry in payload.get("frames", []):
+        frame_id = entry.get("frame_id")
+        frame = entry.get("source_frame")
+        if not isinstance(frame_id, str) or not isinstance(frame, int) or frame < 0:
+            raise ValueError(f"{path}: every review frame requires a frame_id and non-negative source_frame")
+        if frame_id in result:
+            raise ValueError(f"{path}: duplicate frame_id {frame_id!r}")
         result[frame_id] = frame
     return result
 
@@ -196,17 +266,25 @@ class ReviewSession:
     """Rendering-independent annotation state, including per-frame undo/redo."""
 
     def __init__(self, items: list[FrameAnnotation], *, split: str, queue: str = "all",
-                 start_id: str | None = None,
+                 start_id: str | None = None, frame_id_prefixes: tuple[str, ...] = (),
                  source_size: tuple[int, int] = SOURCE_SIZE):
-        if split not in {"pilot", "train", "validation"}:
+        if split not in {"all", "pilot", "train", "validation"}:
             raise ValueError("Interactive review is limited to train and validation, plus isolated pilot data")
         if queue not in VALID_QUEUES:
             raise ValueError(f"queue must be one of {sorted(VALID_QUEUES)}")
         self.all_items = items
         self.source_size = source_size
-        split_items = [item for item in items if item.split == split]
+        allowed_splits = {"pilot", "train", "validation"} if split == "all" else {split}
+        split_items = [
+            item for item in items
+            if item.split in allowed_splits and (
+                not frame_id_prefixes or item.frame_id.startswith(frame_id_prefixes)
+            )
+        ]
+        self.scope_items = split_items
         predicates = {
             "all": lambda item: True,
+            "reviewed": lambda item: item.review_status == "reviewed",
             "pending": lambda item: item.review_status == "pending",
             "needs_review": lambda item: item.review_status == "needs_review",
             "proposal_review_required": lambda item: (
@@ -305,10 +383,11 @@ class ReviewSession:
         self.selected_index = len(self.current.monsters) - 1
         return self.selected_index
 
-    def select_at(self, point: tuple[float, float], *, cycle: bool = False) -> int | None:
+    def select_at(self, point: tuple[float, float], *, cycle: bool = False,
+                  padding: float = 0.0) -> int | None:
         candidates = [index for index, monster in enumerate(self.current.monsters)
-                      if monster.bbox_xyxy[0] <= point[0] <= monster.bbox_xyxy[2]
-                      and monster.bbox_xyxy[1] <= point[1] <= monster.bbox_xyxy[3]]
+                      if monster.bbox_xyxy[0] - padding <= point[0] <= monster.bbox_xyxy[2] + padding
+                      and monster.bbox_xyxy[1] - padding <= point[1] <= monster.bbox_xyxy[3] + padding]
         candidates.sort(key=lambda index: ((self.current.monsters[index].bbox_xyxy[2] - self.current.monsters[index].bbox_xyxy[0]) *
                                            (self.current.monsters[index].bbox_xyxy[3] - self.current.monsters[index].bbox_xyxy[1])))
         if not candidates:
@@ -447,19 +526,19 @@ class ReviewSession:
         return True
 
     def progress(self) -> dict[str, int]:
-        split_items = [item for item in self.all_items if item.split == self.split]
         return {
-            "reviewed": sum(item.review_status == "reviewed" for item in split_items),
-            "pending": sum(item.review_status == "pending" for item in split_items),
-            "needs_review": sum(item.review_status == "needs_review" for item in split_items),
+            "reviewed": sum(item.review_status == "reviewed" for item in self.scope_items),
+            "pending": sum(item.review_status == "pending" for item in self.scope_items),
+            "needs_review": sum(item.review_status == "needs_review" for item in self.scope_items),
         }
 
 
 class MonsterReviewApp:
     def __init__(self, annotations: Path, video: Path, *, split: str, start_id: str | None = None,
                  delta_s: float = .2, queue: str = "all",
+                 frame_id_prefixes: tuple[str, ...] = (),
                  source_size: tuple[int, int] = SOURCE_SIZE):
-        if split not in {"pilot", "train", "validation"}:
+        if split not in {"all", "pilot", "train", "validation"}:
             raise ValueError("Interactive review is limited to train and validation, plus isolated pilot data")
         self.annotations_path = annotations
         self.video = video
@@ -467,23 +546,43 @@ class MonsterReviewApp:
         self.settings_path = annotations.parent / "review_settings.json"
         self.settings = load_review_settings(self.settings_path)
         self.presets = {preset.preset_id: preset for preset in self.settings.box_presets}
-        self.session = ReviewSession(read_jsonl(annotations), split=split, queue=queue,
-                                     start_id=start_id, source_size=source_size)
-        self.pilot_frame_indices: dict[str, int] = {}
+        self.session = ReviewSession(
+            read_jsonl(annotations), split=split, queue=queue, start_id=start_id,
+            frame_id_prefixes=frame_id_prefixes, source_size=source_size,
+        )
+        self.source_frame_indices: dict[str, int] = {}
         self.nominal_fps: float | None = None
+        pilot_manifest = annotations.parent / "pilot_manifest.json"
+        candidate_indices = load_pilot_frame_indices(pilot_manifest)
+        for codex_manifest in sorted(annotations.parent.glob("codex_manual_batch_v*_manifest.json")):
+            codex_indices = load_codex_review_frame_indices(codex_manifest)
+            duplicate_ids = candidate_indices.keys() & codex_indices.keys()
+            conflicting_ids = [
+                frame_id for frame_id in duplicate_ids
+                if candidate_indices[frame_id] != codex_indices[frame_id]
+            ]
+            if conflicting_ids:
+                raise ValueError(
+                    "Conflicting exact source-frame anchors for " + ", ".join(sorted(conflicting_ids))
+                )
+            candidate_indices.update(codex_indices)
         if split == "pilot":
-            manifest = annotations.parent / "pilot_manifest.json"
-            self.pilot_frame_indices = load_pilot_frame_indices(manifest)
+            self.source_frame_indices = candidate_indices
             missing = [item.frame_id for item in self.session.items
-                       if item.frame_id not in self.pilot_frame_indices]
+                       if item.frame_id not in self.source_frame_indices]
             if missing:
                 raise ValueError(
-                    f"{manifest}: missing exact source-frame anchors for {', '.join(missing)}"
+                    f"{pilot_manifest}: missing exact source-frame anchors for {', '.join(missing)}"
                 )
             self.nominal_fps = self._nominal_video_fps(video)
             self.timestamps: list[float] | None = None
         else:
-            self.timestamps = video_frame_timestamps(video)
+            if candidate_indices and all(item.frame_id in candidate_indices for item in self.session.items):
+                self.source_frame_indices = candidate_indices
+                self.nominal_fps = self._nominal_video_fps(video)
+                self.timestamps = None
+            else:
+                self.timestamps = video_frame_timestamps(video)
         self.viewport = Viewport(source_size=source_size)
         self.window = "Monster review"
         self.frame_cache: OrderedDict[int, np.ndarray] = OrderedDict()
@@ -511,10 +610,10 @@ class MonsterReviewApp:
         return fps
 
     def _frame_index(self, timestamp: float, item: FrameAnnotation | None = None) -> int:
-        if item is not None and item.frame_id in self.pilot_frame_indices:
+        if item is not None and item.frame_id in self.source_frame_indices:
             assert self.nominal_fps is not None
             offset = round((timestamp - item.timestamp) * self.nominal_fps)
-            return max(0, self.pilot_frame_indices[item.frame_id] + offset)
+            return max(0, self.source_frame_indices[item.frame_id] + offset)
         assert self.timestamps is not None
         insertion = bisect.bisect_left(self.timestamps, timestamp)
         choices = [i for i in (insertion - 1, insertion) if 0 <= i < len(self.timestamps)]
@@ -620,21 +719,13 @@ class MonsterReviewApp:
     def _preset_preview_color(self, box: list[float], preset: BoxPreset) -> tuple[int, int, int]:
         return preset.color if self._box_valid(box) else (0, 0, 255)
 
-    def _move_preview(self, action: dict, point: tuple[int, int], *,
-                      update_lock: bool = False) -> tuple[list[float], bool]:
+    def _move_preview(self, action: dict, point: tuple[int, int]) -> tuple[list[float], bool]:
         current = self.viewport.display_to_source(point, clamp=False)
         start = action["source_start"]
         dx, dy = current[0] - start[0], current[1] - start[1]
         original = action["original_box"]
-        raw = [original[0] + dx, original[1] + dy,
-               original[2] + dx, original[3] + dy]
-        if (update_lock and action.get("is_preset") and
-                self.session.box_fully_inside(raw)):
-            action["containment_locked"] = True
-        if action.get("containment_locked"):
-            candidate = self.session.translated_box(original, dx, dy, keep_inside=True)
-        else:
-            candidate = raw
+        candidate = [original[0] + dx, original[1] + dy,
+                     original[2] + dx, original[3] + dy]
         return candidate, self._box_valid(candidate)
 
     def _draw_annotations(self, canvas: np.ndarray) -> None:
@@ -788,7 +879,7 @@ class MonsterReviewApp:
             ("", normal),
             ("Enter/R confirm + next   E needs review", normal),
             ("Left/Right: previous/next", normal),
-            ("A: free Add mode   Esc: default/quit", normal),
+            ("A: free Add mode   Esc: default/cancel", normal),
             ("Ctrl+1/2/3 or drag preset card", normal),
             ("Shift+Left/Right (or L/R): width -/+", normal),
             ("Shift+Down/Up (or D/U): height -/+", normal),
@@ -802,7 +893,7 @@ class MonsterReviewApp:
             ("1..5: visibility   0: clear boxes", normal),
             ("wheel image: zoom   middle drag: pan", normal),
             ("F: fit   Ctrl+Z/Y: undo/redo   S: save", normal),
-            ("Q/Esc: save and quit", normal),
+            ("Q: save and quit   X: autosave and close", normal),
             ("", normal),
             ("Preset dimensions:", (170, 210, 255)),
             ("edit dataset/review_settings.json", normal),
@@ -843,8 +934,6 @@ class MonsterReviewApp:
                 previous = self.interaction["current"]
                 self.viewport.pan_display(x - previous[0], y - previous[1])
             self.interaction["current"] = point
-            if self.interaction["kind"] == "move":
-                self._move_preview(self.interaction, point, update_lock=True)
             return
         if event == cv2.EVENT_MBUTTONUP and self.interaction and self.interaction["kind"] == "pan":
             self.interaction = None
@@ -879,15 +968,14 @@ class MonsterReviewApp:
             if handle:
                 self.interaction = {"kind": "resize", "start": point, "current": point, "handle": handle}
                 return
-            selected = self.session.select_at(source)
+            selected = self.session.select_at(
+                source, padding=MOVE_GRAB_PADDING / self.viewport.scale
+            )
             if selected is not None:
                 monster = self.session.current.monsters[selected]
-                is_preset = monster.box_preset in self.presets
                 self.interaction = {
                     "kind": "move", "start": point, "current": point,
                     "source_start": source, "original_box": list(monster.bbox_xyxy),
-                    "is_preset": is_preset,
-                    "containment_locked": is_preset and self.session.box_fully_inside(monster.bbox_xyxy),
                 }
             else:
                 self.interaction = {"kind": "add", "start": point, "current": point,
@@ -913,18 +1001,19 @@ class MonsterReviewApp:
                                          box_preset=preset.preset_id)
                 elif action["kind"] == "move":
                     if abs(point[0] - action["start"][0]) + abs(point[1] - action["start"][1]) >= 3:
-                        candidate, valid = self._move_preview(action, point, update_lock=True)
+                        candidate, valid = self._move_preview(action, point)
                         if valid:
                             original = action["original_box"]
                             self.session.move_selected(candidate[0] - original[0],
-                                                       candidate[1] - original[1],
-                                                       keep_inside=action.get("containment_locked", False))
+                                                       candidate[1] - original[1])
                 elif action["kind"] == "resize":
                     self.session.resize_selected(action["handle"], source_end)
             except ValueError:
                 pass
 
     def save(self) -> None:
+        if not self.session.dirty:
+            return
         write_jsonl_with_backup(self.session.all_items, self.annotations_path)
         self.session.dirty = False
 
@@ -1037,13 +1126,10 @@ class MonsterReviewApp:
         control = self._control_pressed() if control_pressed is None else control_pressed
         shift = self._shift_pressed() if shift_pressed is None else shift_pressed
         if low == 27:
-            if self.add_mode or self.active_preset_id:
-                self.add_mode = False
-                self.active_preset_id = None
-                self.interaction = None
-                return True
-            self.save()
-            return False
+            self.add_mode = False
+            self.active_preset_id = None
+            self.interaction = None
+            return True
         if low == ord("q"):
             self.save()
             return False
@@ -1124,30 +1210,36 @@ class MonsterReviewApp:
         return True
 
     def run(self) -> None:
-        cv2.namedWindow(self.window, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(self.window, *self.canvas_size)
-        cv2.setMouseCallback(self.window, self._mouse)
-        while True:
+        with ReviewInstanceLock(self.annotations_path):
+            self._run_locked()
+
+    def _run_locked(self) -> None:
+        try:
+            cv2.namedWindow(self.window, cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(self.window, *self.canvas_size)
+            cv2.setMouseCallback(self.window, self._mouse)
+            while True:
+                try:
+                    _, _, width, height = cv2.getWindowImageRect(self.window)
+                    if width >= 900 and height >= 600:
+                        self.canvas_size = (width, height)
+                except cv2.error:
+                    pass
+                cv2.imshow(self.window, self._canvas())
+                key = cv2.waitKeyEx(30)
+                try:
+                    window_closed = cv2.getWindowProperty(self.window, cv2.WND_PROP_VISIBLE) < 1
+                except cv2.error:
+                    window_closed = True
+                if window_closed:
+                    self.save()
+                    break
+                if key == -1:
+                    continue
+                if not self._handle_key(key):
+                    break
+        finally:
             try:
-                _, _, width, height = cv2.getWindowImageRect(self.window)
-                if width >= 900 and height >= 600:
-                    self.canvas_size = (width, height)
+                cv2.destroyWindow(self.window)
             except cv2.error:
                 pass
-            cv2.imshow(self.window, self._canvas())
-            key = cv2.waitKeyEx(30)
-            try:
-                window_closed = cv2.getWindowProperty(self.window, cv2.WND_PROP_VISIBLE) < 1
-            except cv2.error:
-                window_closed = True
-            if window_closed:
-                self.save()
-                break
-            if key == -1:
-                continue
-            if not self._handle_key(key):
-                break
-        try:
-            cv2.destroyWindow(self.window)
-        except cv2.error:
-            pass

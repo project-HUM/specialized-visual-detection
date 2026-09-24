@@ -3,19 +3,255 @@
   "files": {
     "capture_manifest.json": {
       "bytes": 634,
-      "sha256": "7ccf239e5f141cd05a0fd26c5982f1cdd3797d5d61bb98c1241ddaa7bbd737c7"
+      "sha256": "dec2b9602d1d6b8e04ca71acc72fcd47ce42a7acfb32e163dea55670be5ef580"
     },
     "dataset/annotations.jsonl": {
-      "bytes": 9439,
-      "sha256": "3ab5e95fba56e56e68172fa8d2e50d4a6dbc2120a81a839f5f9c3d087eff6405"
+      "bytes": 130257,
+      "sha256": "97a28d414af193a5ff6eb7475f64fdb3f56c5052cba11c94344d393893e4d79c"
+    },
+    "dataset/codex_manual_batch_v1_manifest.json": {
+      "bytes": 8110,
+      "sha256": "aa7a61f77f2c377ac7e9d0c4b94a35b7c71d0c601120df6792bb1ea4922e076a"
+    },
+    "dataset/codex_manual_batch_v2_manifest.json": {
+      "bytes": 6917,
+      "sha256": "4ef407e819b6a677db793388fc3e6771e737826e29ac8794746a5eaddbfe3e79"
+    },
+    "dataset/codex_manual_batch_v3_manifest.json": {
+      "bytes": 11421,
+      "sha256": "462cc5b7d351b219a973ea16bcfc8f833b22b3486fc91247d7cb7e8dbc823aa0"
+    },
+    "dataset/codex_manual_batch_v4_manifest.json": {
+      "bytes": 11844,
+      "sha256": "4bb8d2787588883a5748b5754afa981b6bddd9c568b8f87ce92f96cc8633f4f7"
     },
     "dataset/contacts/contact_001.jpg": {
-      "bytes": 235333,
-      "sha256": "d1e92129a82cf3b847a3a1a0ab100cd301a74a14278a49b8d76372c4523761a5"
+      "bytes": 932818,
+      "sha256": "154a59153cd806774a4d62303b27293e1680b6b629544756bd242d07af406ca6"
+    },
+    "dataset/contacts/contact_002.jpg": {
+      "bytes": 944694,
+      "sha256": "8c0559abf2407b1b8ecd27a54fb0e069323026f712fc50788e825ccf9306a687"
     },
     "dataset/dataset_report.json": {
-      "bytes": 1020,
-      "sha256": "992c2d8556c018682e593c0c0351b838308451af2d82120054b22e43ffbe6744"
+      "bytes": 2216,
+      "sha256": "8dfac104bdb24dbce91d0801eea427506de2d5289a1b595f72c5d94050a2bd7f"
+    },
+    "dataset/images/codex-lich-early-0000_000004.522.jpg": {
+      "bytes": 824820,
+      "sha256": "93cce73e91c40920bf529aa0822bfd782c52842b45457b21b8ce059fd8de8fb5"
+    },
+    "dataset/images/codex-lich-early-0001_000017.302.jpg": {
+      "bytes": 917418,
+      "sha256": "5c1011a87cac2a0e5217e8d3ab51ea53b26c55e420f25a1ce0408f7eb3d29a9b"
+    },
+    "dataset/images/codex-lich-late-0000_004627.020.jpg": {
+      "bytes": 747623,
+      "sha256": "8a9d0e9e6efc810c51186d784e4ed9ffb8242ea1d9c3e70ee1db8ad4aabeb0a1"
+    },
+    "dataset/images/codex-lich-late-0001_004661.783.jpg": {
+      "bytes": 899919,
+      "sha256": "5839191b1eb63f7599a39c6828bc1290a67a942a7807a3ce84e1064fe04980bb"
+    },
+    "dataset/images/codex-random-0000_000418.975.jpg": {
+      "bytes": 896911,
+      "sha256": "093c1a8dde1275ef8e3b0f473cf94f5ec9b9a1c511e397fa0a7fe4d95d9d1e8b"
+    },
+    "dataset/images/codex-random-0001_000654.432.jpg": {
+      "bytes": 894381,
+      "sha256": "6223115baeaafed2e53e16b514de20cba28fdd784501795e4600bb75be39c61b"
+    },
+    "dataset/images/codex-random-0002_001187.628.jpg": {
+      "bytes": 902501,
+      "sha256": "adae825ae5dcef81dc22c75bc5ef24c2b42e2cc63ac1264c8c92dd9149fedd2d"
+    },
+    "dataset/images/codex-random-0003_001385.822.jpg": {
+      "bytes": 861968,
+      "sha256": "7f91f6a3c29bb1279dd24d88425221d4631ca2aaab2db15e50c21128a598b76f"
+    },
+    "dataset/images/codex-random-0004_001728.555.jpg": {
+      "bytes": 873935,
+      "sha256": "1b1d44814d22984b8b990730a3e53e27218834b74db8f7c397fa2cca2bc96e6a"
+    },
+    "dataset/images/codex-random-0005_002076.650.jpg": {
+      "bytes": 757958,
+      "sha256": "d61031ccc4d889d8706c9b4524a05356054a9cdf796d41d76b3d6b562de9ec61"
+    },
+    "dataset/images/codex-random-0006_002387.314.jpg": {
+      "bytes": 916792,
+      "sha256": "f305d7c616dd0301ba9d00e0bdb7bea8033efaeec6ff0954fb9e179e9d85b719"
+    },
+    "dataset/images/codex-random-0007_002791.294.jpg": {
+      "bytes": 924852,
+      "sha256": "91b315c5828132a8f642d64808d4e85fa7b7aae27328fbe3ca1db38236aaa118"
+    },
+    "dataset/images/codex-random-0008_003664.910.jpg": {
+      "bytes": 898939,
+      "sha256": "c99f760163e784ecc8fef1ba3251830f4914b6529a9208b90897777084ae3281"
+    },
+    "dataset/images/codex-random-0009_004690.475.jpg": {
+      "bytes": 1003452,
+      "sha256": "c55d8fe2fa87a1d774c43ed1421b53000fa2f0fbd4a46667b3c23645f5cc76cd"
+    },
+    "dataset/images/codex-sample4-hardcase-0000_000044.988.jpg": {
+      "bytes": 824716,
+      "sha256": "d56d7670720ef2dd25283bea04aaed4fd0bf54c2ca7bb19be98bf5edb7a149d0"
+    },
+    "dataset/images/codex-sample4-hardcase-0001_000059.011.jpg": {
+      "bytes": 735026,
+      "sha256": "dc592467032d0b4e55f37565da974d09ded59880604132cc47eea28028c7b885"
+    },
+    "dataset/images/codex-sample4-hardcase-0002_000098.504.jpg": {
+      "bytes": 726946,
+      "sha256": "d40c73db411d273eb59f46157d57b2003b7a7bf4871f8ebf1b0fa4d46eb69351"
+    },
+    "dataset/images/codex-sample4-hardcase-0003_000155.506.jpg": {
+      "bytes": 828745,
+      "sha256": "b5580a886ef6139c1ced0ee69b62fd459896b3c53c1e7cde6d09cf3f4712ac0c"
+    },
+    "dataset/images/codex-sample4-hardcase-0004_000169.984.jpg": {
+      "bytes": 735811,
+      "sha256": "342c968046d639d8af6229ef57becd759a70fcfd04799bfa032931122cb2cc15"
+    },
+    "dataset/images/codex-sample4-hardcase-0005_000048.513.jpg": {
+      "bytes": 735632,
+      "sha256": "502fcd59daae99dc412de1e51c2cecffa43b28e7606a5d645ad3f01ea8a8b6a2"
+    },
+    "dataset/images/codex-sample4-hardcase-0006_000052.000.jpg": {
+      "bytes": 745488,
+      "sha256": "c1d862339d67fc80e7e7c7b12f8ad7884312ce193c1367e8e1b491db64988103"
+    },
+    "dataset/images/codex-sample4-hardcase-0007_000061.513.jpg": {
+      "bytes": 839454,
+      "sha256": "27affa58a7f6b2242dc244268e65760aadfc982692a67c555b8a49a8e3df400a"
+    },
+    "dataset/images/codex-sample4-hardcase-0008_000068.486.jpg": {
+      "bytes": 877060,
+      "sha256": "32fe4e7cd5e494e18ddeddf0e2fac715e714595dbfd315fd5ed1fc1952e6ef91"
+    },
+    "dataset/images/codex-sample4-hardcase-0009_000090.999.jpg": {
+      "bytes": 693908,
+      "sha256": "e3e98326cae3ff008016eff99e8b7b58825fae1baacd22d1f0173590527cba5e"
+    },
+    "dataset/images/codex-sample4-hardcase-0010_000102.483.jpg": {
+      "bytes": 826808,
+      "sha256": "c4b6e92e17a744b7ebfb962b7a2c9e03538a4d9a86015c9a1c868ede12756030"
+    },
+    "dataset/images/codex-sample4-hardcase-0011_000124.011.jpg": {
+      "bytes": 863675,
+      "sha256": "ab2a50c81ed5264fca920b0f50cc63f6c6951b02a3f0eda5a47d1d05eae1cc96"
+    },
+    "dataset/images/codex-sample4-hardcase-0012_000131.515.jpg": {
+      "bytes": 714825,
+      "sha256": "894ad400a9efc73bdd92af1aa311a2e58f6cdf52425ad8989dfbdd88ef6748f4"
+    },
+    "dataset/images/codex-sample4-hardcase-0013_000142.013.jpg": {
+      "bytes": 748207,
+      "sha256": "b276ff947ee5259951f20007d56392fe5523f95682c8172ccb923d3b39cc63e1"
+    },
+    "dataset/images/codex-sample4-hardcase-0014_000176.503.jpg": {
+      "bytes": 728492,
+      "sha256": "6eb031798a600abe763d592167b79ecb051d9d8266260a46cb5053c902b17aec"
+    },
+    "dataset/images/codex-sample4-lichcase-0000_000004.017.jpg": {
+      "bytes": 771802,
+      "sha256": "080acc9dd406bd1c2b46151908b4671dc8aef9165883fe197f212b1775c9890d"
+    },
+    "dataset/images/codex-sample4-lichcase-0001_000006.519.jpg": {
+      "bytes": 859142,
+      "sha256": "eebb526f9a21c28fab3b501b186be9132c3900b98edcd87807b18a33178aa78a"
+    },
+    "dataset/images/codex-sample4-lichcase-0002_000008.982.jpg": {
+      "bytes": 861594,
+      "sha256": "aaede1dd09acef9f9513965e29fe42bae9404c06249b85a8731c932c242d5040"
+    },
+    "dataset/images/codex-sample4-lichcase-0003_000023.991.jpg": {
+      "bytes": 905429,
+      "sha256": "6c1b86730a8c3cdcde5e9b11c3920229f8bc4e300d34b044f18c7295c7160f93"
+    },
+    "dataset/images/codex-sample4-lichcase-0004_000111.503.jpg": {
+      "bytes": 1023939,
+      "sha256": "fff80f9ecab2b588bdfd1829501f9418611f67f8a001074abb2a0c22c504fbed"
+    },
+    "dataset/images/codex-sample4-lichcase-0005_000046.504.jpg": {
+      "bytes": 727694,
+      "sha256": "047e737aa7a32c281ed3df89f56a50abc2b96daa67dae55f27d2fb3ac4a0a304"
+    },
+    "dataset/images/codex-sample4-lichcase-0006_000066.515.jpg": {
+      "bytes": 837340,
+      "sha256": "41e0ccb4bc130bcc928921b0af444251a75b66c8ac006a78107d80a41935ac5c"
+    },
+    "dataset/images/codex-sample4-lichcase-0007_000039.000.jpg": {
+      "bytes": 819357,
+      "sha256": "b6e8c820035382b3b5ee05fbaf88931f7a956e1f1ab2095b5b7fd357e1550d3c"
+    },
+    "dataset/images/codex-sample4-lichcase-0008_000093.993.jpg": {
+      "bytes": 678478,
+      "sha256": "1c83ea31ba927ec25ebd531939327942b9a499b4c6b4f6562d09d600dd515027"
+    },
+    "dataset/images/codex-sample4-lichcase-0009_000109.002.jpg": {
+      "bytes": 960117,
+      "sha256": "b3334c29b121f790470f4549f389dac9a6a4eceeef8982bed0fe206391b022f5"
+    },
+    "dataset/images/codex-sample4-lichcase-0010_000119.008.jpg": {
+      "bytes": 847955,
+      "sha256": "01d47da46e6813cc5e2755dff6f4eed5c8e25adcd7a459a90e5160278ce6f0ec"
+    },
+    "dataset/images/codex-sample4-lichcase-0011_000064.014.jpg": {
+      "bytes": 800225,
+      "sha256": "6d9293c9aa4a60ec930ee53b94e49686ecfdccbca51d785f156641e0d3ac2ae0"
+    },
+    "dataset/images/codex-sample4-lichcase-0012_000138.981.jpg": {
+      "bytes": 666692,
+      "sha256": "5be24d6be3e1d2e5090512f528ef89a2a65530eef9bd5157245a29bbb2df43c4"
+    },
+    "dataset/images/codex-sample4-lichcase-0013_000163.996.jpg": {
+      "bytes": 927291,
+      "sha256": "d3870abd16e4820d3821093c10d4f6b4a2b7f038ab30c117df606af5c61f65b4"
+    },
+    "dataset/images/codex-sample4-lichcase-0014_000166.497.jpg": {
+      "bytes": 918457,
+      "sha256": "101402470fa8d2c571fc43c63be18df4ea9d9087366a5aec6b480132af4eb56c"
+    },
+    "dataset/images/codex-sample4-random-0000_000012.090.jpg": {
+      "bytes": 951244,
+      "sha256": "fed3956dfd2daa4b3c8a7873138bea870da0d5d0be5fa3df747b85ee49c89c46"
+    },
+    "dataset/images/codex-sample4-random-0001_000028.577.jpg": {
+      "bytes": 713882,
+      "sha256": "6eeec82ec37393fa0f27efccd3329ab6cb8b058451bab24efc0b6b7f6369864a"
+    },
+    "dataset/images/codex-sample4-random-0002_000070.268.jpg": {
+      "bytes": 882772,
+      "sha256": "747f10d7fe3e87eb8b51bea7e229b6bae056e0a5b9de47ee390903bf85c54ec6"
+    },
+    "dataset/images/codex-sample4-random-0003_000082.168.jpg": {
+      "bytes": 691118,
+      "sha256": "df4c30696e06706d5dfa1a33482ea4bea495b862dcf355032989cdf906501faf"
+    },
+    "dataset/images/codex-sample4-random-0004_000106.842.jpg": {
+      "bytes": 855457,
+      "sha256": "155ca9fe2eb5192b5b36d74496ee99de2f949e7555783b2bf4b4dc7a514d5d31"
+    },
+    "dataset/images/codex-sample4-random-0005_000116.203.jpg": {
+      "bytes": 740494,
+      "sha256": "a23d28200913e818912633301941c2ccc8ee7caec7ec11e4272b5aa255fbbc11"
+    },
+    "dataset/images/codex-sample4-random-0006_000143.984.jpg": {
+      "bytes": 780637,
+      "sha256": "8ac81ed0f3818a66509e27391ce8b45c64027f652b42d4310219fd5821bd6432"
+    },
+    "dataset/images/codex-sample4-random-0007_000159.144.jpg": {
+      "bytes": 752155,
+      "sha256": "5f9e7c65f0658ad4c46da84e0b8c56b2553450923b9672164733fa70b46e49c6"
+    },
+    "dataset/images/codex-sample4-random-0008_000168.430.jpg": {
+      "bytes": 745123,
+      "sha256": "b53e67d7cfd6b3dd3eb52d1838419d02c74d8ebe37660d24f49c948553fac989"
+    },
+    "dataset/images/codex-sample4-random-0009_000181.165.jpg": {
+      "bytes": 922662,
+      "sha256": "a1b47279d9af337a45134b821a63cb74b29abfef00316b4bdc95754650601c1a"
     },
     "dataset/images/pilot-0000_000039.500.jpg": {
       "bytes": 263568,
@@ -53,9 +289,21 @@
       "bytes": 1396,
       "sha256": "d42c89879860d49c125f078c0ab52c04b3fdadc52a4d921c2b819cf596991788"
     },
+    "dataset/review_settings.json": {
+      "bytes": 337,
+      "sha256": "8ce6b90d34a8234db7018b6133309fdcd879c91ef95f2fcb86f690e07f8aa63e"
+    },
+    "dataset/runs/codex-manual-batch-4/audited-prelabels/contact-sheet.jpg": {
+      "bytes": 1716690,
+      "sha256": "c02f7acf2c55288d274d2ec123b747149d205cdb6e6044ceeaa3691c3a4c6d2e"
+    },
+    "dataset/runs/codex-manual-batch-4/blank-contact-sheet.jpg": {
+      "bytes": 1302159,
+      "sha256": "01f076495b480ed59f051cff52a52e3fedae4d3b2b4f9e1276c68b791997a77e"
+    },
     "map.json": {
       "bytes": 1609,
-      "sha256": "a2c4e29e8c55da844431adc59e4a63605455533f637701d245ebcba9299f0205"
+      "sha256": "cb387613fd6e7243252e462dd4cbd291485090123f517bd8e3affe183ee3fe3c"
     }
   },
   "schema_version": 1

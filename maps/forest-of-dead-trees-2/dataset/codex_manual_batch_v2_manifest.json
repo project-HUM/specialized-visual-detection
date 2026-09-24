@@ -1,0 +1,194 @@
+{
+  "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+  "map_id": "forest-of-dead-trees-2",
+  "labeling_method": "detector_assisted_then_manual_visual_audit",
+  "selection": {
+    "kind": "random_valid_minimap",
+    "count": 10,
+    "seed": 20260923,
+    "minimum_separation_s": 8.0,
+    "minimum_minimap_correlation": 0.9
+  },
+  "review": {
+    "split": "train",
+    "status": "pending",
+    "command": "maps\\forest-of-dead-trees-2\\review_codex_labels_2.bat"
+  },
+  "source": {
+    "video": "C:\\projects\\input-flag-inspector\\saves_m\\ForestOfDeadTreeSample4_LottaLich\\screen.mp4",
+    "video_sha256": "72c6b587120685082a856fc4ed9152591e8b8160b4ebaad07d75005bf6cf1914"
+  },
+  "frames": [
+    {
+      "frame_id": "codex-sample4-random-0000",
+      "frame_index": 319,
+      "source_frame": 319,
+      "timestamp": 12.090273299798792,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0000_000012.090.jpg",
+      "image_sha256": "fed3956dfd2daa4b3c8a7873138bea870da0d5d0be5fa3df747b85ee49c89c46",
+      "minimap_correlation": 0.992427,
+      "proposal_count": 13,
+      "class_counts": {
+        "zombie": 11,
+        "hero": 1,
+        "lich": 1
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0001",
+      "frame_index": 754,
+      "source_frame": 754,
+      "timestamp": 28.57700961770624,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0001_000028.577.jpg",
+      "image_sha256": "6eeec82ec37393fa0f27efccd3329ab6cb8b058451bab24efc0b6b7f6369864a",
+      "minimap_correlation": 0.990863,
+      "proposal_count": 7,
+      "class_counts": {
+        "zombie": 6,
+        "hero": 1,
+        "lich": 0
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0002",
+      "frame_index": 1854,
+      "source_frame": 1854,
+      "timestamp": 70.26760720321931,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0002_000070.268.jpg",
+      "image_sha256": "747f10d7fe3e87eb8b51bea7e229b6bae056e0a5b9de47ee390903bf85c54ec6",
+      "minimap_correlation": 0.992784,
+      "proposal_count": 11,
+      "class_counts": {
+        "zombie": 9,
+        "hero": 1,
+        "lich": 1
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0003",
+      "frame_index": 2168,
+      "source_frame": 2168,
+      "timestamp": 82.16837778672031,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0003_000082.168.jpg",
+      "image_sha256": "df4c30696e06706d5dfa1a33482ea4bea495b862dcf355032989cdf906501faf",
+      "minimap_correlation": 0.992151,
+      "proposal_count": 6,
+      "class_counts": {
+        "zombie": 4,
+        "hero": 1,
+        "lich": 1
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0004",
+      "frame_index": 2819,
+      "source_frame": 2819,
+      "timestamp": 106.84163144869216,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0004_000106.842.jpg",
+      "image_sha256": "155ca9fe2eb5192b5b36d74496ee99de2f949e7555783b2bf4b4dc7a514d5d31",
+      "minimap_correlation": 0.996931,
+      "proposal_count": 12,
+      "class_counts": {
+        "zombie": 10,
+        "hero": 1,
+        "lich": 1
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0005",
+      "frame_index": 3066,
+      "source_frame": 3066,
+      "timestamp": 116.20306563380281,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0005_000116.203.jpg",
+      "image_sha256": "a23d28200913e818912633301941c2ccc8ee7caec7ec11e4272b5aa255fbbc11",
+      "minimap_correlation": 0.991747,
+      "proposal_count": 6,
+      "class_counts": {
+        "zombie": 6,
+        "hero": 0,
+        "lich": 0
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0006",
+      "frame_index": 3799,
+      "source_frame": 3799,
+      "timestamp": 143.98416384305835,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0006_000143.984.jpg",
+      "image_sha256": "8ac81ed0f3818a66509e27391ce8b45c64027f652b42d4310219fd5821bd6432",
+      "minimap_correlation": 0.994558,
+      "proposal_count": 5,
+      "class_counts": {
+        "zombie": 3,
+        "hero": 1,
+        "lich": 1
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0007",
+      "frame_index": 4199,
+      "source_frame": 4199,
+      "timestamp": 159.14438114688127,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0007_000159.144.jpg",
+      "image_sha256": "5f9e7c65f0658ad4c46da84e0b8c56b2553450923b9672164733fa70b46e49c6",
+      "minimap_correlation": 0.994762,
+      "proposal_count": 5,
+      "class_counts": {
+        "zombie": 3,
+        "hero": 1,
+        "lich": 1
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0008",
+      "frame_index": 4444,
+      "source_frame": 4444,
+      "timestamp": 168.43001424547282,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0008_000168.430.jpg",
+      "image_sha256": "b53e67d7cfd6b3dd3eb52d1838419d02c74d8ebe37660d24f49c948553fac989",
+      "minimap_correlation": 0.993519,
+      "proposal_count": 3,
+      "class_counts": {
+        "zombie": 1,
+        "hero": 1,
+        "lich": 1
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-random-0009",
+      "frame_index": 4780,
+      "source_frame": 4780,
+      "timestamp": 181.1645967806841,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-random-0009_000181.165.jpg",
+      "image_sha256": "a1b47279d9af337a45134b821a63cb74b29abfef00316b4bdc95754650601c1a",
+      "minimap_correlation": 0.992326,
+      "proposal_count": 4,
+      "class_counts": {
+        "zombie": 2,
+        "hero": 1,
+        "lich": 1
+      },
+      "visual_audit": "completed_pending_human_confirmation"
+    }
+  ],
+  "audit": {
+    "all_frames_visually_inspected": true,
+    "audited_contact_sheet": "maps/forest-of-dead-trees-2/dataset/runs/codex-manual-batch-2/audited-label-contact-sheet.jpg",
+    "checks": [
+      "class",
+      "duplicates",
+      "missed_sprites",
+      "partial_edges",
+      "lower_ui_cutoffs"
+    ]
+  }
+}

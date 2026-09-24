@@ -9,8 +9,8 @@ from monster_dataset.annotation_io import export_yolo, write_jsonl_with_backup
 from monster_dataset.contact_sheet import write_temporal_context
 from monster_dataset.review_app import (
     BoxPreset, display_box_to_source, fixed_box_centered_at, fixed_box_from_drag,
-    load_pilot_frame_indices, load_review_settings, source_box_to_display,
-    MonsterReviewApp, ReviewSession, Viewport,
+    load_codex_review_frame_indices, load_pilot_frame_indices, load_review_settings, source_box_to_display,
+    MonsterReviewApp, ReviewInstanceLock, ReviewSession, Viewport,
 )
 from monster_dataset.prelabel import detect_dynamic_ui_panels, prelabel_annotations
 
@@ -23,6 +23,35 @@ class FakeProposalGenerator:
         return [MonsterAnnotation([100, 200, 180, 300], [140, 300],
                                   annotation_confidence=.8, review_required=True,
                                   source="codex_prelabel")]
+
+
+def test_review_instance_lock_rejects_a_second_writer(tmp_path: Path):
+    annotations = tmp_path / "annotations.jsonl"
+    with ReviewInstanceLock(annotations):
+        with pytest.raises(RuntimeError, match="Another monster reviewer"):
+            with ReviewInstanceLock(annotations):
+                pytest.fail("a second reviewer must not acquire the same annotation lock")
+
+    with ReviewInstanceLock(annotations):
+        pass
+
+
+def test_review_app_only_writes_backup_for_actual_edits(tmp_path: Path, monkeypatch):
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.annotations_path = tmp_path / "annotations.jsonl"
+    app.session = ReviewSession([FrameAnnotation("frame", 0, "frame.jpg")], split="train")
+    writes = []
+    monkeypatch.setattr(
+        "monster_dataset.review_app.write_jsonl_with_backup",
+        lambda items, path: writes.append((items, path)),
+    )
+
+    app.save()
+    assert writes == []
+    app.session.add_box([10, 20, 30, 50])
+    app.save()
+    assert len(writes) == 1
+    assert app.session.dirty is False
 
 
 def test_pilot_review_uses_manifest_frame_anchor_without_full_video_probe(
@@ -49,6 +78,97 @@ def test_pilot_review_uses_manifest_frame_anchor_without_full_video_probe(
     assert app._frame_index(item.timestamp, item) == 300
     assert app._frame_index(item.timestamp - .2, item) == 294
     assert app._frame_index(item.timestamp + .2, item) == 306
+
+
+def test_codex_train_review_uses_manifest_frame_anchor_without_full_video_probe(
+        tmp_path: Path, monkeypatch):
+    annotations = tmp_path / "annotations.jsonl"
+    write_jsonl([FrameAnnotation("codex-random-0000", 10.0, "frame.jpg", split="train")], annotations)
+    manifest = tmp_path / "codex_manual_batch_v1_manifest.json"
+    manifest.write_text(
+        '{"schema":"specialized-visual-detection.codex-manual-review-batch.v1",'
+        '"frames":[{"frame_id":"codex-random-0000","source_frame":300,"timestamp":10.0}]}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "monster_dataset.review_app.video_frame_timestamps",
+        lambda _video: pytest.fail("anchored train review must not scan every video timestamp"),
+    )
+    monkeypatch.setattr(MonsterReviewApp, "_nominal_video_fps", staticmethod(lambda _video: 30.0))
+
+    app = MonsterReviewApp(annotations, tmp_path / "large.mp4", split="train", queue="pending")
+    item = app.session.current
+
+    assert load_codex_review_frame_indices(manifest) == {"codex-random-0000": 300}
+    assert app.timestamps is None
+    assert app._frame_index(item.timestamp, item) == 300
+    assert app._frame_index(item.timestamp - .2, item) == 294
+    assert app._frame_index(item.timestamp + .2, item) == 306
+
+
+def test_mixed_pilot_and_codex_train_review_combines_exact_frame_anchors(
+        tmp_path: Path, monkeypatch):
+    annotations = tmp_path / "annotations.jsonl"
+    write_jsonl([
+        FrameAnnotation("pilot-0000", 10.0, "pilot.jpg", split="train"),
+        FrameAnnotation("codex-random-0000", 20.0, "codex.jpg", split="train"),
+    ], annotations)
+    (tmp_path / "pilot_manifest.json").write_text(
+        '{"schema":"specialized-visual-detection.pilot.v1",'
+        '"frames":[{"frame_id":"pilot-0000","frame":300,"time_s":10.0}]}',
+        encoding="utf-8",
+    )
+    (tmp_path / "codex_manual_batch_v1_manifest.json").write_text(
+        '{"schema":"specialized-visual-detection.codex-manual-review-batch.v1",'
+        '"frames":[{"frame_id":"codex-random-0000","source_frame":600,"timestamp":20.0}]}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "monster_dataset.review_app.video_frame_timestamps",
+        lambda _video: pytest.fail("mixed anchored review must not scan every video timestamp"),
+    )
+    monkeypatch.setattr(MonsterReviewApp, "_nominal_video_fps", staticmethod(lambda _video: 30.0))
+
+    app = MonsterReviewApp(annotations, tmp_path / "large.mp4", split="train", queue="all")
+
+    assert app.timestamps is None
+    assert app.source_frame_indices == {"pilot-0000": 300, "codex-random-0000": 600}
+
+
+def test_reviewed_queue_excludes_new_pending_batch():
+    reviewed = FrameAnnotation("old", 1.0, "old.jpg", split="train", review_status="reviewed")
+    pending = FrameAnnotation("new", 2.0, "new.jpg", split="train", review_status="pending")
+
+    session = ReviewSession([reviewed, pending], split="train", queue="reviewed")
+
+    assert [item.frame_id for item in session.items] == ["old"]
+
+
+def test_all_split_with_prefixes_keeps_batches_separate():
+    items = [
+        FrameAnnotation("pilot-0000", 1.0, "pilot.jpg", split="validation",
+                        review_status="reviewed"),
+        FrameAnnotation("codex-random-0000", 2.0, "batch1.jpg", split="train",
+                        review_status="reviewed"),
+        FrameAnnotation("codex-lich-late-0000", 3.0, "batch1-lich.jpg", split="validation",
+                        review_status="reviewed"),
+        FrameAnnotation("codex-sample4-random-0000", 4.0, "batch2.jpg", split="train",
+                        review_status="pending"),
+    ]
+
+    original = ReviewSession(items, split="all", queue="reviewed",
+                             frame_id_prefixes=("pilot-",))
+    batch1 = ReviewSession(items, split="all", queue="reviewed",
+                           frame_id_prefixes=("codex-random-", "codex-lich-"))
+    batch2 = ReviewSession(items, split="all", queue="all",
+                           frame_id_prefixes=("codex-sample4-",))
+
+    assert [item.frame_id for item in original.items] == ["pilot-0000"]
+    assert [item.frame_id for item in batch1.items] == [
+        "codex-random-0000", "codex-lich-late-0000",
+    ]
+    assert [item.frame_id for item in batch2.items] == ["codex-sample4-random-0000"]
+    assert batch2.progress() == {"reviewed": 0, "pending": 1, "needs_review": 0}
 
 def test_canonical_annotation_round_trip(tmp_path: Path):
     item=FrameAnnotation("f",1.25,"frame.jpg",[MonsterAnnotation([10,20,30,50],[20,50],occluded=True,visibility=.5)],category="heavy_effects")
@@ -87,6 +207,41 @@ def test_export_is_split_aware_and_sealed_test_is_protected(tmp_path: Path):
         export_yolo([reviewed],tmp_path/"yolo",split="test")
 
 
+def test_yolo_export_maps_box_presets_to_distinct_classes(tmp_path: Path):
+    image = tmp_path / "frame.jpg"
+    cv2.imwrite(str(image), np.zeros((540, 960, 3), np.uint8))
+    reviewed = FrameAnnotation(
+        "f", 0, str(image),
+        [MonsterAnnotation([10, 20, 30, 50], [20, 50], box_preset="1"),
+         MonsterAnnotation([40, 20, 80, 70], [60, 70], box_preset="3")],
+        split="train", review_status="reviewed",
+    )
+    output = tmp_path / "yolo"
+    result = export_yolo(
+        [reviewed], output, split="train",
+        preset_classes={"1": "zombie", "2": "hero", "3": "lich"},
+    )
+
+    labels = (output / "labels/train/f.txt").read_text(encoding="utf-8").splitlines()
+    assert labels[0].startswith("0 ")
+    assert labels[1].startswith("2 ")
+    assert result["classes"] == {"lich": 1, "zombie": 1}
+    assert '0: "zombie"' in (output / "dataset.yaml").read_text(encoding="utf-8")
+
+
+def test_multi_class_export_rejects_unmapped_boxes(tmp_path: Path):
+    image = tmp_path / "frame.jpg"
+    cv2.imwrite(str(image), np.zeros((540, 960, 3), np.uint8))
+    reviewed = FrameAnnotation(
+        "f", 0, str(image),
+        [MonsterAnnotation([10, 20, 30, 50], [20, 50])],
+        split="train", review_status="reviewed",
+    )
+    with pytest.raises(ValueError, match="every monster must use a mapped box preset"):
+        export_yolo([reviewed], tmp_path / "yolo", split="train",
+                    preset_classes={"1": "zombie"})
+
+
 def test_yolo_export_clips_partially_off_frame_box(tmp_path: Path):
     image = tmp_path / "frame.jpg"
     cv2.imwrite(str(image), np.zeros((20, 20, 3), np.uint8))
@@ -99,27 +254,27 @@ def test_yolo_export_clips_partially_off_frame_box(tmp_path: Path):
     assert values == pytest.approx([10 / 1920, 180 / 1080, 20 / 1920, 160 / 1080], abs=1e-6)
 
 
-def test_preset_box_becomes_frame_contained_after_it_moves_fully_inside():
+def test_dragging_preset_box_can_move_from_inside_to_partially_outside_frame():
     preset = BoxPreset("1", "Orange mob", 170, 121, 42)
-    monster = MonsterAnnotation([-80, 100, 90, 221], [5, 221], box_preset="1")
+    monster = MonsterAnnotation([100, 100, 270, 221], [185, 221], box_preset="1")
     app = MonsterReviewApp.__new__(MonsterReviewApp)
     app.session = ReviewSession([FrameAnnotation("f", 0, "f.jpg", [monster])], split="train")
     app.session.selected_index = 0
     app.viewport = Viewport(rect=(0, 0, 960, 540))
     app.presets = {"1": preset}
     action = {
-        "kind": "move", "source_start": (0, 160), "original_box": list(monster.bbox_xyxy),
-        "is_preset": True, "containment_locked": False,
+        "kind": "move", "start": (75, 75), "current": (75, 75),
+        "source_start": (150, 150), "original_box": list(monster.bbox_xyxy),
     }
 
-    inside, valid = app._move_preview(action, (100, 80), update_lock=True)
+    partial, valid = app._move_preview(action, (10, 75))
     assert valid is True
-    assert inside == [120, 100, 290, 221]
-    assert action["containment_locked"] is True
+    assert partial == [-30, 100, 140, 221]
 
-    clamped, valid = app._move_preview(action, (-100, 80), update_lock=True)
-    assert valid is True
-    assert clamped == [0, 100, 170, 221]
+    app.interaction = action
+    app._mouse(cv2.EVENT_LBUTTONUP, 10, 75, 0, None)
+    assert monster.bbox_xyxy == [-30, 100, 140, 221]
+    assert monster.ground_position == [55, 221]
 
 
 def test_move_preview_tracks_cursor_without_mutating_annotation_and_flags_invalid_position():
@@ -131,7 +286,6 @@ def test_move_preview_tracks_cursor_without_mutating_annotation_and_flags_invali
     app.presets = {"1": BoxPreset("1", "Orange mob", 170, 121, 42)}
     action = {
         "kind": "move", "source_start": (150, 150), "original_box": list(monster.bbox_xyxy),
-        "is_preset": False, "containment_locked": False,
     }
 
     preview, valid = app._move_preview(action, (100, 100))
@@ -142,6 +296,21 @@ def test_move_preview_tracks_cursor_without_mutating_annotation_and_flags_invali
     invalid_preview, valid = app._move_preview(action, (-1000, 100))
     assert invalid_preview[2] < 0
     assert valid is False
+
+
+def test_move_grab_area_extends_beyond_box_without_enlarging_resize_handles():
+    monster = MonsterAnnotation([100, 100, 270, 221], [185, 221])
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.session = ReviewSession([FrameAnnotation("f", 0, "f.jpg", [monster])], split="train")
+    app.session.selected_index = 0
+    app.viewport = Viewport(rect=(0, 0, 960, 540))
+
+    assert app._hit_handle((59, 59)) == "top_left"
+    assert app._hit_handle((60, 60)) is None
+    assert app.session.select_at((80, 150)) is None
+    assert app.session.select_at(
+        (80, 150), padding=12 / app.viewport.scale
+    ) == 0
 
 def test_malformed_annotation_blocks_export(tmp_path: Path):
     image=tmp_path/"frame.jpg"; cv2.imwrite(str(image),np.zeros((540,960,3),np.uint8))
@@ -430,6 +599,7 @@ def test_review_keyboard_uses_arrows_for_navigation_and_a_toggles_add_mode():
     assert app.active_preset_id is None
     assert app._handle_key(2555904) is True
     assert app.session.index == 1
+    saved.clear()
 
     assert app._handle_key(ord("a")) is True
     assert app.add_mode is True
@@ -438,7 +608,9 @@ def test_review_keyboard_uses_arrows_for_navigation_and_a_toggles_add_mode():
     app._handle_key(ord("a"))
     assert app._handle_key(27) is True
     assert app.add_mode is False
-    assert app._handle_key(27) is False
+    assert app._handle_key(27) is True
+    assert not saved
+    assert app._handle_key(ord("q")) is False
     assert saved
 
 

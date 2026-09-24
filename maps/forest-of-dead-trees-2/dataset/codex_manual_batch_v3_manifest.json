@@ -1,0 +1,308 @@
+{
+  "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+  "map_id": "forest-of-dead-trees-2",
+  "labeling_method": "detector_assisted_then_full_resolution_visual_audit",
+  "selection": {
+    "kind": "stratified_lich_observation_valid_minimap",
+    "count": 15,
+    "survey_interval_s": 2.5,
+    "minimum_minimap_correlation": 0.9,
+    "lich_positive_frames": 12,
+    "lich_absent_comparison_frames": 3
+  },
+  "review": {
+    "split": "train",
+    "status": "pending",
+    "command": "maps\\forest-of-dead-trees-2\\review_codex_labels_3.bat"
+  },
+  "source": {
+    "video": "C:\\projects\\input-flag-inspector\\saves_m\\ForestOfDeadTreeSample4_LottaLich\\screen.mp4",
+    "video_sha256": "72c6b587120685082a856fc4ed9152591e8b8160b4ebaad07d75005bf6cf1914"
+  },
+  "frames": [
+    {
+      "frame_id": "codex-sample4-lichcase-0000",
+      "candidate_id": "survey-000",
+      "case": "no_lich_wide_negative",
+      "source_frame": 106,
+      "timestamp": 4.017457585513078,
+      "image_sha256": "080acc9dd406bd1c2b46151908b4671dc8aef9165883fe197f212b1775c9890d",
+      "minimap_correlation": 0.988765,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0000_000004.017.jpg",
+      "proposal_count": 7,
+      "class_counts": {
+        "zombie": 6,
+        "hero": 1,
+        "lich": 0
+      },
+      "lich_observation": "absent_comparison",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0001",
+      "candidate_id": "survey-001",
+      "case": "clear_lich_left_with_zombies",
+      "source_frame": 172,
+      "timestamp": 6.518893440643863,
+      "image_sha256": "eebb526f9a21c28fab3b501b186be9132c3900b98edcd87807b18a33178aa78a",
+      "minimap_correlation": 0.991609,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0001_000006.519.jpg",
+      "proposal_count": 12,
+      "class_counts": {
+        "zombie": 10,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0002",
+      "candidate_id": "survey-002",
+      "case": "clear_lich_far_left_dense_zombies",
+      "source_frame": 237,
+      "timestamp": 8.98242875251509,
+      "image_sha256": "aaede1dd09acef9f9513965e29fe42bae9404c06249b85a8731c932c242d5040",
+      "minimap_correlation": 0.992103,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0002_000008.982.jpg",
+      "proposal_count": 14,
+      "class_counts": {
+        "zombie": 12,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0003",
+      "candidate_id": "survey-007",
+      "case": "elevated_left_lich",
+      "source_frame": 633,
+      "timestamp": 23.9910438832998,
+      "image_sha256": "6c1b86730a8c3cdcde5e9b11c3920229f8bc4e300d34b044f18c7295c7160f93",
+      "minimap_correlation": 0.993495,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0003_000023.991.jpg",
+      "proposal_count": 8,
+      "class_counts": {
+        "zombie": 6,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0004",
+      "candidate_id": "survey-037",
+      "case": "clear_lich_center_portal_damage",
+      "source_frame": 2942,
+      "timestamp": 111.5033982696177,
+      "image_sha256": "fff80f9ecab2b588bdfd1829501f9418611f67f8a001074abb2a0c22c504fbed",
+      "minimap_correlation": 0.993326,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0004_000111.503.jpg",
+      "proposal_count": 6,
+      "class_counts": {
+        "zombie": 4,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0005",
+      "candidate_id": "survey-015",
+      "case": "bottom_right_ui_cutoff",
+      "source_frame": 1227,
+      "timestamp": 46.50396657947686,
+      "image_sha256": "047e737aa7a32c281ed3df89f56a50abc2b96daa67dae55f27d2fb3ac4a0a304",
+      "minimap_correlation": 0.993021,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0005_000046.504.jpg",
+      "proposal_count": 5,
+      "class_counts": {
+        "zombie": 3,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0006",
+      "candidate_id": "survey-023",
+      "case": "aura_overlap",
+      "source_frame": 1755,
+      "timestamp": 66.51545342052314,
+      "image_sha256": "41e0ccb4bc130bcc928921b0af444251a75b66c8ac006a78107d80a41935ac5c",
+      "minimap_correlation": 0.985704,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0006_000066.515.jpg",
+      "proposal_count": 11,
+      "class_counts": {
+        "zombie": 9,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0007",
+      "candidate_id": "survey-012",
+      "case": "left_lich_portal_damage",
+      "source_frame": 1029,
+      "timestamp": 38.99965901408451,
+      "image_sha256": "b6e8c820035382b3b5ee05fbaf88931f7a956e1f1ab2095b5b7fd357e1550d3c",
+      "minimap_correlation": 0.984628,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0007_000039.000.jpg",
+      "proposal_count": 14,
+      "class_counts": {
+        "zombie": 12,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0008",
+      "candidate_id": "survey-031",
+      "case": "no_lich_sparse_negative",
+      "source_frame": 2480,
+      "timestamp": 93.9933472837022,
+      "image_sha256": "1c83ea31ba927ec25ebd531939327942b9a499b4c6b4f6562d09d600dd515027",
+      "minimap_correlation": 0.990702,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0008_000093.993.jpg",
+      "proposal_count": 2,
+      "class_counts": {
+        "zombie": 1,
+        "hero": 1,
+        "lich": 0
+      },
+      "lich_observation": "absent_comparison",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0009",
+      "candidate_id": "survey-036",
+      "case": "dense_center_lich",
+      "source_frame": 2876,
+      "timestamp": 109.00196241448693,
+      "image_sha256": "b3334c29b121f790470f4549f389dac9a6a4eceeef8982bed0fe206391b022f5",
+      "minimap_correlation": 0.993902,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0009_000109.002.jpg",
+      "proposal_count": 8,
+      "class_counts": {
+        "zombie": 6,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0010",
+      "candidate_id": "survey-039",
+      "case": "portal_damage_overlap",
+      "source_frame": 3140,
+      "timestamp": 119.00770583501006,
+      "image_sha256": "01d47da46e6813cc5e2755dff6f4eed5c8e25adcd7a459a90e5160278ce6f0ec",
+      "minimap_correlation": 0.988271,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0010_000119.008.jpg",
+      "proposal_count": 12,
+      "class_counts": {
+        "zombie": 10,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0011",
+      "candidate_id": "survey-022",
+      "case": "low_left_lich_open_scene",
+      "source_frame": 1689,
+      "timestamp": 64.01401756539235,
+      "image_sha256": "6d9293c9aa4a60ec930ee53b94e49686ecfdccbca51d785f156641e0d3ac2ae0",
+      "minimap_correlation": 0.992731,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0011_000064.014.jpg",
+      "proposal_count": 9,
+      "class_counts": {
+        "zombie": 7,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0012",
+      "candidate_id": "survey-047",
+      "case": "airborne_hero_edge_case",
+      "source_frame": 3667,
+      "timestamp": 138.98129213279677,
+      "image_sha256": "5be24d6be3e1d2e5090512f528ef89a2a65530eef9bd5157245a29bbb2df43c4",
+      "minimap_correlation": 0.99138,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0012_000138.981.jpg",
+      "proposal_count": 3,
+      "class_counts": {
+        "zombie": 2,
+        "hero": 1,
+        "lich": 0
+      },
+      "lich_observation": "absent_comparison",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0013",
+      "candidate_id": "survey-055",
+      "case": "dense_late_combat",
+      "source_frame": 4327,
+      "timestamp": 163.99565068410462,
+      "image_sha256": "d3870abd16e4820d3821093c10d4f6b4a2b7f038ab30c117df606af5c61f65b4",
+      "minimap_correlation": 0.996111,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0013_000163.996.jpg",
+      "proposal_count": 7,
+      "class_counts": {
+        "zombie": 5,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    },
+    {
+      "frame_id": "codex-sample4-lichcase-0014",
+      "candidate_id": "survey-056",
+      "case": "lich_below_airborne_hero",
+      "source_frame": 4393,
+      "timestamp": 166.4970865392354,
+      "image_sha256": "101402470fa8d2c571fc43c63be18df4ea9d9087366a5aec6b480132af4eb56c",
+      "minimap_correlation": 0.993166,
+      "image_path": "maps/forest-of-dead-trees-2/dataset/images/codex-sample4-lichcase-0014_000166.497.jpg",
+      "proposal_count": 4,
+      "class_counts": {
+        "zombie": 2,
+        "hero": 1,
+        "lich": 1
+      },
+      "lich_observation": "visible",
+      "visual_audit": "completed_pending_human_confirmation"
+    }
+  ],
+  "audit": {
+    "all_frames_visually_inspected": true,
+    "audited_contact_sheet": "maps/forest-of-dead-trees-2/dataset/runs/codex-manual-batch-3/audited-label-contact-sheet.jpg",
+    "checks": [
+      "valid_minimap",
+      "lich_observation_diversity",
+      "class",
+      "duplicates",
+      "missed_sprites",
+      "overlap_and_effects",
+      "partial_edges",
+      "lower_ui_cutoffs"
+    ]
+  }
+}

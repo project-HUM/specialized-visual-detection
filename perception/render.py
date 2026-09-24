@@ -25,6 +25,12 @@ def draw_observation(frame: np.ndarray, observation: dict[str, Any]) -> np.ndarr
             x1,y1,x2,y2=(int(round(value)) for value in detection["box"])
             cv2.rectangle(canvas,(x1,y1),(x2,y2),(60,220,60),2)
             cv2.circle(canvas,tuple(int(round(value)) for value in detection.get("ground_position",detection["center"])),4,(60,220,60),-1)
+            metadata = detection.get("metadata", {})
+            class_name = metadata.get("class_name")
+            if class_name:
+                cv2.putText(canvas, f"{class_name} {detection.get('score', 0.0):.2f}",
+                            (x1, max(18, y1 - 7)), cv2.FONT_HERSHEY_SIMPLEX, .52,
+                            (60, 220, 60), 2, cv2.LINE_AA)
     tracks = observation["monsters"].get("tracks", observation["monsters"].get("centers", []))
     for index, monster in enumerate(tracks):
         point = tuple(int(round(value)) for value in monster["center"])

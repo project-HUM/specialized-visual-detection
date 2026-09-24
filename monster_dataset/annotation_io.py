@@ -1,8 +1,10 @@
 """Canonical annotation import and strict split-aware detector export."""
 from __future__ import annotations
 import csv
+import json
 import os
 import shutil
+from collections import Counter
 from pathlib import Path
 from .schema import FrameAnnotation
 from .schema import write_jsonl
@@ -55,11 +57,34 @@ def validate_for_export(items: list[FrameAnnotation], split: str, *,
 
 def export_yolo(items: list[FrameAnnotation], output_dir: Path, *, split: str,
                 source_size: tuple[int, int] = (1920, 1080),
-                image_root: Path = Path.cwd()) -> dict[str, int | str]:
+                image_root: Path = Path.cwd(),
+                preset_classes: dict[str, str] | None = None) -> dict[str, object]:
     selected = validate_for_export(items, split, source_size=source_size, image_root=image_root)
+    if preset_classes:
+        if any(not preset_id or not name for preset_id, name in preset_classes.items()):
+            raise ValueError("Preset class IDs and names must be non-empty")
+        if len(set(preset_classes.values())) != len(preset_classes):
+            raise ValueError("Preset class names must be unique")
+        class_ids = {preset_id: index for index, preset_id in enumerate(preset_classes)}
+        missing = [
+            f"{item.frame_id}: monster[{index}] box_preset={monster.box_preset!r}"
+            for item in selected
+            for index, monster in enumerate(item.monsters)
+            if monster.box_preset not in class_ids
+        ]
+        if missing:
+            raise ValueError(
+                "Refusing multi-class export; every monster must use a mapped box preset:\n" +
+                "\n".join(missing[:20])
+            )
+        names = list(preset_classes.values())
+    else:
+        class_ids = {}
+        names = ["monster"]
     labels_dir, images_dir = output_dir / "labels" / split, output_dir / "images" / split
     labels_dir.mkdir(parents=True, exist_ok=True); images_dir.mkdir(parents=True, exist_ok=True)
     instances = 0
+    class_counts: Counter[str] = Counter()
     for item in selected:
         lines: list[str] = []
         for monster in item.monsters:
@@ -67,16 +92,21 @@ def export_yolo(items: list[FrameAnnotation], output_dir: Path, *, split: str,
             width, height = source_size
             x1, x2 = max(0.0, min(float(width), x1)), max(0.0, min(float(width), x2))
             y1, y2 = max(0.0, min(float(height), y1)), max(0.0, min(float(height), y2))
-            lines.append(f"0 {((x1+x2)/2)/width:.6f} {((y1+y2)/2)/height:.6f} {(x2-x1)/width:.6f} {(y2-y1)/height:.6f}")
+            class_id = class_ids[monster.box_preset] if preset_classes else 0
+            class_name = names[class_id]
+            lines.append(f"{class_id} {((x1+x2)/2)/width:.6f} {((y1+y2)/2)/height:.6f} {(x2-x1)/width:.6f} {(y2-y1)/height:.6f}")
             instances += 1
+            class_counts[class_name] += 1
         (labels_dir / f"{item.frame_id}.txt").write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
         source = _image_path(item.image_path, image_root)
         shutil.copy2(source, images_dir / f"{item.frame_id}{source.suffix.lower()}")
+    yaml_names = "".join(f"  {index}: {json.dumps(name)}\n" for index, name in enumerate(names))
     (output_dir / "dataset.yaml").write_text(
-        f"path: {output_dir.resolve().as_posix()}\ntrain: images/train\nval: images/validation\nnames:\n  0: monster\n",
+        f"path: {output_dir.resolve().as_posix()}\ntrain: images/train\nval: images/validation\nnames:\n{yaml_names}",
         encoding="utf-8",
     )
-    return {"split": split, "frames": len(selected), "instances": instances, "output": str(output_dir)}
+    return {"split": split, "frames": len(selected), "instances": instances,
+            "classes": dict(sorted(class_counts.items())), "output": str(output_dir)}
 
 def sync_splits_from_benchmark(items: list[FrameAnnotation], benchmark_csv: Path,
                                output_path: Path) -> dict[str, int]:
