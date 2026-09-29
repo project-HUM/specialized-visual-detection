@@ -1,0 +1,23 @@
+{
+  "imgsz": 640,
+  "batch": 16,
+  "device": "cpu",
+  "workers": 0,
+  "seed": 20260929,
+  "deterministic": true,
+  "optimizer": "AdamW",
+  "weight_decay": 0.0005,
+  "warmup_epochs": 3.0,
+  "close_mosaic": 10,
+  "save": true,
+  "save_period": 10,
+  "plots": true,
+  "amp": false,
+  "cache": false,
+  "cos_lr": true,
+  "lrf": 0.01,
+  "resume": false,
+  "epochs": 200,
+  "patience": 50,
+  "lr0": 0.001
+}

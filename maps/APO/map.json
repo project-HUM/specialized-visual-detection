@@ -1,0 +1,47 @@
+{
+  "schema": "specialized-visual-detection.map.v1",
+  "map_id": "APO",
+  "display_name": "APO",
+  "source_size": [
+    1920,
+    1080
+  ],
+  "capture": {
+    "directory": "C:/projects/input-flag-inspector/saves_m/APO_sample2",
+    "video": "screen.mp4",
+    "events": "events.csv",
+    "end_s": null
+  },
+  "minimap": null,
+  "fixed_ui_rects": [],
+  "prelabel": {
+    "prompts": []
+  },
+  "preparation": {
+    "status": "reviewed_training_snapshot_available",
+    "geometry_status": "not_available",
+    "minimap_status": "not_calibrated",
+    "fixed_ui_status": "not_calibrated",
+    "class_status": "defined_mob_hero_special",
+    "training_ready": false
+  },
+  "paths": {
+    "capture_manifest": "capture_manifest.json",
+    "calibration_hints": "calibration_hints.json",
+    "profile_dir": "session_profile",
+    "profile": "session_profile/profile.json",
+    "benchmark_annotations": "benchmark/annotations.csv",
+    "benchmark_frames": "benchmark/frames",
+    "annotations": "dataset/annotations.jsonl",
+    "dataset_images": "dataset/images",
+    "dataset_report": "dataset/dataset_report.json",
+    "prelabel_report": "dataset/prelabel_report.json",
+    "pilot_manifest": "dataset/pilot_manifest.json",
+    "contacts": "dataset/contacts",
+    "temporal_context": "dataset/temporal_context",
+    "yolo_dataset": "dataset/yolo_dataset",
+    "training_runs": "dataset/runs/v0",
+    "evaluation": "evaluation",
+    "proof": "proof"
+  }
+}

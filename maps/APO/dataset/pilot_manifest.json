@@ -1,0 +1,426 @@
+{
+  "schema": "specialized-visual-detection.pilot.v1",
+  "map_id": "APO",
+  "source_video": "C:/projects/input-flag-inspector/saves_m/APO_sample2/screen.mp4",
+  "source_video_sha256": "471512bf3064371f6703a246e916a7b67a59e50f444a3aaf3df2fc19f513280a",
+  "source_frame_count": 2346,
+  "source_size": [
+    1920,
+    1080
+  ],
+  "seed": 20260929,
+  "requested_count": 50,
+  "sampling": "Python random.Random(seed).sample over all zero-based source frame indices; sorted chronologically",
+  "timestamp_basis": "ffprobe best_effort_timestamp_time; never nominal FPS",
+  "image_encoding": "PNG; lossless decoded BGR pixels, verified roundtrip",
+  "filter": "none; no minimap or geometry requirement",
+  "split": "pilot",
+  "training_ready": false,
+  "frames": [
+    {
+      "frame_id": "apo-random-0000",
+      "frame": 36,
+      "timestamp": 1.347467,
+      "image_path": "maps/APO/dataset/images/apo-random-0000_000001.347.png",
+      "image_sha256": "3f63b2ea6105e9359d7d34e80b734000904a5b77cd7fda4eb7a7f71b8d7993b4",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0001",
+      "frame": 37,
+      "timestamp": 1.3822,
+      "image_path": "maps/APO/dataset/images/apo-random-0001_000001.382.png",
+      "image_sha256": "1e886691d311f27fff35c17aae353229a9d928d91878de0597b27846b40a2d77",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0002",
+      "frame": 87,
+      "timestamp": 3.250567,
+      "image_path": "maps/APO/dataset/images/apo-random-0002_000003.251.png",
+      "image_sha256": "c8068b227d53469bcaf1bcc295799c524af866567dedb39199c05a28535a3c02",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0003",
+      "frame": 180,
+      "timestamp": 6.7859,
+      "image_path": "maps/APO/dataset/images/apo-random-0003_000006.786.png",
+      "image_sha256": "efaefb21a909a70a9a815b48268a0b334326e97368377399c6ee7cf6b9eb83ba",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0004",
+      "frame": 226,
+      "timestamp": 8.522333,
+      "image_path": "maps/APO/dataset/images/apo-random-0004_000008.522.png",
+      "image_sha256": "3cbf08b70f4fd6271aa075612a18283af793c269542b8aa80d55faa1f947307f",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0005",
+      "frame": 279,
+      "timestamp": 10.4949,
+      "image_path": "maps/APO/dataset/images/apo-random-0005_000010.495.png",
+      "image_sha256": "b10b7e79f6b07fd2fa93da97e1c0bc161ec165a2d834b8f50c1a41647e5ed18f",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0006",
+      "frame": 512,
+      "timestamp": 19.225567,
+      "image_path": "maps/APO/dataset/images/apo-random-0006_000019.226.png",
+      "image_sha256": "802738e32eb167119618b5f4a9adf5fa2d40e8f8d8d6d2d455e06a994b115cc0",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0007",
+      "frame": 535,
+      "timestamp": 20.1007,
+      "image_path": "maps/APO/dataset/images/apo-random-0007_000020.101.png",
+      "image_sha256": "6ce2d294278605cb7bdfd873a1120bd4edd290a2b84e047d4a7fa7b4adac9c3b",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0008",
+      "frame": 542,
+      "timestamp": 20.3438,
+      "image_path": "maps/APO/dataset/images/apo-random-0008_000020.344.png",
+      "image_sha256": "0cf06ac897e041ff7c77cf5fa65411ad78ee0a366ad2e3d652154c74e4a13369",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0009",
+      "frame": 595,
+      "timestamp": 22.3233,
+      "image_path": "maps/APO/dataset/images/apo-random-0009_000022.323.png",
+      "image_sha256": "3be377617ee4fb9042e1bdda7a8b86fc464f744404bca965a96714cf1cef14cb",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0010",
+      "frame": 602,
+      "timestamp": 22.601133,
+      "image_path": "maps/APO/dataset/images/apo-random-0010_000022.601.png",
+      "image_sha256": "3e84e72c7a19c8e9a61a71fe2b33ca82d875ba1ace2a76d234bb5b4739e91d24",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0011",
+      "frame": 761,
+      "timestamp": 28.6994,
+      "image_path": "maps/APO/dataset/images/apo-random-0011_000028.699.png",
+      "image_sha256": "749fa062fd83808b4fd00a943a5d9c611bb639986770861f3b24a56ce0b2ca18",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0012",
+      "frame": 767,
+      "timestamp": 28.914733,
+      "image_path": "maps/APO/dataset/images/apo-random-0012_000028.915.png",
+      "image_sha256": "688bb907912d444f81d5662c15762296f89c1b3c549856794774c7baac313d0e",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0013",
+      "frame": 774,
+      "timestamp": 29.192567,
+      "image_path": "maps/APO/dataset/images/apo-random-0013_000029.193.png",
+      "image_sha256": "56f912adf76ef14393c0cd5f71fd37a8c60277bacaaf872f388e1a3731f0ba59",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0014",
+      "frame": 831,
+      "timestamp": 31.304033,
+      "image_path": "maps/APO/dataset/images/apo-random-0014_000031.304.png",
+      "image_sha256": "3822a23dd9a11a8815fd28916cf6a43c103cfc11ef43d67e9c9aa72779f6725e",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0015",
+      "frame": 968,
+      "timestamp": 36.4577,
+      "image_path": "maps/APO/dataset/images/apo-random-0015_000036.458.png",
+      "image_sha256": "ed53c3f73623e2c9628a116d3bd98e0fa7bbf95362f324326658f2fee335fe0c",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0016",
+      "frame": 998,
+      "timestamp": 37.603733,
+      "image_path": "maps/APO/dataset/images/apo-random-0016_000037.604.png",
+      "image_sha256": "197a1a43a7e530be86e73738bed7b1cff0193aab94765980839fd4dbdf7c5b9c",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0017",
+      "frame": 1040,
+      "timestamp": 39.1665,
+      "image_path": "maps/APO/dataset/images/apo-random-0017_000039.166.png",
+      "image_sha256": "85d55e67de8e0b22dfdea0f00db247bf02e223ff1a83cc972d08669701a191e7",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0018",
+      "frame": 1053,
+      "timestamp": 39.6527,
+      "image_path": "maps/APO/dataset/images/apo-random-0018_000039.653.png",
+      "image_sha256": "cc9064ba5ce5b3958d527fab87e091ad3cc95cf313246217608a59965073f078",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0019",
+      "frame": 1190,
+      "timestamp": 44.7508,
+      "image_path": "maps/APO/dataset/images/apo-random-0019_000044.751.png",
+      "image_sha256": "76fa6ef312e298d47c89cc8ed18fb529630238d5e80a93362d6168460197e3bb",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0020",
+      "frame": 1207,
+      "timestamp": 45.4384,
+      "image_path": "maps/APO/dataset/images/apo-random-0020_000045.438.png",
+      "image_sha256": "81f7e7529c7e77a8b8d4f99a4f4f4ea90327773968c8c36e5fea0fbdf35a2055",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0021",
+      "frame": 1275,
+      "timestamp": 48.029133,
+      "image_path": "maps/APO/dataset/images/apo-random-0021_000048.029.png",
+      "image_sha256": "d044b07c0ef4fead84ef2658c1e41bc50ded04094a6e241298a36574f0241470",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0022",
+      "frame": 1290,
+      "timestamp": 48.5848,
+      "image_path": "maps/APO/dataset/images/apo-random-0022_000048.585.png",
+      "image_sha256": "4083ee1e9119a306400144b097eb3b2df357c8af5c91a1dd014a0d26378234f6",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0023",
+      "frame": 1365,
+      "timestamp": 51.453333,
+      "image_path": "maps/APO/dataset/images/apo-random-0023_000051.453.png",
+      "image_sha256": "751f30c100c5eb74cd90da0859e736813dfcf9d021929276513a5a2eb24c89fd",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0024",
+      "frame": 1499,
+      "timestamp": 56.405567,
+      "image_path": "maps/APO/dataset/images/apo-random-0024_000056.406.png",
+      "image_sha256": "8fcd69c086b03d9ef1ad786fdb16d594fd13a69350cf513982492da2002070d5",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0025",
+      "frame": 1524,
+      "timestamp": 57.364067,
+      "image_path": "maps/APO/dataset/images/apo-random-0025_000057.364.png",
+      "image_sha256": "bd29423ff0c66f0186bed0c2f1b3996ad5def4280e24e52122ec7f44022bdacc",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0026",
+      "frame": 1534,
+      "timestamp": 57.7183,
+      "image_path": "maps/APO/dataset/images/apo-random-0026_000057.718.png",
+      "image_sha256": "abb4fb1a77469beddbc9cfee3bddb9b82750a78381455e608b36eacfcef7dbc4",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0027",
+      "frame": 1567,
+      "timestamp": 59.003267,
+      "image_path": "maps/APO/dataset/images/apo-random-0027_000059.003.png",
+      "image_sha256": "0003e5c02241f1e8f9c5b3cad686a966105c2fdc7ecff1bc36249c30eada23e2",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0028",
+      "frame": 1710,
+      "timestamp": 64.434733,
+      "image_path": "maps/APO/dataset/images/apo-random-0028_000064.435.png",
+      "image_sha256": "8ca96ea03fec30e7ebd5faedfd4ccba99c16bb153221f7d3d8ada115a4ee4782",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0029",
+      "frame": 1731,
+      "timestamp": 65.233467,
+      "image_path": "maps/APO/dataset/images/apo-random-0029_000065.233.png",
+      "image_sha256": "9b9eb0ec596ec1bdadda203959692d95b18b5067526cf42363c5da4c67bd0c90",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0030",
+      "frame": 1772,
+      "timestamp": 66.7754,
+      "image_path": "maps/APO/dataset/images/apo-random-0030_000066.775.png",
+      "image_sha256": "60153c51d4fce6ef1d36682b2b4cb34cdf88585ab04c50e2b44144be41f40ea3",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0031",
+      "frame": 1777,
+      "timestamp": 66.949067,
+      "image_path": "maps/APO/dataset/images/apo-random-0031_000066.949.png",
+      "image_sha256": "49723ef03777d8bc1992702f81606b3462ceed40fcaf817bcfaf293290a7075d",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0032",
+      "frame": 1786,
+      "timestamp": 67.296333,
+      "image_path": "maps/APO/dataset/images/apo-random-0032_000067.296.png",
+      "image_sha256": "771113ac4f9d5eb80cd5a94b7dfc74f20bfcfadc63a250a70b8bc54911e5d10e",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0033",
+      "frame": 1800,
+      "timestamp": 67.817267,
+      "image_path": "maps/APO/dataset/images/apo-random-0033_000067.817.png",
+      "image_sha256": "4b72bd53ceb5826a818758935c1227b1b898135fa99158c9171d1cef40109e75",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0034",
+      "frame": 1821,
+      "timestamp": 68.616033,
+      "image_path": "maps/APO/dataset/images/apo-random-0034_000068.616.png",
+      "image_sha256": "4b8ea0fa5dd4d1f510d24d25b26b3106db2b3c02ea017a6615d1124552d614a0",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0035",
+      "frame": 1823,
+      "timestamp": 68.685467,
+      "image_path": "maps/APO/dataset/images/apo-random-0035_000068.685.png",
+      "image_sha256": "4c7709f2b3543a0d400d49a31933a5221a6a5e3871a7e4d66d4dfc2d0b2c8466",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0036",
+      "frame": 1834,
+      "timestamp": 69.1022,
+      "image_path": "maps/APO/dataset/images/apo-random-0036_000069.102.png",
+      "image_sha256": "a00abf4ab79dc32254b0d8ee1299fc335cc51d59b1a9b4ab16136d2a729e43be",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0037",
+      "frame": 1869,
+      "timestamp": 70.449667,
+      "image_path": "maps/APO/dataset/images/apo-random-0037_000070.450.png",
+      "image_sha256": "18621142d8bb525796448d00cb8c4ac5f7af8f842275494c899d807160c10f30",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0038",
+      "frame": 1881,
+      "timestamp": 70.901133,
+      "image_path": "maps/APO/dataset/images/apo-random-0038_000070.901.png",
+      "image_sha256": "2ba01284c4ebf6c29696ee47ca59d0b3c7fe1a2aaade0c9a38a093ee42a4225f",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0039",
+      "frame": 1896,
+      "timestamp": 71.4568,
+      "image_path": "maps/APO/dataset/images/apo-random-0039_000071.457.png",
+      "image_sha256": "4c03127612ac50746990e891b2c0bf1edaacd8447a5b0b4263cdaf5bfd25b18f",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0040",
+      "frame": 1975,
+      "timestamp": 74.367,
+      "image_path": "maps/APO/dataset/images/apo-random-0040_000074.367.png",
+      "image_sha256": "2ffba6cb91ee6b498fe2c0159d6dc746f24c95616d6398f387fb856f0a1796f2",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0041",
+      "frame": 1988,
+      "timestamp": 74.818467,
+      "image_path": "maps/APO/dataset/images/apo-random-0041_000074.818.png",
+      "image_sha256": "f9f7fe17c6b68329734418974271eb7bb83060f636f648b372cd87068bca3e8a",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0042",
+      "frame": 2018,
+      "timestamp": 75.9645,
+      "image_path": "maps/APO/dataset/images/apo-random-0042_000075.965.png",
+      "image_sha256": "0a7583d250cddd64723638e47edc2859c468ed6e3d60ebc2bc3f3bc07f0879d0",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0043",
+      "frame": 2050,
+      "timestamp": 77.214733,
+      "image_path": "maps/APO/dataset/images/apo-random-0043_000077.215.png",
+      "image_sha256": "48a4fe7bbdc9e84c9f53e69d8b2cc4f533d761142d7287a1e3cdc95e2eb14196",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0044",
+      "frame": 2055,
+      "timestamp": 77.423067,
+      "image_path": "maps/APO/dataset/images/apo-random-0044_000077.423.png",
+      "image_sha256": "d80bb0252754fe36d927c7e309dcf23854b1e46f26b8e709d81ae3ebf3a4aca6",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0045",
+      "frame": 2059,
+      "timestamp": 77.562,
+      "image_path": "maps/APO/dataset/images/apo-random-0045_000077.562.png",
+      "image_sha256": "363621ae50c80ebc8305758346d2a40ebfebb85917b4230997cc6fd09d90a45b",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0046",
+      "frame": 2079,
+      "timestamp": 78.346867,
+      "image_path": "maps/APO/dataset/images/apo-random-0046_000078.347.png",
+      "image_sha256": "b9c8a99adc9e8c5469985e61df926cff77bd68044b5c3275ced5882b97b08aad",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0047",
+      "frame": 2120,
+      "timestamp": 79.847133,
+      "image_path": "maps/APO/dataset/images/apo-random-0047_000079.847.png",
+      "image_sha256": "04910253580d9c0f8467a2a0cf8c415b88f18cff87ec2c3ab1668ebf03ead7d0",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0048",
+      "frame": 2138,
+      "timestamp": 80.541667,
+      "image_path": "maps/APO/dataset/images/apo-random-0048_000080.542.png",
+      "image_sha256": "a41915e923907f51f949775db34c2018cb545b287c16849ac2cccd4d8cb56f89",
+      "review_status": "pending"
+    },
+    {
+      "frame_id": "apo-random-0049",
+      "frame": 2228,
+      "timestamp": 83.9659,
+      "image_path": "maps/APO/dataset/images/apo-random-0049_000083.966.png",
+      "image_sha256": "391013589afb058fbb7ffe5528d1bad892fa12fd3fd65088abd7fd197efb77a9",
+      "review_status": "pending"
+    }
+  ],
+  "contact_sheets": [
+    "maps/APO/dataset/contacts/contact_001.jpg",
+    "maps/APO/dataset/contacts/contact_002.jpg",
+    "maps/APO/dataset/contacts/contact_003.jpg"
+  ]
+}

@@ -26,6 +26,24 @@ def test_checked_in_map_workspaces_keep_artifacts_isolated():
     assert rednose.source_size == forest.source_size == (1920, 1080)
 
 
+def test_uncalibrated_apo_workspace_supports_review_without_inventing_geometry():
+    workspace = MapWorkspace.load(REPO, "APO")
+    assert workspace.map_dir.name == "APO"
+    assert workspace.path("annotations") == workspace.map_dir / "dataset/annotations.jsonl"
+    assert workspace.source_size == (1920, 1080)
+    assert "geometry" not in workspace.config
+    with pytest.raises(ValueError, match="no minimap crop configured"):
+        _ = workspace.minimap_crop
+    with pytest.raises(ValueError, match="no configured geometry.positions"):
+        workspace.external_path("geometry", "positions")
+
+
+@pytest.mark.parametrize("map_id", ["../APO", "APO/other", "APO\\other", "C:APO", "APO.."])
+def test_map_workspace_still_rejects_unsafe_map_ids(map_id):
+    with pytest.raises(ValueError, match="Invalid map id"):
+        MapWorkspace.load(REPO, map_id)
+
+
 def test_map_workspace_rejects_identity_mismatch_and_path_escape(tmp_path: Path):
     map_dir = tmp_path / "maps" / "wrong"
     map_dir.mkdir(parents=True)

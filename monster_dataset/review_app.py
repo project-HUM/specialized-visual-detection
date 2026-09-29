@@ -264,6 +264,15 @@ def valid_source_box(box: list[float], source_size: tuple[int, int]) -> list[flo
     return [x1, y1, x2, y2]
 
 
+def resized_box(box: list[float], handle: str, point: tuple[float, float]) -> list[float]:
+    """Return normalized dragged bounds, shared by preview and commit."""
+    result = list(box)
+    result[0 if "left" in handle else 2] = point[0]
+    result[1 if "top" in handle else 3] = point[1]
+    return [min(result[0], result[2]), min(result[1], result[3]),
+            max(result[0], result[2]), max(result[1], result[3])]
+
+
 class ReviewSession:
     """Rendering-independent annotation state, including per-frame undo/redo."""
 
@@ -434,16 +443,7 @@ class ReviewSession:
         if self.selected_index is None or handle not in HANDLE_NAMES:
             return
         monster = self.current.monsters[self.selected_index]
-        box = list(monster.bbox_xyxy)
-        if "left" in handle:
-            box[0] = point[0]
-        else:
-            box[2] = point[0]
-        if "top" in handle:
-            box[1] = point[1]
-        else:
-            box[3] = point[1]
-        box = self._valid_box(box)
+        box = self._valid_box(resized_box(monster.bbox_xyxy, handle, point))
         self._record()
         monster.bbox_xyxy = box
         monster.ground_position = [(box[0] + box[2]) / 2.0, box[3]]
@@ -601,6 +601,9 @@ class MonsterReviewApp:
         self.help_max_scroll_lines = 0
         self.dimension_status = ""
         self.canvas_size = (1440, 900)
+        self.frame_jump_rect = (0, 0, 0, 0)
+        self.frame_jump_text: str | None = None
+        self.frame_jump_select_all = False
 
     @staticmethod
     def _nominal_video_fps(video: Path) -> float:
@@ -735,6 +738,11 @@ class MonsterReviewApp:
                      original[2] + dx, original[3] + dy]
         return candidate, self._box_valid(candidate)
 
+    def _resize_preview(self, action: dict, point: tuple[int, int]) -> tuple[list[float], bool]:
+        source = self.viewport.display_to_source(point, clamp=False)
+        candidate = resized_box(action["original_box"], action["handle"], source)
+        return candidate, self._box_valid(candidate)
+
     def _draw_annotations(self, canvas: np.ndarray) -> None:
         for index, monster in enumerate(self.session.current.monsters):
             selected = index == self.session.selected_index
@@ -743,6 +751,8 @@ class MonsterReviewApp:
             color = self._box_color(monster, selected)
             moving = (selected and self.interaction is not None and
                       self.interaction["kind"] == "move")
+            resizing = (selected and self.interaction is not None and
+                        self.interaction["kind"] == "resize")
             if moving:
                 draw_box, valid = self._move_preview(self.interaction, self.interaction["current"])
                 dx = draw_box[0] - self.interaction["original_box"][0]
@@ -750,8 +760,13 @@ class MonsterReviewApp:
                 draw_ground = [monster.ground_position[0] + dx, monster.ground_position[1] + dy]
                 if not valid:
                     color = (0, 0, 255)
+            if resizing:
+                draw_box, valid = self._resize_preview(self.interaction, self.interaction["current"])
+                draw_ground = [(draw_box[0] + draw_box[2]) / 2.0, draw_box[3]]
+                if not valid:
+                    color = (0, 0, 255)
             box = [round(value) for value in source_box_to_display(draw_box, self.viewport)]
-            if monster.review_required:
+            if monster.review_required and not resizing:
                 self._dashed_rectangle(canvas, box, color, 2 if selected else 1)
             else:
                 cv2.rectangle(canvas, (box[0], box[1]), (box[2], box[3]), color, 2 if selected else 1)
@@ -775,7 +790,9 @@ class MonsterReviewApp:
             self._put(canvas, label, (box[0], max(self.viewport.rect[1] + 16, box[1] - 5)),
                       .42, color, 1)
             if selected and not moving:
-                for handle in self._handles(index).values():
+                handles = ((box[0], box[1]), (box[2], box[1]),
+                           (box[0], box[3]), (box[2], box[3]))
+                for handle in handles:
                     cv2.rectangle(canvas, (round(handle[0]) - 4, round(handle[1]) - 4),
                                   (round(handle[0]) + 4, round(handle[1]) + 4), color, -1)
         if self.interaction and self.interaction["kind"] in {"add", "preset_add", "preset_drag"}:
@@ -878,9 +895,21 @@ class MonsterReviewApp:
         else:
             mode_text = "FREE ADD" if self.add_mode else "DEFAULT"
         normal = (225, 225, 225)
+        self.frame_jump_rect = (controls_x + 58, top + 3, 78, 28)
+        jump_x, jump_y, jump_width, jump_height = self.frame_jump_rect
+        editing = self.frame_jump_text is not None
+        cv2.rectangle(canvas, (jump_x, jump_y), (jump_x + jump_width, jump_y + jump_height),
+                      (65, 65, 65) if editing else (38, 38, 38), -1)
+        cv2.rectangle(canvas, (jump_x, jump_y), (jump_x + jump_width, jump_y + jump_height),
+                      (100, 220, 255) if editing else (110, 110, 110), 1)
+        self._put(canvas, "Frame", (controls_x, top + 23))
+        number = self.frame_jump_text if editing else str(self.session.index + 1)
+        self._put(canvas, number + ("|" if editing else ""), (jump_x + 6, top + 23))
+        self._put(canvas, f"/ {len(self.session.items)}", (jump_x + jump_width + 8, top + 23))
+        self._put(canvas, "Enter: jump   Esc: cancel" if editing else "Click number to jump",
+                  (controls_x, top + 49), .42)
         lines = [
             (f"{self.session.split.upper()}  {self.session.queue}", normal),
-            (f"frame {self.session.index + 1} / {len(self.session.items)}", normal),
             (f"{item.frame_id}  t={item.timestamp:.3f}", normal),
             (f"status: {item.review_status.upper()}", (100, 220, 255)),
             (f"MODE: {mode_text}", (80, 255, 120) if (self.add_mode or self.active_preset_id) else normal),
@@ -894,7 +923,7 @@ class MonsterReviewApp:
             ("Ctrl+1/2/3 or drag preset card", normal),
             ("Shift+Left/Right (or L/R): width -/+", normal),
             ("Shift+Down/Up (or D/U): height -/+", normal),
-            ("resize anchor: bottom-left stays fixed", normal),
+            ("key resize: bottom-left stays fixed", normal),
             ("Ctrl+Left/Right/Up/Down: move box", normal),
             ("Ctrl+L/R/U/D: move box one pixel", normal),
             ("drag empty: add   drag box: move", normal),
@@ -907,13 +936,14 @@ class MonsterReviewApp:
             ("Q: save and quit   X: autosave and close", normal),
             ("", normal),
             ("Preset dimensions:", (170, 210, 255)),
-            ("edit dataset/review_settings.json", normal),
-            ("change width/height, then reopen", normal),
+            ("drag corner or use Shift+arrows", normal),
+            ("saved for future preset placements", normal),
         ]
         status_y = height - status_height
         preset_y = self._draw_preset_cards(canvas, controls_x, controls_width, status_y)
-        self._draw_help_panel(canvas, (controls_x, top, controls_width - 16,
-                                       max(1, preset_y - top - 8)), lines)
+        help_top = top + 60
+        self._draw_help_panel(canvas, (controls_x, help_top, controls_width - 16,
+                                       max(1, preset_y - help_top - 8)), lines)
         cv2.rectangle(canvas, (0, status_y), (width, height), (12, 12, 12), -1)
         selected = "none" if self.session.selected_index is None else f"M{self.session.selected_index + 1}"
         mode = f"{mode_text} (Esc to default)" if (self.add_mode or self.active_preset_id) else "DEFAULT (A for free Add)"
@@ -926,6 +956,14 @@ class MonsterReviewApp:
 
     def _mouse(self, event: int, x: int, y: int, flags: int, _param: object) -> None:
         point = (x, y)
+        if event == cv2.EVENT_LBUTTONDOWN:
+            fx, fy, fw, fh = getattr(self, "frame_jump_rect", (0, 0, 0, 0))
+            if fx <= x < fx + fw and fy <= y < fy + fh:
+                self.frame_jump_text = str(self.session.index + 1)
+                self.frame_jump_select_all = True
+                self.interaction = None
+                return
+            self.frame_jump_text = None
         if event == cv2.EVENT_MOUSEWHEEL and self.viewport.contains_display(point):
             self.viewport.zoom_at(point, 1.25 if flags > 0 else .8)
             return
@@ -964,6 +1002,13 @@ class MonsterReviewApp:
                 return
         if event == cv2.EVENT_LBUTTONDOWN and self.viewport.contains_display(point):
             source = self.viewport.display_to_source(point)
+            # A selected corner remains resizable while its preset tool is active.
+            handle = None if self.add_mode else self._hit_handle(point)
+            if handle:
+                monster = self.session.current.monsters[self.session.selected_index]
+                self.interaction = {"kind": "resize", "start": point, "current": point,
+                                    "handle": handle, "original_box": list(monster.bbox_xyxy)}
+                return
             if self.active_preset_id:
                 self.interaction = {"kind": "preset_add", "preset_id": self.active_preset_id,
                                     "start": point, "current": point, "source_start": source}
@@ -974,10 +1019,6 @@ class MonsterReviewApp:
                 return
             if flags & cv2.EVENT_FLAG_SHIFTKEY and self.session.selected_index is not None:
                 self.session.set_ground(source)
-                return
-            handle = self._hit_handle(point)
-            if handle:
-                self.interaction = {"kind": "resize", "start": point, "current": point, "handle": handle}
                 return
             selected = self.session.select_at(
                 source, padding=MOVE_GRAB_PADDING / self.viewport.scale
@@ -995,7 +1036,6 @@ class MonsterReviewApp:
         if event == cv2.EVENT_LBUTTONUP and self.interaction and self.interaction["kind"] != "pan":
             action = self.interaction
             self.interaction = None
-            source_end = self.viewport.display_to_source(point)
             try:
                 if action["kind"] == "add":
                     self.session.add_box(display_box_to_source(action["start"], point, self.viewport))
@@ -1018,7 +1058,15 @@ class MonsterReviewApp:
                             self.session.move_selected(candidate[0] - original[0],
                                                        candidate[1] - original[1])
                 elif action["kind"] == "resize":
-                    self.session.resize_selected(action["handle"], source_end)
+                    candidate, valid = self._resize_preview(action, point)
+                    if valid and candidate != action["original_box"]:
+                        self.session.resize_selected(
+                            action["handle"], self.viewport.display_to_source(point, clamp=False))
+                        monster = self.session.current.monsters[self.session.selected_index]
+                        if monster.box_preset in self.presets:
+                            self._set_preset_dimensions(monster.box_preset,
+                                                        candidate[2] - candidate[0],
+                                                        candidate[3] - candidate[1])
             except ValueError:
                 pass
 
@@ -1074,6 +1122,16 @@ class MonsterReviewApp:
         temporary.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         temporary.replace(self.settings_path)
 
+    def _set_preset_dimensions(self, preset_id: str, width: float, height: float) -> None:
+        current = self.presets[preset_id]
+        replacement = BoxPreset(current.preset_id, current.name, width, height, current.hue)
+        self.settings = ReviewSettings(tuple(
+            replacement if preset.preset_id == preset_id else preset
+            for preset in self.settings.box_presets))
+        self.presets[preset_id] = replacement
+        self._persist_review_settings()
+        self.dimension_status = f"Preset {preset_id} {current.name}: {width:g} x {height:g} px"
+
     def _adjust_preset_dimensions(self, delta_width: float, delta_height: float) -> bool:
         preset_id = self._dimension_target_preset_id()
         if preset_id is None:
@@ -1096,15 +1154,8 @@ class MonsterReviewApp:
                 self.dimension_status = "Preset resize would move too much of the box outside the frame"
                 return False
 
-        replacement = BoxPreset(current.preset_id, current.name, width, height, current.hue)
-        updated = tuple(replacement if preset.preset_id == preset_id else preset
-                        for preset in self.settings.box_presets)
-        self.settings = ReviewSettings(updated)
-        self.presets[preset_id] = replacement
-        self._persist_review_settings()
-        self.dimension_status = (
-            f"Preset {preset_id} {current.name}: {width:g} x {height:g} px | bottom-left fixed"
-        )
+        self._set_preset_dimensions(preset_id, width, height)
+        self.dimension_status += " | bottom-left fixed"
         return True
 
     def _nudge_selected(self, dx: float, dy: float) -> bool:
@@ -1136,6 +1187,33 @@ class MonsterReviewApp:
         low = key & 0xFF
         control = self._control_pressed() if control_pressed is None else control_pressed
         shift = self._shift_pressed() if shift_pressed is None else shift_pressed
+        if getattr(self, "frame_jump_text", None) is not None:
+            if low == 27:
+                self.frame_jump_text = None
+            elif low in (13, 10):
+                number = int(self.frame_jump_text) if self.frame_jump_text else 0
+                if 1 <= number <= len(self.session.items):
+                    self.save()
+                    self.session.navigate(number - 1 - self.session.index)
+                    self.viewport.fit()
+                    self.interaction = None
+                    self.frame_jump_text = None
+                    self.dimension_status = ""
+                else:
+                    self.dimension_status = f"Enter a frame number from 1 to {len(self.session.items)}"
+            elif low == 1 or (control and low == ord("a")):
+                self.frame_jump_select_all = True
+            elif low in (8, 127) or key == 3014656:
+                self.frame_jump_text = "" if self.frame_jump_select_all else self.frame_jump_text[:-1]
+                self.frame_jump_select_all = False
+            elif ord("0") <= key <= ord("9") and not control:
+                if self.frame_jump_select_all:
+                    self.frame_jump_text = ""
+                if len(self.frame_jump_text) < max(1, len(str(len(self.session.items)))):
+                    self.frame_jump_text += chr(key)
+                self.frame_jump_select_all = False
+            # Editing a number must not trigger annotation shortcuts (0, 1..5, R).
+            return True
         if low == 27:
             self.add_mode = False
             self.active_preset_id = None

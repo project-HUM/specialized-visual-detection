@@ -527,6 +527,111 @@ def test_preset_resize_keeps_selected_box_bottom_left_fixed_and_persists(tmp_pat
     assert persisted["box_presets"][2]["height"] == 219
 
 
+@pytest.mark.parametrize("handle,start,end,expected", [
+    ("top_left", (100, 100), (80, 60), [80, 60, 270, 220]),
+    ("top_right", (270, 100), (320, 60), [100, 60, 320, 220]),
+    ("bottom_left", (100, 220), (80, 260), [80, 100, 270, 260]),
+    ("bottom_right", (270, 220), (320, 260), [100, 100, 320, 260]),
+])
+def test_corner_drag_previews_then_persists_preset_dimensions(tmp_path, handle, start, end, expected):
+    annotations = tmp_path / "annotations.jsonl"
+    monster = MonsterAnnotation([100, 100, 270, 220], [185, 220], box_preset="1")
+    write_jsonl([FrameAnnotation("f", 0, "unused.png", [monster])], annotations)
+    app = MonsterReviewApp(annotations, tmp_path / "unused.mp4", split="train", images_only=True)
+    app.viewport = Viewport(rect=(0, 0, 960, 540))
+    app.session.selected_index = 0
+    app.active_preset_id = "1"
+    app._persist_review_settings()
+    before = app.settings_path.read_bytes()
+    start = tuple(round(v) for v in app.viewport.source_to_display(start))
+    end = tuple(round(v) for v in app.viewport.source_to_display(end))
+    app._mouse(cv2.EVENT_LBUTTONDOWN, *start, 0, None)
+    assert app.interaction["kind"] == "resize"
+    assert app.interaction["handle"] == handle
+    app._mouse(cv2.EVENT_MOUSEMOVE, *end, cv2.EVENT_FLAG_LBUTTON, None)
+    assert app._resize_preview(app.interaction, end) == (expected, True)
+    assert app.session.current.monsters[0].bbox_xyxy == [100, 100, 270, 220]
+    assert app.settings_path.read_bytes() == before
+    canvas = np.zeros((540, 960, 3), np.uint8)
+    app._draw_annotations(canvas)
+    # The new right border is drawn before mouse-up, away from handles/ground marker.
+    x = round(expected[2] / 2)
+    y = round((expected[1] + expected[3]) / 4)
+    assert tuple(int(v) for v in canvas[y, x]) == app.presets["1"].color
+    app._mouse(cv2.EVENT_LBUTTONUP, *end, 0, None)
+    assert app.session.current.monsters[0].bbox_xyxy == expected
+    width, height = expected[2] - expected[0], expected[3] - expected[1]
+    assert (app.presets["1"].width, app.presets["1"].height) == (width, height)
+    app.save()
+    reopened = MonsterReviewApp(annotations, tmp_path / "unused.mp4", split="train", images_only=True)
+    assert (reopened.presets["1"].width, reopened.presets["1"].height) == (width, height)
+    assert reopened.session.current.monsters[0].bbox_xyxy == expected
+    new_box = fixed_box_centered_at((500, 500), reopened.presets["1"])
+    assert (new_box[2] - new_box[0], new_box[3] - new_box[1]) == (width, height)
+
+
+def test_invalid_cancelled_and_freehand_resize_do_not_change_presets(tmp_path):
+    annotations = tmp_path / "annotations.jsonl"
+    monster = MonsterAnnotation([100, 100, 270, 220], [185, 220], box_preset="1")
+    write_jsonl([FrameAnnotation("f", 0, "unused.png", [monster])], annotations)
+    app = MonsterReviewApp(annotations, tmp_path / "unused.mp4", split="train", images_only=True)
+    app.viewport = Viewport(rect=(0, 0, 960, 540))
+    app.session.selected_index = 0
+    app._persist_review_settings()
+    before = app.settings_path.read_bytes()
+    app._mouse(cv2.EVENT_LBUTTONDOWN, 135, 110, 0, None)
+    app._mouse(cv2.EVENT_MOUSEMOVE, 51, 51, cv2.EVENT_FLAG_LBUTTON, None)
+    assert app._resize_preview(app.interaction, (51, 51))[1] is False
+    app._mouse(cv2.EVENT_LBUTTONUP, 51, 51, 0, None)
+    assert app.session.current.monsters[0].bbox_xyxy == [100, 100, 270, 220]
+    assert app.settings_path.read_bytes() == before
+    app._mouse(cv2.EVENT_LBUTTONDOWN, 135, 110, 0, None)
+    app._mouse(cv2.EVENT_MOUSEMOVE, 160, 130, cv2.EVENT_FLAG_LBUTTON, None)
+    app._handle_key(27)
+    app._mouse(cv2.EVENT_LBUTTONUP, 160, 130, 0, None)
+    assert app.session.current.monsters[0].bbox_xyxy == [100, 100, 270, 220]
+    assert app.settings_path.read_bytes() == before
+    app.session.current.monsters[0].box_preset = None
+    app._mouse(cv2.EVENT_LBUTTONDOWN, 135, 110, 0, None)
+    app._mouse(cv2.EVENT_LBUTTONUP, 160, 130, 0, None)
+    assert app.session.current.monsters[0].bbox_xyxy == [100, 100, 320, 260]
+    assert app.settings_path.read_bytes() == before
+
+
+def test_editable_frame_number_jumps_in_display_order_saves_and_consumes_shortcuts(tmp_path):
+    image = tmp_path / "image.png"
+    cv2.imwrite(str(image), np.zeros((1080, 1920, 3), np.uint8))
+    annotations = tmp_path / "annotations.jsonl"
+    order = ["first", "third", "second"]
+    write_jsonl([FrameAnnotation(name, i, str(image)) for i, name in enumerate(order)], annotations)
+    app = MonsterReviewApp(annotations, tmp_path / "unused.mp4", split="train", images_only=True)
+    app.session.add_box([100, 100, 270, 220])
+    app._canvas()
+    x, y, _, _ = app.frame_jump_rect
+    app._mouse(cv2.EVENT_LBUTTONDOWN, x + 10, y + 10, 0, None)
+    app._handle_key(ord("0"), control_pressed=False)
+    assert len(app.session.current.monsters) == 1  # 0 must not clear the frame.
+    app._handle_key(13, control_pressed=False)
+    assert app.session.index == 0
+    assert app.frame_jump_text == "0"
+    app._handle_key(8, control_pressed=False)
+    app._handle_key(ord("3"), control_pressed=False)
+    app._handle_key(13, control_pressed=False)
+    assert app.session.current.frame_id == "second"
+    assert app.frame_jump_text is None
+    saved = read_jsonl(annotations)
+    assert len(saved[0].monsters) == 1 and saved[0].review_status == "pending"
+    assert [item.frame_id for item in saved] == order
+    reopened = MonsterReviewApp(annotations, tmp_path / "unused.mp4", split="train", images_only=True)
+    assert [item.frame_id for item in reopened.session.items] == order
+    # Cancelling a jump leaves the selected frame and annotations unchanged.
+    app._mouse(cv2.EVENT_LBUTTONDOWN, x + 10, y + 10, 0, None)
+    app._handle_key(ord("1"), control_pressed=False)
+    app._handle_key(27, control_pressed=False)
+    assert app.session.current.frame_id == "second"
+    assert app.frame_jump_text is None
+
+
 def test_ctrl_arrows_and_letters_nudge_selected_box_and_keep_it_inside_frame():
     monster = MonsterAnnotation([0, 100, 83, 231], [41.5, 231], box_preset="1")
     app = MonsterReviewApp.__new__(MonsterReviewApp)

@@ -1,0 +1,352 @@
+{
+  "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+  "map_id": "APO",
+  "labeling_method": "manual_visual_proposals_pending_review",
+  "class_mapping": {
+    "1": "mob",
+    "2": "hero",
+    "3": "special"
+  },
+  "exclusion_policy": "Ghost-like NPC bearing a book thought bubble is not a target; do not mask out neighboring mobs.",
+  "source_video_sha256": "471512bf3064371f6703a246e916a7b67a59e50f444a3aaf3df2fc19f513280a",
+  "review": {
+    "split": "pilot",
+    "status": "pending",
+    "images_only": true,
+    "display_positions": [
+      21,
+      50
+    ]
+  },
+  "prior_reviewed_frames_preserved": true,
+  "note": "Upper-platform heroes in 0001/0002 are labeled at y=371; fully dissolved death effects in 0022 are not treated as visible mobs.",
+  "preset_snapshot": {
+    "box_presets": [
+      {
+        "name": "mob",
+        "width": 100,
+        "height": 149,
+        "hue": 42
+      },
+      {
+        "name": "hero",
+        "width": 128.117002,
+        "height": 164.972578,
+        "hue": 205
+      },
+      {
+        "name": "special",
+        "width": 231,
+        "height": 265,
+        "hue": 305
+      }
+    ]
+  },
+  "counts_by_preset": {
+    "1": 201,
+    "2": 30,
+    "3": 30
+  },
+  "frames": [
+    {
+      "frame_id": "apo-random-0027",
+      "display_position": 21,
+      "source_frame": 1567,
+      "image_sha256": "0003e5c02241f1e8f9c5b3cad686a966105c2fdc7ecff1bc36249c30eada23e2",
+      "proposal_count": 10,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-21-apo-random-0027.jpg"
+    },
+    {
+      "frame_id": "apo-random-0014",
+      "display_position": 22,
+      "source_frame": 831,
+      "image_sha256": "3822a23dd9a11a8815fd28916cf6a43c103cfc11ef43d67e9c9aa72779f6725e",
+      "proposal_count": 9,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1792,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-22-apo-random-0014.jpg"
+    },
+    {
+      "frame_id": "apo-random-0042",
+      "display_position": 23,
+      "source_frame": 2018,
+      "image_sha256": "0a7583d250cddd64723638e47edc2859c468ed6e3d60ebc2bc3f3bc07f0879d0",
+      "proposal_count": 5,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-23-apo-random-0042.jpg"
+    },
+    {
+      "frame_id": "apo-random-0006",
+      "display_position": 24,
+      "source_frame": 512,
+      "image_sha256": "802738e32eb167119618b5f4a9adf5fa2d40e8f8d8d6d2d455e06a994b115cc0",
+      "proposal_count": 11,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-24-apo-random-0006.jpg"
+    },
+    {
+      "frame_id": "apo-random-0002",
+      "display_position": 25,
+      "source_frame": 87,
+      "image_sha256": "c8068b227d53469bcaf1bcc295799c524af866567dedb39199c05a28535a3c02",
+      "proposal_count": 11,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1668,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-25-apo-random-0002.jpg"
+    },
+    {
+      "frame_id": "apo-random-0023",
+      "display_position": 26,
+      "source_frame": 1365,
+      "image_sha256": "751f30c100c5eb74cd90da0859e736813dfcf9d021929276513a5a2eb24c89fd",
+      "proposal_count": 10,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-26-apo-random-0023.jpg"
+    },
+    {
+      "frame_id": "apo-random-0026",
+      "display_position": 27,
+      "source_frame": 1534,
+      "image_sha256": "abb4fb1a77469beddbc9cfee3bddb9b82750a78381455e608b36eacfcef7dbc4",
+      "proposal_count": 5,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-27-apo-random-0026.jpg"
+    },
+    {
+      "frame_id": "apo-random-0038",
+      "display_position": 28,
+      "source_frame": 1881,
+      "image_sha256": "2ba01284c4ebf6c29696ee47ca59d0b3c7fe1a2aaade0c9a38a093ee42a4225f",
+      "proposal_count": 11,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-28-apo-random-0038.jpg"
+    },
+    {
+      "frame_id": "apo-random-0022",
+      "display_position": 29,
+      "source_frame": 1290,
+      "image_sha256": "4083ee1e9119a306400144b097eb3b2df357c8af5c91a1dd014a0d26378234f6",
+      "proposal_count": 4,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-29-apo-random-0022.jpg"
+    },
+    {
+      "frame_id": "apo-random-0041",
+      "display_position": 30,
+      "source_frame": 1988,
+      "image_sha256": "f9f7fe17c6b68329734418974271eb7bb83060f636f648b372cd87068bca3e8a",
+      "proposal_count": 8,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-30-apo-random-0041.jpg"
+    },
+    {
+      "frame_id": "apo-random-0017",
+      "display_position": 31,
+      "source_frame": 1040,
+      "image_sha256": "85d55e67de8e0b22dfdea0f00db247bf02e223ff1a83cc972d08669701a191e7",
+      "proposal_count": 11,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-31-apo-random-0017.jpg"
+    },
+    {
+      "frame_id": "apo-random-0015",
+      "display_position": 32,
+      "source_frame": 968,
+      "image_sha256": "ed53c3f73623e2c9628a116d3bd98e0fa7bbf95362f324326658f2fee335fe0c",
+      "proposal_count": 8,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-32-apo-random-0015.jpg"
+    },
+    {
+      "frame_id": "apo-random-0045",
+      "display_position": 33,
+      "source_frame": 2059,
+      "image_sha256": "363621ae50c80ebc8305758346d2a40ebfebb85917b4230997cc6fd09d90a45b",
+      "proposal_count": 4,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-33-apo-random-0045.jpg"
+    },
+    {
+      "frame_id": "apo-random-0046",
+      "display_position": 34,
+      "source_frame": 2079,
+      "image_sha256": "b9c8a99adc9e8c5469985e61df926cff77bd68044b5c3275ced5882b97b08aad",
+      "proposal_count": 4,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-34-apo-random-0046.jpg"
+    },
+    {
+      "frame_id": "apo-random-0037",
+      "display_position": 35,
+      "source_frame": 1869,
+      "image_sha256": "18621142d8bb525796448d00cb8c4ac5f7af8f842275494c899d807160c10f30",
+      "proposal_count": 11,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-35-apo-random-0037.jpg"
+    },
+    {
+      "frame_id": "apo-random-0020",
+      "display_position": 36,
+      "source_frame": 1207,
+      "image_sha256": "81f7e7529c7e77a8b8d4f99a4f4f4ea90327773968c8c36e5fea0fbdf35a2055",
+      "proposal_count": 9,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-36-apo-random-0020.jpg"
+    },
+    {
+      "frame_id": "apo-random-0001",
+      "display_position": 37,
+      "source_frame": 37,
+      "image_sha256": "1e886691d311f27fff35c17aae353229a9d928d91878de0597b27846b40a2d77",
+      "proposal_count": 12,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1668,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-37-apo-random-0001.jpg"
+    },
+    {
+      "frame_id": "apo-random-0033",
+      "display_position": 38,
+      "source_frame": 1800,
+      "image_sha256": "4b72bd53ceb5826a818758935c1227b1b898135fa99158c9171d1cef40109e75",
+      "proposal_count": 10,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1740,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-38-apo-random-0033.jpg"
+    },
+    {
+      "frame_id": "apo-random-0005",
+      "display_position": 39,
+      "source_frame": 279,
+      "image_sha256": "b10b7e79f6b07fd2fa93da97e1c0bc161ec165a2d834b8f50c1a41647e5ed18f",
+      "proposal_count": 12,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1668,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-39-apo-random-0005.jpg"
+    },
+    {
+      "frame_id": "apo-random-0031",
+      "display_position": 40,
+      "source_frame": 1777,
+      "image_sha256": "49723ef03777d8bc1992702f81606b3462ceed40fcaf817bcfaf293290a7075d",
+      "proposal_count": 10,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1740,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-40-apo-random-0031.jpg"
+    },
+    {
+      "frame_id": "apo-random-0024",
+      "display_position": 41,
+      "source_frame": 1499,
+      "image_sha256": "8fcd69c086b03d9ef1ad786fdb16d594fd13a69350cf513982492da2002070d5",
+      "proposal_count": 7,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-41-apo-random-0024.jpg"
+    },
+    {
+      "frame_id": "apo-random-0039",
+      "display_position": 42,
+      "source_frame": 1896,
+      "image_sha256": "4c03127612ac50746990e891b2c0bf1edaacd8447a5b0b4263cdaf5bfd25b18f",
+      "proposal_count": 11,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-42-apo-random-0039.jpg"
+    },
+    {
+      "frame_id": "apo-random-0016",
+      "display_position": 43,
+      "source_frame": 998,
+      "image_sha256": "197a1a43a7e530be86e73738bed7b1cff0193aab94765980839fd4dbdf7c5b9c",
+      "proposal_count": 11,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-43-apo-random-0016.jpg"
+    },
+    {
+      "frame_id": "apo-random-0028",
+      "display_position": 44,
+      "source_frame": 1710,
+      "image_sha256": "8ca96ea03fec30e7ebd5faedfd4ccba99c16bb153221f7d3d8ada115a4ee4782",
+      "proposal_count": 10,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1740,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-44-apo-random-0028.jpg"
+    },
+    {
+      "frame_id": "apo-random-0010",
+      "display_position": 45,
+      "source_frame": 602,
+      "image_sha256": "3e84e72c7a19c8e9a61a71fe2b33ca82d875ba1ace2a76d234bb5b4739e91d24",
+      "proposal_count": 9,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-45-apo-random-0010.jpg"
+    },
+    {
+      "frame_id": "apo-random-0030",
+      "display_position": 46,
+      "source_frame": 1772,
+      "image_sha256": "60153c51d4fce6ef1d36682b2b4cb34cdf88585ab04c50e2b44144be41f40ea3",
+      "proposal_count": 10,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1740,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-46-apo-random-0030.jpg"
+    },
+    {
+      "frame_id": "apo-random-0043",
+      "display_position": 47,
+      "source_frame": 2050,
+      "image_sha256": "48a4fe7bbdc9e84c9f53e69d8b2cc4f533d761142d7287a1e3cdc95e2eb14196",
+      "proposal_count": 4,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1755,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-47-apo-random-0043.jpg"
+    },
+    {
+      "frame_id": "apo-random-0019",
+      "display_position": 48,
+      "source_frame": 1190,
+      "image_sha256": "76fa6ef312e298d47c89cc8ed18fb529630238d5e80a93362d6168460197e3bb",
+      "proposal_count": 9,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-48-apo-random-0019.jpg"
+    },
+    {
+      "frame_id": "apo-random-0034",
+      "display_position": 49,
+      "source_frame": 1821,
+      "image_sha256": "4b8ea0fa5dd4d1f510d24d25b26b3106db2b3c02ea017a6615d1124552d614a0",
+      "proposal_count": 10,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1750,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-49-apo-random-0034.jpg"
+    },
+    {
+      "frame_id": "apo-random-0025",
+      "display_position": 50,
+      "source_frame": 1524,
+      "image_sha256": "bd29423ff0c66f0186bed0c2f1b3996ad5def4280e24e52122ec7f44022bdacc",
+      "proposal_count": 5,
+      "review_status": "pending",
+      "excluded_npc_approx_ground_x": 1728,
+      "overlay": "maps/APO/dataset/prelabel_contacts/final30/position-50-apo-random-0025.jpg"
+    }
+  ]
+}

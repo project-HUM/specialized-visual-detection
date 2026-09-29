@@ -10,7 +10,7 @@ from typing import Any
 
 
 MAP_SCHEMA = "specialized-visual-detection.map.v1"
-MAP_ID = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+MAP_ID = re.compile(r"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
 
 
 @dataclass(frozen=True)
@@ -40,9 +40,12 @@ class MapWorkspace:
         width, height = config.get("source_size", [0, 0])
         if not isinstance(width, int) or not isinstance(height, int) or width <= 0 or height <= 0:
             raise ValueError(f"{config_path}: source_size must contain two positive integers")
-        crop = config.get("minimap", {}).get("crop_xywh", [])
-        if len(crop) != 4 or any(not isinstance(value, int) or value < 0 for value in crop) or crop[2] <= 0 or crop[3] <= 0:
-            raise ValueError(f"{config_path}: minimap.crop_xywh must be x,y,width,height")
+        # An explicit null permits image-only dataset preparation before calibration.
+        minimap = config.get("minimap", {})
+        if minimap is not None:
+            crop = minimap.get("crop_xywh", [])
+            if len(crop) != 4 or any(not isinstance(value, int) or value < 0 for value in crop) or crop[2] <= 0 or crop[3] <= 0:
+                raise ValueError(f"{config_path}: minimap.crop_xywh must be x,y,width,height")
         return cls(root, map_dir, config)
 
     @property
@@ -60,6 +63,8 @@ class MapWorkspace:
 
     @property
     def minimap_crop(self) -> tuple[int, int, int, int]:
+        if self.config.get("minimap") is None:
+            raise ValueError(f"Map {self.map_id!r} has no minimap crop configured")
         return tuple(int(value) for value in self.config["minimap"]["crop_xywh"])
 
     @property

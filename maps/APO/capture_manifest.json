@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "map_id": "APO",
+  "capture_dir": "C:/projects/input-flag-inspector/saves_m/APO_sample2",
+  "video": "C:/projects/input-flag-inspector/saves_m/APO_sample2/screen.mp4",
+  "video_sha256": "471512bf3064371f6703a246e916a7b67a59e50f444a3aaf3df2fc19f513280a",
+  "decoded_frames": 2346,
+  "source_size": [
+    1920,
+    1080
+  ],
+  "first_frame_timestamp_s": 0.0,
+  "last_frame_timestamp_s": 88.306933,
+  "geometry_status": "not_available"
+}

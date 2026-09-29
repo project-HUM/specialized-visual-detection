@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "frames": 80,
+  "reviewed_frames": 80,
+  "pending_frames": 0,
+  "positive_frames": 80,
+  "negative_frames": 0,
+  "monster_instances": 700,
+  "occluded_instances": 578,
+  "review_required_instances": 0,
+  "count_distribution": {
+    "1": 1,
+    "10": 19,
+    "11": 14,
+    "12": 9,
+    "3": 2,
+    "4": 6,
+    "5": 3,
+    "6": 5,
+    "7": 6,
+    "8": 5,
+    "9": 10
+  },
+  "condition_distribution": {
+    "APO_sample1": 15,
+    "APO_sample2": 50,
+    "APO_sample3_woSpecial": 15,
+    "book_bubble_npc_excluded": 75,
+    "codex_prelabel_pending": 79,
+    "dialogue_occlusion": 1,
+    "map_membership_unverified": 50,
+    "outside_APO_town": 1,
+    "unlabeled": 1
+  },
+  "splits": {
+    "pilot": {
+      "frames": 80,
+      "reviewed": 80,
+      "pending": 0
+    },
+    "train": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    },
+    "validation": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    },
+    "test": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    }
+  },
+  "malformed_frames": {},
+  "training_ready": false,
+  "box_size": {
+    "mean_width": 115.19051451404022,
+    "mean_height": 161.43115177099503
+  },
+  "pairwise_iou": {
+    "pairs": 2992,
+    "max": 0.808862433862434,
+    "ge_0_5": 37
+  }
+}
