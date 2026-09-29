@@ -556,8 +556,11 @@ class MonsterReviewApp:
         self.source_frame_indices: dict[str, int] = {}
         self.nominal_fps: float | None = None
         pilot_manifest = annotations.parent / "pilot_manifest.json"
-        candidate_indices = load_pilot_frame_indices(pilot_manifest)
-        for codex_manifest in sorted(annotations.parent.glob("codex_manual_batch_v*_manifest.json")):
+        # Still-image review must not depend on video metadata, including
+        # manifests belonging to other batches in the same dataset.
+        candidate_indices = {} if images_only else load_pilot_frame_indices(pilot_manifest)
+        codex_manifests = () if images_only else sorted(annotations.parent.glob("codex_manual_batch_v*_manifest.json"))
+        for codex_manifest in codex_manifests:
             codex_indices = load_codex_review_frame_indices(codex_manifest)
             duplicate_ids = candidate_indices.keys() & codex_indices.keys()
             conflicting_ids = [

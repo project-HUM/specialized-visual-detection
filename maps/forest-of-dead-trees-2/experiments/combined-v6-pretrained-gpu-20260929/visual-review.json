@@ -1,0 +1,11 @@
+{
+  "reviewer": "Codex visual audit",
+  "frames_reviewed": 22,
+  "overlay_legend": "green ground truth; magenta predictions",
+  "candidate_misses": {
+    "codex-human-batch5-evidence-0049": "Real Lich clipped at right edge.",
+    "codex-human-batch6-evidence-0058": "Real Lich obscured by bright spell effect and MISS text."
+  },
+  "conclusion": "No clear replacement win at confidence 0.25: removes two false positives but introduces two misses. No deployment.",
+  "environment_note": "Dedicated CUDA environment is training-only. OpenCV 5 changes HoughLinesP return shape in an unrelated reviewer/prelabel helper; existing reviewer environment passes all 51 focused checks."
+}

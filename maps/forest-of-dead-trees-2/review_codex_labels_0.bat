@@ -3,8 +3,9 @@ setlocal
 cd /d "%~dp0\..\.."
 
 python perception_cli.py --map forest-of-dead-trees-2 monster-review ^
+    --images-only ^
     --split all ^
-    --queue reviewed ^
+    --queue all ^
     --frame-id-prefix pilot-
 
 if errorlevel 1 (

@@ -1,0 +1,15 @@
+{
+  "reviewer": "Codex visual audit",
+  "frames_reviewed": 22,
+  "overlay_legend": "green ground truth; magenta predictions",
+  "candidate_misses": {
+    "codex-human-batch5-evidence-0049": "Real Lich clipped at right edge."
+  },
+  "candidate_false_positives": {
+    "codex-human-batch6-evidence-0076": "Portal/background sliver at left image border, confidence 0.28018."
+  },
+  "recovered_from_short_run": {
+    "codex-human-batch6-evidence-0058": "Real Lich obscured by spell and MISS text, now detected at approximately 0.87."
+  },
+  "conclusion": "Improved aggregate metrics and recovered one short-run miss, with one new false positive. Existing model retains better recall at confidence 0.25. No deployment."
+}

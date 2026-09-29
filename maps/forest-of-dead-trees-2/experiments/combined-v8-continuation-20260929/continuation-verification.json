@@ -1,0 +1,6 @@
+{
+  "best_model_tensors_unchanged": true,
+  "tensors_compared": 499,
+  "terminal_checkpoint_completed_epoch": 664,
+  "terminal_optimizer_retained": true
+}

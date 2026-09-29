@@ -18,7 +18,7 @@
     "prompts": []
   },
   "preparation": {
-    "status": "reviewed_training_snapshot_available",
+    "status": "trained_experiment_available",
     "geometry_status": "not_available",
     "minimap_status": "not_calibrated",
     "fixed_ui_status": "not_calibrated",

@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0\..\.."
 
 python perception_cli.py --map forest-of-dead-trees-2 monster-review ^
-    --video "C:\projects\input-flag-inspector\saves_m\ForestOfDeadTreeSample4_LottaLich\screen.mp4" ^
+    --images-only ^
     --split all ^
     --queue all ^
     --frame-id-prefix codex-sample4-lichcase- ^

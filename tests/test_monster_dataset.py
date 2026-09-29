@@ -69,6 +69,13 @@ def test_image_only_review_renders_without_video_and_rejects_missing_image(tmp_p
                         lambda _: pytest.fail("still review opened video"))
     monkeypatch.setattr(MonsterReviewApp, "_frame",
                         lambda *args: pytest.fail("still review requested video context"))
+    # An unrelated batch without source-frame anchors used to prevent every
+    # image-only launcher from opening, before video access was even attempted.
+    (tmp_path / "codex_manual_batch_v6_manifest.json").write_text(json.dumps({
+        "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+        "frames": [{"frame_id": "other-incident", "timestamp": 20.0}],
+    }), encoding="utf-8")
+    (tmp_path / "pilot_manifest.json").write_text("unavailable video metadata", encoding="utf-8")
     app = MonsterReviewApp(annotations, tmp_path / "missing.mp4", split="all", images_only=True)
     assert load_codex_review_frame_indices(manifest) == {}
     assert app._canvas().shape == (900, 1440, 3)

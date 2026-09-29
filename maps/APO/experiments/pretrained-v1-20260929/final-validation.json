@@ -1,0 +1,16 @@
+{
+  "canonical_annotations_preserved": true,
+  "presets_preserved": true,
+  "review_order_preserved": true,
+  "source_disjoint_split": true,
+  "train_images": 64,
+  "validation_images": 15,
+  "train_boxes": 555,
+  "validation_boxes": 144,
+  "all_classes_in_both_splits": true,
+  "normalized_labels_valid": true,
+  "fixed_threshold_match_cases_passed": 4,
+  "effective_cpu_threads": 6,
+  "training_completed": true,
+  "best_weights_sha256": "f5ceb0cade81d192c488b0839f89830973fb1d87f160a1e468717bd04633bf55"
+}

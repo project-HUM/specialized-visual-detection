@@ -53,17 +53,28 @@ def metrics(result):
                 for n, c in enumerate(result.box.ap_class_index)}}
 
 
-def evaluate(root, run_name):
+def require_device(device):
+    """An explicitly requested CUDA device must never silently become CPU."""
+    if str(device) != "cpu":
+        import torch
+        if not torch.cuda.is_available():
+            raise RuntimeError(f"Requested CUDA device {device}, but CUDA is unavailable")
+        torch.cuda.get_device_properties(int(device))
+
+
+def evaluate(root, run_name, config):
     from ultralytics import YOLO
     data = dataset_yaml(root)
     target = root / "runs" / run_name / "weights/best.pt"
     if not target.is_file():
         raise FileNotFoundError(target)
-    report = {"evaluation_set": "16 held-out frames; 12 legacy and 4 new run-isolated frames",
+    count = len(list((root / "dataset/labels/validation").glob("*.txt")))
+    require_device(config["device"])
+    report = {"evaluation_set": f"{count} held-out frames from this frozen snapshot",
               "caution": "Small selected validation set; not a broad production accuracy estimate.",
               "models": {}}
     for name, weights in [("parent", root / "models/parent-best.pt"), ("candidate", target)]:
-        result = YOLO(str(weights)).val(data=str(data), imgsz=640, batch=16, device="cpu",
+        result = YOLO(str(weights)).val(data=str(data), imgsz=config["imgsz"], batch=config["batch"], device=config["device"],
             workers=0, plots=True, project=str(root / "evaluation"),
             name=f"{run_name}-{name}", exist_ok=False, verbose=False)
         report["models"][name] = {"weights": str(weights.relative_to(root)),
@@ -76,7 +87,7 @@ def evaluate(root, run_name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["verify", "train", "evaluate"])
+    parser.add_argument("action", choices=["verify", "smoke", "train", "evaluate"])
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent)
     parser.add_argument("--mode", choices=["finetune", "pretrained", "scratch"], default="finetune")
     parser.add_argument("--name", default="finetune-640")
@@ -88,22 +99,30 @@ def main():
     verify(root)
     if args.action == "verify":
         return
+    config = json.loads((root / "training-configs.json").read_text())[args.mode]
     if args.action == "evaluate":
-        evaluate(root, args.name)
+        evaluate(root, args.name, config)
         return
     from ultralytics import YOLO
     import ultralytics
     import torch
     torch.set_num_threads(6)
-    config = json.loads((root / "training-configs.json").read_text())[args.mode]
+    require_device(config["device"])
+    if args.action == "smoke":
+        if args.resume:
+            raise ValueError("Smoke checks cannot resume")
+        config = {**config, "epochs": 1, "patience": 0, "save_period": -1}
     run = root / "runs" / args.name
     if run.exists() and not args.resume:
         raise FileExistsError(f"Use a new run name; history is never overwritten: {run}")
     model_file = root / {"finetune": "models/parent-best.pt", "pretrained": "models/yolo11n.pt",
                          "scratch": "models/yolo11n.yaml"}[args.mode]
     if args.resume:
-        if args.mode != "finetune":
-            raise ValueError("Specify the original mode configuration before extending resume support")
+        starts = [json.loads(line) for line in (root / "history.jsonl").read_text().splitlines()
+                  if line.strip()]
+        original = next(e for e in starts if e.get("event") == "training_started" and e.get("run") == args.name)
+        if original["mode"] != args.mode or original["args"]["device"] != config["device"]:
+            raise ValueError("Resume mode/device must match the original run")
         model_file = run / "weights/last.pt"
     effective = {**config, "data": str(dataset_yaml(root)), "project": str(root / "runs"),
                  "name": args.name, "exist_ok": False}
@@ -113,7 +132,7 @@ def main():
     try:
         model = YOLO(str(model_file))
         if args.resume:
-            model.train(resume=True, device="cpu")
+            model.train(resume=True, device=config["device"])
         else:
             model.train(**effective)
         weights = {p.name: sha(p) for p in (run / "weights").glob("*.pt")}

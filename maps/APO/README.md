@@ -17,7 +17,7 @@ canonical JSONL, pending review, contact sheet, and provenance workflow.
   per source; the original 50 positions are unchanged. Source paths, hashes,
   exact frame indices, timestamps, and seeds are in
   `dataset/codex_manual_batch_v3_manifest.json`.
-- Geometry, minimap crop, UI masks, and trained weights are not available yet.
+- Geometry, minimap crop, and UI masks are not available yet.
   No frames were filtered by minimap or assumed map membership.
 - The first frame stays first. The other 49 are shuffled once with seed
   `20260929`; canonical JSONL order and `dataset/review_order.json` preserve
@@ -91,8 +91,30 @@ pretrained YOLO11n, following Forest's pretrained configuration: 640px, CPU,
 batch 16, AdamW lr=0.001, maximum 200 epochs, patience 50, seed 20260929.
 The experiment is under `dataset/runs/pretrained-v1-20260929`; portable recovery
 instructions and lightweight provenance are under
-`experiments/pretrained-v1-20260929`. Training and evaluation results are recorded
-there when complete. No checkpoint is automatically deployed.
+`experiments/pretrained-v1-20260929`. No checkpoint is automatically deployed.
+
+Training completed 200 epochs and selected epoch 173. The saved best checkpoint
+scored validation mAP50 **0.96464** and mAP50-95 **0.78480** on the 15 held-out
+sample1 frames. At confidence 0.25 and matching IoU 0.50:
+
+| Class | Correct | Extra | Missed |
+| --- | ---: | ---: | ---: |
+| mob | 112 | 7 | 3 |
+| hero | 15 | 1 | 0 |
+| special | 10 | 0 | 4 |
+
+Best weights: `dataset/runs/pretrained-v1-20260929/runs/pretrained-640/weights/best.pt`.
+All four special misses occur in neighboring attack-heavy frames. Visual review
+found no clear book-bubble NPC-centered false detection at 0.25 in these 15 frames;
+this is a small development set, not a production accuracy claim. The complete
+metrics, visual findings, and comparison overlays are recorded in the experiment.
+
+The recovery ZIP is under
+`C:/Users/LEE/Documents/Project HUM/Training Backups/APO/`.
+All 308 archived payload files were extracted separately and verified by hash.
+See `experiments/pretrained-v1-20260929/archive-receipt.json` for its exact path,
+SHA-256, and verified restore location. This is an independent local copy on the
+same volume. The original videos are not needed to recover the training dataset.
 
 The canonical pilot report is not training-ready because its split is deliberately
 unchanged; the experiment snapshot has validated train/validation splits.

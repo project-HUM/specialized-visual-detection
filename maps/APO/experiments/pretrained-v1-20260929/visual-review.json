@@ -1,0 +1,62 @@
+{
+  "reviewer": "Codex manual visual inspection",
+  "confidence": 0.25,
+  "matching_iou": 0.5,
+  "frames_reviewed": [
+    "apo-sample1-0007",
+    "apo-sample1-0013",
+    "apo-sample1-0001",
+    "apo-sample1-0010",
+    "apo-sample1-0009",
+    "apo-sample1-0002",
+    "apo-sample1-0011",
+    "apo-sample1-0004",
+    "apo-sample1-0012",
+    "apo-sample1-0000",
+    "apo-sample1-0006",
+    "apo-sample1-0005",
+    "apo-sample1-0014",
+    "apo-sample1-0003",
+    "apo-sample1-0008"
+  ],
+  "evidence": [
+    "clean-inspection-01.jpg",
+    "clean-inspection-02.jpg",
+    "clean-inspection-03.jpg",
+    "clean-inspection-04.jpg",
+    "clean-inspection-05.jpg"
+  ],
+  "full_frame_checks": [
+    "apo-sample1-0000",
+    "apo-sample1-0001",
+    "apo-sample1-0004"
+  ],
+  "npc_finding": "No clear book-bubble NPC-centered false detection observed in these 15 validation frames at confidence 0.25. Neighboring real mob boxes can overlap NPC pixels; this is a limited visual audit, not proof of general NPC discrimination.",
+  "special_miss_frames": [
+    "apo-sample1-0011",
+    "apo-sample1-0012",
+    "apo-sample1-0013",
+    "apo-sample1-0014"
+  ],
+  "special_finding": "Four neighboring late sample1 attack frames miss the special under damage text, spell effects, and sprite overlap. Dialogue frame 0000 correctly has no special prediction.",
+  "hero_finding": "All 15 reviewed heroes match at IoU 0.50. Frame 0013 has an additional shifted/oversized hero box over the monitor/effect cluster. Some jump/occluded boxes are tighter than the full reviewed preset extent.",
+  "mob_finding": "Seven unmatched predictions and three misses against reviewed labels, primarily crowded overlapping instances; frame 0012 also has a mob prediction over the hero/effect area.",
+  "fixed_threshold_counts": {
+    "mob": {
+      "tp": 112,
+      "fp": 7,
+      "fn": 3
+    },
+    "hero": {
+      "tp": 15,
+      "fp": 1,
+      "fn": 0
+    },
+    "special": {
+      "tp": 10,
+      "fp": 0,
+      "fn": 4
+    }
+  },
+  "conclusion": "First APO development checkpoint is trained and recoverable. Main observed weakness is special recall under attack effects. No automatic deployment; broader independent video testing remains future work."
+}

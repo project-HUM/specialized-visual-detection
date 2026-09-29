@@ -282,6 +282,67 @@ archive is `combined-v4-20260928-finetune-640-complete.zip` in the backup direct
 above. All 247 archived files were extracted and verified by hash; the ZIP hash
 and restore location are recorded in `archive-receipt.json`.
 
+## Reviewed batch 6: recent HUMAN evidence
+
+All numbered launchers `review_codex_labels_0.bat` through
+`review_codex_labels_6.bat` review saved images only, without loading videos or
+neighboring-frame metadata. They include all review statuses within each
+launcher's batch filter. Close the current reviewer before opening another
+batch; the annotation writer lock prevents concurrent edits from being lost.
+
+`review_codex_labels_6.bat` opens 29 prelabelled September 29 HUMAN incident
+screenshots: 17 Lich-positive frames and 12 hard negatives. They include the
+left-edge warning-sign false positive that reversed post-box clearing, dying
+Zombies/loot, portal confusions, and real Lich under HUD/spell/sprite occlusion.
+All 29 frames have now been human-reviewed in the canonical annotations. The source-run split assigns 23 frames
+to training and 6 to validation; all selected frames from run `5be330d2` stay
+in validation. Future training exports must preserve those assignments.
+See `dataset/codex_manual_batch_v6_review.md` and the batch 6 manifest for
+provenance, selection notes and split limitations. The GPU experiments below
+use the corrected labels; neither experiment changes deployment.
+
+## Batches 0-6: standard pretrained GPU experiments
+
+The September 29 snapshots use all 111 reviewed Forest images (757 boxes),
+excluding the one town/dialog image. The frozen split is 89 train / 22 validation:
+older experiment assignments and batch-6 source-run separation are preserved.
+Both experiments start from original COCO-pretrained `yolo11n.pt`, use seed
+`20260929`, and train at 640 pixels, batch 16, on the RTX 5060 Ti. The separate
+Python 3.12 CUDA environment is `C:\projects\.venvs\forest-yolo-cu128`.
+
+`combined-v6-pretrained-gpu-20260929` used 200 maximum epochs and patience 50,
+stopping at epoch 110 after 188 seconds (best epoch 60). On the same 22 held-out
+frames, its overall mAP50-95 is 0.7364 versus combined-v3's 0.7504; Lich
+mAP50-95 improves from 0.6904 to 0.7162. At confidence 0.25 / match IoU 0.5,
+Lich TP/FP/FN changes from 14/2/0 to 12/0/2. This is a precision/recall tradeoff.
+See `experiments/combined-v6-pretrained-gpu-20260929/RESULTS.md`.
+
+`combined-v7-pretrained-gpu-long-20260929` extends the schedule to 500 maximum
+epochs and patience 300, with identical frozen data, initializer and seed.
+It is a separate fresh run, preserving the shorter experiment unchanged.
+All 500 epochs completed in 841 seconds; epoch 364 was best. Standalone overall
+mAP50-95 is 0.7585 and Lich mAP50-95 is 0.7375. At confidence 0.25, Lich
+TP/FP/FN is 13/1/1 (batch-6 subset: 4/1/0). It recovers the short run's
+spell-obscured Lich miss, but retains the right-edge miss and adds a left-edge
+portal/background false positive at confidence 0.280. See
+`experiments/combined-v7-pretrained-gpu-long-20260929/RESULTS.md` for the three-model
+comparison. These are repeatedly used development validation images, not an
+independent final test.
+The snapshots retain input hashes, environment pins, logs, periodic checkpoints
+and prediction overlays. Complete archives are restored and hash-verified under
+`C:\Users\LEE\Documents\Project HUM\Training Backups\forest-of-dead-trees-2`.
+This is a same-volume recovery copy. No HUMAN detector is automatically replaced.
+
+`combined-v8-continuation-20260929` continued the long experiment until the
+300-epoch patience condition was actually met. Training stopped at epoch 664,
+with the best still at epoch 364. The latest full optimizer checkpoint covered
+epoch 491, so epochs 492-500 were replayed; original results remain preserved.
+The historical patience counter and original 500-epoch cosine schedule were
+retained, holding learning rate at 0.00001 afterward. All 499 best-model tensors
+and the held-out evaluation results are unchanged. The final optimizer/EMA
+checkpoint is retained as `terminal-resumable.pt`. See
+`experiments/combined-v8-continuation-20260929/RESULTS.md` for recovery details.
+
 ## Expanded full-collection experiment
 
 `tools/prepare_forest_combined_v3.py` snapshots all 60 valid-minimap labeled

@@ -1,0 +1,9 @@
+{
+  "archive": "C:\\Users\\LEE\\Documents\\Project HUM\\Training Backups\\forest-of-dead-trees-2\\combined-v8-continuation-20260929-pretrained-gpu-640-complete.zip",
+  "sha256": "4c0c7a2da3c128d695fcd5fb050d547286bc2f558f9adce9b467af3edf74e74b",
+  "bytes": 590951482,
+  "verified_restoration": "C:\\Users\\LEE\\Documents\\Project HUM\\Training Backups\\forest-of-dead-trees-2\\combined-v8-continuation-20260929-pretrained-gpu-640-verified-restore",
+  "verified_files": 373,
+  "verified_utc": "2026-09-29T07:08:51.640747+00:00",
+  "note": "Independent local copy on the same volume; not off-device disaster recovery."
+}

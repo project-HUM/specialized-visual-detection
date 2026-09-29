@@ -1,0 +1,9 @@
+{
+  "archive": "C:\\Users\\LEE\\Documents\\Project HUM\\Training Backups\\APO\\pretrained-v1-20260929-pretrained-640-complete.zip",
+  "sha256": "708828591b07b07edaf174fb7f8e283e6a1160cb951f6045f7ba5e43650a10c9",
+  "bytes": 753388349,
+  "verified_restoration": "C:\\Users\\LEE\\Documents\\Project HUM\\Training Backups\\APO\\pretrained-v1-20260929-pretrained-640-verified-restore",
+  "verified_files": 308,
+  "verified_utc": "2026-09-29T03:14:34.713633+00:00",
+  "note": "Independent local copy on the same volume, not off-device backup"
+}
