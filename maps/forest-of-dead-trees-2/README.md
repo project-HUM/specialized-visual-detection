@@ -130,6 +130,34 @@ snow/tree/UI false positives and to add missed partial/effect-obscured sprites.
 All proposals remain review-required and the launcher resumes at frame `0002`
 for human correction and confirmation.
 
+## HUMAN Lich evidence review batch 5
+
+Run `review_codex_labels_5.bat` to review 22 exact PNG screenshots from HUMAN.
+The original five unchanged entries come from
+run `20260928-120440-485-189ec300`, detector samples 15, 776, 1296, 1297, and 1505.
+Three Lich false positives were on the left-edge warning sign; two were on an
+inventory tooltip icon. These regions are deliberately left without Lich labels.
+The five frames have 13 Zombie and 5 Hero preset proposals, including obscured
+and dying sprites that need human correction/confirmation.
+
+The September 28 extension adds 17 screenshots selected from saved detector
+incidents: eight Lich-positive frames and nine false-positive examples. Its
+100 Zombie, 16 Hero and 8 Lich preset proposals were checked against full frames
+to remove duplicate boxes and detections on UI, loot and scenery, and to add
+missed partial/dying Zombies. Lich examples include overlap, screen-edge and
+HUD occlusion. Hidden feet are inferred; check these boxes carefully. All 22
+frames remain pending and all proposals remain review-required. No training or
+confirmation was performed. Existing annotation bytes were preserved.
+
+`dataset/codex_manual_batch_v5_manifest.json` preserves the original detection
+boxes, confidences, capture timestamps, source paths, image hashes, minimap checks,
+and prelabel provenance. PNG copies are byte-identical to the run evidence.
+The launcher uses `--images-only`: saved incident frames have no temporal video
+context, so the reviewer does not load an unrelated source recording.
+Extension source-run provenance is recorded per frame and in the manifest's
+`extensions` list. Audited contact sheets and pre-extension backups are under
+`dataset/runs/codex-manual-batch-5/extension-20260928/` (local review artifacts).
+
 ## Combined confirmed experiment
 
 `tools/prepare_forest_combined_v1.py` promotes the explicitly confirmed labels,
@@ -179,6 +207,80 @@ Confidence `0.05` recovers another plausible extreme-edge Lich but increases
 total proposals from 181 to 244, so `0.25` is the preferred display threshold. Full provenance,
 weights hash, per-class metrics, test counts, audit notes, and contact-sheet
 paths are in `dataset/runs/combined-v2/experiment-report.json`.
+
+## Random-initialization comparison
+
+`combined-v5-scratch-20260928` trains YOLO11n from random weights
+(`models/yolo11n.yaml`, `pretrained=False`) on the exact combined-v4 dataset:
+66 training / 16 validation images, with identical image/label hashes and splits.
+It ran 292 epochs with AdamW lr=0.001, seed 20260928, maximum 300 epochs and
+patience 75; early stopping selected epoch 217. The original and fine-tuned
+checkpoints were used only for comparison, not for initialization.
+
+On the same 16 validation images:
+
+| Model | mAP50 | mAP50-95 | Lich recall at validator operating point |
+| --- | ---: | ---: | ---: |
+| Original combined-v3 | 0.9535 | 0.7331 | 0.90 |
+| Fine-tuned combined-v4 | 0.9528 | 0.7306 | 0.90 |
+| Random-init combined-v5 | 0.9289 | 0.6443 | 0.80 |
+
+At fixed confidence 0.25, Lich TP/FP/FN over all 16 validation images was
+10/3/0 for the original, 9/1/1 for fine-tuning, and 8/3/2 for random initialization.
+At confidence 0.40, random initialization had 8/0/2 versus the original's 9/1/1:
+fewer false detections came with another miss. This scratch run underperformed
+overall and was not deployed. The validation set is small and reused across
+experiments; these results are development comparisons, not production accuracy.
+
+The complete dataset, all three comparison checkpoints, training history and
+portable scripts are under `dataset/runs/combined-v5-scratch-20260928/`.
+Git-visible records are in `experiments/combined-v5-scratch-20260928/`.
+Start with `RECOVERY-START-HERE.md`; `compare.py` and `compare_lich.py` repeat
+the comparison after restoration. The complete ZIP and verified extracted copy
+are in `C:/Users/LEE/Documents/Project HUM/Training Backups/forest-of-dead-trees-2/`.
+See `archive-receipt.json` for hashes and the verified file count. Both backups
+are local to this volume; original videos and the repository are not needed
+to recover the image/label dataset.
+
+## Recoverable fine-tuning experiment
+
+The experiment `combined-v4-20260928` fine-tunes combined-v3's
+`best.pt` with the human-confirmed batch 5. Its frozen dataset preserves the
+previous 48/12 split and adds 18 training / 4 validation frames, with complete
+source runs kept on one side. It contains 66 training images (434 boxes) and
+16 validation images (99 boxes). Canonical annotations remain unchanged.
+
+Recoverable input data, source weights, original pretrained weights, architecture,
+environment versions, hashes and the portable runner live at
+`dataset/runs/combined-v4-20260928/`. The lightweight records in
+`experiments/combined-v4-20260928/` remain visible to Git even though large run
+artifacts are ignored. Start with `RECOVERY-START-HERE.md` for the portable
+installation commands; `RECOVERY.md` explains repeating the fine-tune, starting
+fresh from pretrained YOLO11n, and training with random initialization.
+An independent local ZIP is also saved under
+`C:/Users/LEE/Documents/Project HUM/Training Backups/forest-of-dead-trees-2/`.
+The input archive was extracted into a different directory and all payload hashes
+verified there. This protects against changes to the checkout; both copies are
+on the same volume, so this is not an off-device backup.
+
+The experiment records parent lineage and training events in `history.jsonl`;
+each run retains `args.yaml`, epoch metrics, plots and checkpoints. Fine-tuning
+uses an explicit AdamW learning rate of 0.0001, a fixed seed, 640px inputs,
+up to 80 epochs, and patience 20. No checkpoint is installed into HUMAN
+automatically.
+
+The run completed 45 epochs and selected epoch 25. On the same 16 validation
+frames, parent/candidate mAP50-95 was 0.7331/0.7306, and Lich recall was 0.90
+for both at the validator's operating point. At fixed confidence 0.25, the four
+new held-out frames changed from 2 true / 2 false / 0 missed Lich detections to
+1 true / 1 false / 1 missed. This is not a clear generalization improvement;
+the checkpoint remains an experimental candidate and was not deployed.
+
+See `experiments/combined-v4-20260928/experiment-report.json`,
+`training-results.csv` and `history.jsonl` for the result and lineage. The complete
+archive is `combined-v4-20260928-finetune-640-complete.zip` in the backup directory
+above. All 247 archived files were extracted and verified by hash; the ZIP hash
+and restore location are recorded in `archive-receipt.json`.
 
 ## Expanded full-collection experiment
 

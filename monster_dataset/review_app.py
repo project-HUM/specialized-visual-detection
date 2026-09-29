@@ -103,6 +103,8 @@ def load_codex_review_frame_indices(path: Path) -> dict[str, int]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("schema") != "specialized-visual-detection.codex-manual-review-batch.v1":
         raise ValueError(f"{path}: unsupported Codex review manifest schema")
+    if payload.get("source", {}).get("kind") == "still_images":
+        return {}  # Incident PNGs have capture timestamps, not video frame anchors.
     result: dict[str, int] = {}
     for entry in payload.get("frames", []):
         frame_id = entry.get("frame_id")
@@ -537,12 +539,13 @@ class MonsterReviewApp:
     def __init__(self, annotations: Path, video: Path, *, split: str, start_id: str | None = None,
                  delta_s: float = .2, queue: str = "all",
                  frame_id_prefixes: tuple[str, ...] = (),
-                 source_size: tuple[int, int] = SOURCE_SIZE):
+                 source_size: tuple[int, int] = SOURCE_SIZE, images_only: bool = False):
         if split not in {"all", "pilot", "train", "validation"}:
             raise ValueError("Interactive review is limited to train and validation, plus isolated pilot data")
         self.annotations_path = annotations
         self.video = video
         self.delta_s = delta_s
+        self.images_only = images_only
         self.settings_path = annotations.parent / "review_settings.json"
         self.settings = load_review_settings(self.settings_path)
         self.presets = {preset.preset_id: preset for preset in self.settings.box_presets}
@@ -566,7 +569,9 @@ class MonsterReviewApp:
                     "Conflicting exact source-frame anchors for " + ", ".join(sorted(conflicting_ids))
                 )
             candidate_indices.update(codex_indices)
-        if split == "pilot":
+        if images_only:
+            self.timestamps = None
+        elif split == "pilot":
             self.source_frame_indices = candidate_indices
             missing = [item.frame_id for item in self.session.items
                        if item.frame_id not in self.source_frame_indices]
@@ -633,6 +638,8 @@ class MonsterReviewApp:
             path = resolve_image_path(item.image_path, self.annotations_path)
             image = cv2.imread(str(path))
             if image is None:
+                if self.images_only:
+                    raise RuntimeError(f"Could not read saved review image: {path}")
                 image = self._frame(item.timestamp, item)
             self.image_cache = {item.frame_id: image}
         return self.image_cache[item.frame_id]
@@ -854,9 +861,13 @@ class MonsterReviewApp:
         thumb_width = width // 3
         contexts = (("PREVIOUS", max(0.0, item.timestamp - self.delta_s)),
                     ("CURRENT CONTEXT", item.timestamp), ("NEXT", item.timestamp + self.delta_s))
-        for index, (label, timestamp) in enumerate(contexts):
-            self._draw_thumbnail(canvas, self._frame(timestamp, item), (index * thumb_width, 0,
-                                 thumb_width if index < 2 else width - index * thumb_width, top), label)
+        if self.images_only:
+            self._draw_thumbnail(canvas, self._current_image(), (0, 0, thumb_width, top), "SAVED INCIDENT FRAME")
+            self._put(canvas, "Still image: temporal context unavailable", (thumb_width + 20, top // 2), .65)
+        else:
+            for index, (label, timestamp) in enumerate(contexts):
+                self._draw_thumbnail(canvas, self._frame(timestamp, item), (index * thumb_width, 0,
+                                     thumb_width if index < 2 else width - index * thumb_width, top), label)
         self._draw_main_image(canvas, self._current_image())
         self._draw_annotations(canvas)
         controls_x = main_width + 12

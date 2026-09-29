@@ -1,0 +1,9 @@
+{
+  "archive": "C:\\Users\\LEE\\Documents\\Project HUM\\Training Backups\\forest-of-dead-trees-2\\combined-v4-20260928-finetune-640-complete.zip",
+  "sha256": "a91c109bb720802c60a775c640fb5c8a7a7bdbd87d87b775e1a4a0e490f9ea74",
+  "bytes": 212376063,
+  "verified_restoration": "C:\\Users\\LEE\\Documents\\Project HUM\\Training Backups\\forest-of-dead-trees-2\\combined-v4-20260928-finetune-640-verified-restore",
+  "verified_files": 247,
+  "verified_utc": "2026-09-28T07:46:48.364668+00:00",
+  "note": "Independent local copy on the same volume; not off-device disaster recovery."
+}

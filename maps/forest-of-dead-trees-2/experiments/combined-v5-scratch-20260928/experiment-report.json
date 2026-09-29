@@ -1,0 +1,325 @@
+{
+  "schema": "forest.training-result.v1",
+  "experiment": "combined-v5-scratch-20260928",
+  "completed_utc": "2026-09-28T08:35:26.452769+00:00",
+  "parent_experiment": "combined-v4-20260928",
+  "parent_weights_sha256": "68992fe81ccd581676f5d25d2fb7820aae0059856d5a4c57903f2dd8df7a88e3",
+  "best_weights": "runs/scratch-640/weights/best.pt",
+  "best_weights_sha256": "47b22d7182cd5822e8146a28aa19a810bd5c18267bd3c3eef4e2f0d86a3aa548",
+  "epochs_completed": 292,
+  "best_epoch_by_validation_map50_95": 217,
+  "best_epoch_metrics": {
+    "epoch": "217",
+    "time": "1869.74",
+    "train/box_loss": "1.44732",
+    "train/cls_loss": "0.84395",
+    "train/dfl_loss": "1.07897",
+    "metrics/precision(B)": "0.98407",
+    "metrics/recall(B)": "0.83739",
+    "metrics/mAP50(B)": "0.92888",
+    "metrics/mAP50-95(B)": "0.64429",
+    "val/box_loss": "1.1401",
+    "val/cls_loss": "0.71293",
+    "val/dfl_loss": "1.11394",
+    "lr/pg0": "0.000189475",
+    "lr/pg1": "0.000189475",
+    "lr/pg2": "0.000189475"
+  },
+  "dataset": {
+    "train": {
+      "split": "train",
+      "frames": 66,
+      "instances": 434,
+      "classes": {
+        "hero": 64,
+        "lich": 32,
+        "zombie": 338
+      },
+      "output": "C:\\projects\\specialized-visual-detection\\maps\\forest-of-dead-trees-2\\dataset\\runs\\combined-v5-scratch-20260928\\dataset"
+    },
+    "validation": {
+      "split": "validation",
+      "frames": 16,
+      "instances": 99,
+      "classes": {
+        "hero": 15,
+        "lich": 10,
+        "zombie": 74
+      },
+      "output": "C:\\projects\\specialized-visual-detection\\maps\\forest-of-dead-trees-2\\dataset\\runs\\combined-v5-scratch-20260928\\dataset"
+    }
+  },
+  "comparison": {
+    "evaluation_set": "Same 16 held-out frames: 12 legacy and 4 new run-isolated frames",
+    "caution": "Small selected validation set reused across experiments; not an independent production test.",
+    "candidate_initialization": "random weights; pretrained=False",
+    "models": {
+      "parent": {
+        "weights": "models\\parent-best.pt",
+        "sha256": "68992fe81ccd581676f5d25d2fb7820aae0059856d5a4c57903f2dd8df7a88e3",
+        "overall": {
+          "metrics/precision(B)": 0.9612964869916251,
+          "metrics/recall(B)": 0.9476516451980731,
+          "metrics/mAP50(B)": 0.9534606923577512,
+          "metrics/mAP50-95(B)": 0.733054605204334,
+          "fitness": 0.733054605204334
+        },
+        "per_class": {
+          "zombie": {
+            "precision": 1.0,
+            "recall": 0.9429549355942193,
+            "map50": 0.9741320770732536,
+            "map50_95": 0.7481509951001812
+          },
+          "hero": {
+            "precision": 0.933935501421913,
+            "recall": 1.0,
+            "map50": 0.99125,
+            "map50_95": 0.7543253205128205
+          },
+          "lich": {
+            "precision": 0.9499539595529625,
+            "recall": 0.9,
+            "map50": 0.895,
+            "map50_95": 0.6966875
+          }
+        }
+      },
+      "finetuned": {
+        "weights": "models\\finetuned-best.pt",
+        "sha256": "154eb2499cb8ac021c5dee5c6b6d11c85fa45a051d6ca2bca8eedd4b6251c2e3",
+        "overall": {
+          "metrics/precision(B)": 0.9500206149337713,
+          "metrics/recall(B)": 0.9531531531531532,
+          "metrics/mAP50(B)": 0.9528302982323776,
+          "metrics/mAP50-95(B)": 0.7306277495370124,
+          "fitness": 0.7306277495370124
+        },
+        "per_class": {
+          "zombie": {
+            "precision": 0.9691160254398455,
+            "recall": 0.9594594594594594,
+            "map50": 0.9722408946971328,
+            "map50_95": 0.7506160180345962
+          },
+          "hero": {
+            "precision": 0.930202745677209,
+            "recall": 1.0,
+            "map50": 0.99125,
+            "map50_95": 0.7631600877192982
+          },
+          "lich": {
+            "precision": 0.9507430736842596,
+            "recall": 0.9,
+            "map50": 0.895,
+            "map50_95": 0.6781071428571429
+          }
+        }
+      },
+      "candidate": {
+        "weights": "runs\\scratch-640\\weights\\best.pt",
+        "sha256": "47b22d7182cd5822e8146a28aa19a810bd5c18267bd3c3eef4e2f0d86a3aa548",
+        "overall": {
+          "metrics/precision(B)": 0.9855387416124771,
+          "metrics/recall(B)": 0.8374204082108422,
+          "metrics/mAP50(B)": 0.9288650861811841,
+          "metrics/mAP50-95(B)": 0.6443012133274418,
+          "fitness": 0.6443012133274418
+        },
+        "per_class": {
+          "zombie": {
+            "precision": 0.9784454082975468,
+            "recall": 0.7297297297297297,
+            "map50": 0.9215952585435526,
+            "map50_95": 0.6259324482868436
+          },
+          "hero": {
+            "precision": 1.0,
+            "recall": 0.982531494902797,
+            "map50": 0.995,
+            "map50_95": 0.6402211916954815
+          },
+          "lich": {
+            "precision": 0.9781708165398845,
+            "recall": 0.8,
+            "map50": 0.87,
+            "map50_95": 0.66675
+          }
+        }
+      }
+    }
+  },
+  "lich_fixed_thresholds": {
+    "method": "YOLO raw detections at imgsz=640; greedy confidence-order IoU>=0.5 matches against clipped YOLO labels",
+    "warning": "Training cohort results measure fit, not generalization. Does not reproduce HUMAN temporal gating or preset-box postprocessing.",
+    "models": {
+      "parent": {
+        "weights_sha256": "68992fe81ccd581676f5d25d2fb7820aae0059856d5a4c57903f2dd8df7a88e3",
+        "thresholds": {
+          "0.25": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 8,
+              "fp": 1,
+              "fn": 0,
+              "frames_with_false_lich": 1
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 6,
+              "fp": 12,
+              "fn": 0,
+              "frames_with_false_lich": 11
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 2,
+              "fp": 2,
+              "fn": 0,
+              "frames_with_false_lich": 2
+            }
+          },
+          "0.4": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 8,
+              "fp": 0,
+              "fn": 0,
+              "frames_with_false_lich": 0
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 6,
+              "fp": 7,
+              "fn": 0,
+              "frames_with_false_lich": 7
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 1,
+              "fp": 1,
+              "fn": 1,
+              "frames_with_false_lich": 1
+            }
+          }
+        }
+      },
+      "finetuned": {
+        "weights_sha256": "154eb2499cb8ac021c5dee5c6b6d11c85fa45a051d6ca2bca8eedd4b6251c2e3",
+        "thresholds": {
+          "0.25": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 8,
+              "fp": 0,
+              "fn": 0,
+              "frames_with_false_lich": 0
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 6,
+              "fp": 3,
+              "fn": 0,
+              "frames_with_false_lich": 3
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 1,
+              "fp": 1,
+              "fn": 1,
+              "frames_with_false_lich": 1
+            }
+          },
+          "0.4": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 8,
+              "fp": 0,
+              "fn": 0,
+              "frames_with_false_lich": 0
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 6,
+              "fp": 0,
+              "fn": 0,
+              "frames_with_false_lich": 0
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 1,
+              "fp": 1,
+              "fn": 1,
+              "frames_with_false_lich": 1
+            }
+          }
+        }
+      },
+      "candidate": {
+        "weights_sha256": "47b22d7182cd5822e8146a28aa19a810bd5c18267bd3c3eef4e2f0d86a3aa548",
+        "thresholds": {
+          "0.25": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 7,
+              "fp": 2,
+              "fn": 1,
+              "frames_with_false_lich": 2
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 5,
+              "fp": 2,
+              "fn": 1,
+              "frames_with_false_lich": 2
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 1,
+              "fp": 1,
+              "fn": 1,
+              "frames_with_false_lich": 1
+            }
+          },
+          "0.4": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 7,
+              "fp": 0,
+              "fn": 1,
+              "frames_with_false_lich": 0
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 5,
+              "fp": 0,
+              "fn": 1,
+              "frames_with_false_lich": 0
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 1,
+              "fp": 0,
+              "fn": 1,
+              "frames_with_false_lich": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "conclusion": "Random-initialization run underperformed both baselines on the fixed validation set: mAP50-95 0.6443 versus original 0.7331 and fine-tuned 0.7306; Lich recall 0.80 versus 0.90. Preserve for comparison; no deployment.",
+  "initialization": "random_weights_from_yolo11n_yaml",
+  "deployed_to_human": false,
+  "recovery_verification": {
+    "restored_payload_files": 203,
+    "train_frames": 66,
+    "validation_frames": 16,
+    "yolo_label_rows": 533,
+    "restored_directory": "C:\\Users\\LEE\\Documents\\Project HUM\\Training Backups\\forest-of-dead-trees-2\\combined-v5-scratch-20260928-input-restoration-check",
+    "archive_sha256": "01271a3be9fd0bef139a5b22e7c7eb3ed32c32ba97c1f6e0de8eb7df86106769",
+    "source_run_cross_split_leakage": false,
+    "dataset_matches_v4": true,
+    "canonical_unchanged": true
+  }
+}

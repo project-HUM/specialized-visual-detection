@@ -1,0 +1,240 @@
+{
+  "schema": "forest.training-result.v1",
+  "experiment": "combined-v4-20260928",
+  "completed_utc": "2026-09-28T07:46:41.933452+00:00",
+  "parent_experiment": "combined-v3",
+  "parent_weights_sha256": "68992fe81ccd581676f5d25d2fb7820aae0059856d5a4c57903f2dd8df7a88e3",
+  "best_weights": "runs/finetune-640/weights/best.pt",
+  "best_weights_sha256": "154eb2499cb8ac021c5dee5c6b6d11c85fa45a051d6ca2bca8eedd4b6251c2e3",
+  "epochs_completed": 45,
+  "best_epoch_by_validation_map50_95": 25,
+  "best_epoch_metrics": {
+    "epoch": "25",
+    "time": "216.065",
+    "train/box_loss": "0.82276",
+    "train/cls_loss": "0.58439",
+    "train/dfl_loss": "0.90499",
+    "metrics/precision(B)": "0.94976",
+    "metrics/recall(B)": "0.95315",
+    "metrics/mAP50(B)": "0.95279",
+    "metrics/mAP50-95(B)": "0.73051",
+    "val/box_loss": "0.86067",
+    "val/cls_loss": "0.56115",
+    "val/dfl_loss": "0.92576",
+    "lr/pg0": "7.95954e-05",
+    "lr/pg1": "7.95954e-05",
+    "lr/pg2": "7.95954e-05"
+  },
+  "dataset": {
+    "train": {
+      "split": "train",
+      "frames": 66,
+      "instances": 434,
+      "classes": {
+        "hero": 64,
+        "lich": 32,
+        "zombie": 338
+      },
+      "output": "C:\\projects\\specialized-visual-detection\\maps\\forest-of-dead-trees-2\\dataset\\runs\\combined-v4-20260928\\dataset"
+    },
+    "validation": {
+      "split": "validation",
+      "frames": 16,
+      "instances": 99,
+      "classes": {
+        "hero": 15,
+        "lich": 10,
+        "zombie": 74
+      },
+      "output": "C:\\projects\\specialized-visual-detection\\maps\\forest-of-dead-trees-2\\dataset\\runs\\combined-v4-20260928\\dataset"
+    }
+  },
+  "comparison": {
+    "evaluation_set": "16 held-out frames; 12 legacy and 4 new run-isolated frames",
+    "caution": "Small selected validation set; not a broad production accuracy estimate.",
+    "models": {
+      "parent": {
+        "weights": "models\\parent-best.pt",
+        "sha256": "68992fe81ccd581676f5d25d2fb7820aae0059856d5a4c57903f2dd8df7a88e3",
+        "overall": {
+          "metrics/precision(B)": 0.9612964869916251,
+          "metrics/recall(B)": 0.9476516451980731,
+          "metrics/mAP50(B)": 0.9534606923577512,
+          "metrics/mAP50-95(B)": 0.733054605204334,
+          "fitness": 0.733054605204334
+        },
+        "per_class": {
+          "zombie": {
+            "precision": 1.0,
+            "recall": 0.9429549355942193,
+            "map50": 0.9741320770732536,
+            "map50_95": 0.7481509951001812
+          },
+          "hero": {
+            "precision": 0.933935501421913,
+            "recall": 1.0,
+            "map50": 0.99125,
+            "map50_95": 0.7543253205128205
+          },
+          "lich": {
+            "precision": 0.9499539595529625,
+            "recall": 0.9,
+            "map50": 0.895,
+            "map50_95": 0.6966875
+          }
+        }
+      },
+      "candidate": {
+        "weights": "runs\\finetune-640\\weights\\best.pt",
+        "sha256": "154eb2499cb8ac021c5dee5c6b6d11c85fa45a051d6ca2bca8eedd4b6251c2e3",
+        "overall": {
+          "metrics/precision(B)": 0.9500206149337713,
+          "metrics/recall(B)": 0.9531531531531532,
+          "metrics/mAP50(B)": 0.9528302982323776,
+          "metrics/mAP50-95(B)": 0.7306277495370124,
+          "fitness": 0.7306277495370124
+        },
+        "per_class": {
+          "zombie": {
+            "precision": 0.9691160254398455,
+            "recall": 0.9594594594594594,
+            "map50": 0.9722408946971328,
+            "map50_95": 0.7506160180345962
+          },
+          "hero": {
+            "precision": 0.930202745677209,
+            "recall": 1.0,
+            "map50": 0.99125,
+            "map50_95": 0.7631600877192982
+          },
+          "lich": {
+            "precision": 0.9507430736842596,
+            "recall": 0.9,
+            "map50": 0.895,
+            "map50_95": 0.6781071428571429
+          }
+        }
+      }
+    }
+  },
+  "lich_fixed_thresholds": {
+    "method": "YOLO raw detections at imgsz=640; greedy confidence-order IoU>=0.5 matches against clipped YOLO labels",
+    "warning": "Training cohort results measure fit, not generalization. Does not reproduce HUMAN temporal gating or preset-box postprocessing.",
+    "models": {
+      "parent": {
+        "weights_sha256": "68992fe81ccd581676f5d25d2fb7820aae0059856d5a4c57903f2dd8df7a88e3",
+        "thresholds": {
+          "0.25": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 8,
+              "fp": 1,
+              "fn": 0,
+              "frames_with_false_lich": 1
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 6,
+              "fp": 12,
+              "fn": 0,
+              "frames_with_false_lich": 11
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 2,
+              "fp": 2,
+              "fn": 0,
+              "frames_with_false_lich": 2
+            }
+          },
+          "0.4": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 8,
+              "fp": 0,
+              "fn": 0,
+              "frames_with_false_lich": 0
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 6,
+              "fp": 7,
+              "fn": 0,
+              "frames_with_false_lich": 7
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 1,
+              "fp": 1,
+              "fn": 1,
+              "frames_with_false_lich": 1
+            }
+          }
+        }
+      },
+      "candidate": {
+        "weights_sha256": "154eb2499cb8ac021c5dee5c6b6d11c85fa45a051d6ca2bca8eedd4b6251c2e3",
+        "thresholds": {
+          "0.25": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 8,
+              "fp": 0,
+              "fn": 0,
+              "frames_with_false_lich": 0
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 6,
+              "fp": 3,
+              "fn": 0,
+              "frames_with_false_lich": 3
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 1,
+              "fp": 1,
+              "fn": 1,
+              "frames_with_false_lich": 1
+            }
+          },
+          "0.4": {
+            "legacy_validation": {
+              "frames": 12,
+              "tp": 8,
+              "fp": 0,
+              "fn": 0,
+              "frames_with_false_lich": 0
+            },
+            "new_training_fit": {
+              "frames": 18,
+              "tp": 6,
+              "fp": 0,
+              "fn": 0,
+              "frames_with_false_lich": 0
+            },
+            "new_validation": {
+              "frames": 4,
+              "tp": 1,
+              "fp": 1,
+              "fn": 1,
+              "frames_with_false_lich": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "conclusion": "No clear held-out improvement; preserve as an experimental candidate. No deployment.",
+  "deployed_to_human": false,
+  "recovery_verification": {
+    "restored_payload_files": 193,
+    "restored_dataset_resolves_without_original_paths": true,
+    "scratch_architecture_loads": true,
+    "train_frames": 66,
+    "validation_frames": 16,
+    "source_run_cross_split_leakage": false,
+    "yolo_label_rows": 533,
+    "canonical_unchanged": true
+  }
+}

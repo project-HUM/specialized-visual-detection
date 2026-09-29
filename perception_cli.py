@@ -153,6 +153,7 @@ def _parser(workspace: MapWorkspace) -> argparse.ArgumentParser:
     temporal.add_argument("--output", type=Path, default=workspace.path("temporal_context"))
     review = commands.add_parser("monster-review", help="interactive train/validation box review with temporal context")
     review.add_argument("--video", type=Path, default=workspace.video)
+    review.add_argument("--images-only", action="store_true", help="review saved images without opening a video or temporal context")
     review.add_argument("--annotations", type=Path, default=workspace.path("annotations"))
     review.add_argument("--split", choices=("all", "pilot", "train", "validation"), required=True)
     review.add_argument("--start-id")
@@ -616,7 +617,7 @@ def main() -> int:
         MonsterReviewApp(args.annotations,args.video,split=args.split,start_id=args.start_id,
                          delta_s=args.delta,queue=args.queue,
                          frame_id_prefixes=tuple(args.frame_id_prefix),
-                         source_size=workspace.source_size).run()
+                         source_size=workspace.source_size, images_only=args.images_only).run()
     elif args.command == "monster-prelabel":
         if args.split != "train":
             raise ValueError("Automatic pre-labeling is restricted to TRAIN; validation is manual and test is sealed")

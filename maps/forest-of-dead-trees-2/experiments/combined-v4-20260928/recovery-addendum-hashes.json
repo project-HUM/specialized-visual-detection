@@ -1,0 +1,10 @@
+{
+  "requirements-training.txt": {
+    "bytes": 775,
+    "sha256": "3130bd994343513375c27635d3c41511bada8b471cc59f99e6f6b21a89cbc076"
+  },
+  "RECOVERY-START-HERE.md": {
+    "bytes": 1310,
+    "sha256": "d9ddf0c481d38e7257ddcc7a78ea555d0893feacfc63765a580c487df6ae99e0"
+  }
+}

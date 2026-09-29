@@ -1,0 +1,159 @@
+{
+  "method": "YOLO raw detections at imgsz=640; greedy confidence-order IoU>=0.5 matches against clipped YOLO labels",
+  "warning": "Training cohort results measure fit, not generalization. Does not reproduce HUMAN temporal gating or preset-box postprocessing.",
+  "models": {
+    "parent": {
+      "weights_sha256": "68992fe81ccd581676f5d25d2fb7820aae0059856d5a4c57903f2dd8df7a88e3",
+      "thresholds": {
+        "0.25": {
+          "legacy_validation": {
+            "frames": 12,
+            "tp": 8,
+            "fp": 1,
+            "fn": 0,
+            "frames_with_false_lich": 1
+          },
+          "new_training_fit": {
+            "frames": 18,
+            "tp": 6,
+            "fp": 12,
+            "fn": 0,
+            "frames_with_false_lich": 11
+          },
+          "new_validation": {
+            "frames": 4,
+            "tp": 2,
+            "fp": 2,
+            "fn": 0,
+            "frames_with_false_lich": 2
+          }
+        },
+        "0.4": {
+          "legacy_validation": {
+            "frames": 12,
+            "tp": 8,
+            "fp": 0,
+            "fn": 0,
+            "frames_with_false_lich": 0
+          },
+          "new_training_fit": {
+            "frames": 18,
+            "tp": 6,
+            "fp": 7,
+            "fn": 0,
+            "frames_with_false_lich": 7
+          },
+          "new_validation": {
+            "frames": 4,
+            "tp": 1,
+            "fp": 1,
+            "fn": 1,
+            "frames_with_false_lich": 1
+          }
+        }
+      }
+    },
+    "finetuned": {
+      "weights_sha256": "154eb2499cb8ac021c5dee5c6b6d11c85fa45a051d6ca2bca8eedd4b6251c2e3",
+      "thresholds": {
+        "0.25": {
+          "legacy_validation": {
+            "frames": 12,
+            "tp": 8,
+            "fp": 0,
+            "fn": 0,
+            "frames_with_false_lich": 0
+          },
+          "new_training_fit": {
+            "frames": 18,
+            "tp": 6,
+            "fp": 3,
+            "fn": 0,
+            "frames_with_false_lich": 3
+          },
+          "new_validation": {
+            "frames": 4,
+            "tp": 1,
+            "fp": 1,
+            "fn": 1,
+            "frames_with_false_lich": 1
+          }
+        },
+        "0.4": {
+          "legacy_validation": {
+            "frames": 12,
+            "tp": 8,
+            "fp": 0,
+            "fn": 0,
+            "frames_with_false_lich": 0
+          },
+          "new_training_fit": {
+            "frames": 18,
+            "tp": 6,
+            "fp": 0,
+            "fn": 0,
+            "frames_with_false_lich": 0
+          },
+          "new_validation": {
+            "frames": 4,
+            "tp": 1,
+            "fp": 1,
+            "fn": 1,
+            "frames_with_false_lich": 1
+          }
+        }
+      }
+    },
+    "candidate": {
+      "weights_sha256": "47b22d7182cd5822e8146a28aa19a810bd5c18267bd3c3eef4e2f0d86a3aa548",
+      "thresholds": {
+        "0.25": {
+          "legacy_validation": {
+            "frames": 12,
+            "tp": 7,
+            "fp": 2,
+            "fn": 1,
+            "frames_with_false_lich": 2
+          },
+          "new_training_fit": {
+            "frames": 18,
+            "tp": 5,
+            "fp": 2,
+            "fn": 1,
+            "frames_with_false_lich": 2
+          },
+          "new_validation": {
+            "frames": 4,
+            "tp": 1,
+            "fp": 1,
+            "fn": 1,
+            "frames_with_false_lich": 1
+          }
+        },
+        "0.4": {
+          "legacy_validation": {
+            "frames": 12,
+            "tp": 7,
+            "fp": 0,
+            "fn": 1,
+            "frames_with_false_lich": 0
+          },
+          "new_training_fit": {
+            "frames": 18,
+            "tp": 5,
+            "fp": 0,
+            "fn": 1,
+            "frames_with_false_lich": 0
+          },
+          "new_validation": {
+            "frames": 4,
+            "tp": 1,
+            "fp": 0,
+            "fn": 1,
+            "frames_with_false_lich": 0
+          }
+        }
+      }
+    }
+  }
+}

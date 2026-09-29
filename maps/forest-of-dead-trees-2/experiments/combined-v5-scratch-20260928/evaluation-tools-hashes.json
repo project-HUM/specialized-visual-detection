@@ -1,0 +1,14 @@
+{
+  "compare.py": {
+    "bytes": 1945,
+    "sha256": "fd5ad3e68afbd45e405ddb8be4b44cec7f004f546bfeac731ad316f39273d7d7"
+  },
+  "compare_lich.py": {
+    "bytes": 3913,
+    "sha256": "302e4f3cd9bc2578349fd49b08aa0c9312c31258b5ead7c2b23fa7f3ad8676c9"
+  },
+  "EVALUATION.md": {
+    "bytes": 843,
+    "sha256": "d9db4b76b3366c4f0f59295b86fc090a6d96735bd7539be362f674e19a67cbee"
+  }
+}

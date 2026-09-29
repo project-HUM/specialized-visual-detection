@@ -1,0 +1,10 @@
+{
+  "restored_payload_files": 193,
+  "restored_dataset_resolves_without_original_paths": true,
+  "scratch_architecture_loads": true,
+  "train_frames": 66,
+  "validation_frames": 16,
+  "source_run_cross_split_leakage": false,
+  "yolo_label_rows": 533,
+  "canonical_unchanged": true
+}

@@ -54,6 +54,31 @@ def test_review_app_only_writes_backup_for_actual_edits(tmp_path: Path, monkeypa
     assert app.session.dirty is False
 
 
+def test_image_only_review_renders_without_video_and_rejects_missing_image(tmp_path: Path, monkeypatch):
+    image = tmp_path / "incident.png"
+    cv2.imwrite(str(image), np.full((1080, 1920, 3), 80, np.uint8))
+    annotations = tmp_path / "annotations.jsonl"
+    write_jsonl([FrameAnnotation("incident-0000", 400.0, str(image))], annotations)
+    manifest = tmp_path / "codex_manual_batch_v5_manifest.json"
+    manifest.write_text(json.dumps({
+        "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+        "source": {"kind": "still_images"},
+        "frames": [{"frame_id": "incident-0000", "image_path": str(image)}],
+    }), encoding="utf-8")
+    monkeypatch.setattr("monster_dataset.review_app.video_frame_timestamps",
+                        lambda _: pytest.fail("still review opened video"))
+    monkeypatch.setattr(MonsterReviewApp, "_frame",
+                        lambda *args: pytest.fail("still review requested video context"))
+    app = MonsterReviewApp(annotations, tmp_path / "missing.mp4", split="all", images_only=True)
+    assert load_codex_review_frame_indices(manifest) == {}
+    assert app._canvas().shape == (900, 1440, 3)
+    assert app._current_image().shape == (1080, 1920, 3)
+    image.unlink()
+    app.image_cache.clear()
+    with pytest.raises(FileNotFoundError, match="Could not read annotation image"):
+        app._current_image()
+
+
 def test_pilot_review_uses_manifest_frame_anchor_without_full_video_probe(
         tmp_path: Path, monkeypatch):
     annotations = tmp_path / "annotations.jsonl"

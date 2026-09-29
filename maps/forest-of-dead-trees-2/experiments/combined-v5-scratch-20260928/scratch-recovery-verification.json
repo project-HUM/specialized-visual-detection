@@ -1,0 +1,11 @@
+{
+  "restored_payload_files": 203,
+  "train_frames": 66,
+  "validation_frames": 16,
+  "yolo_label_rows": 533,
+  "restored_directory": "C:\\Users\\LEE\\Documents\\Project HUM\\Training Backups\\forest-of-dead-trees-2\\combined-v5-scratch-20260928-input-restoration-check",
+  "archive_sha256": "01271a3be9fd0bef139a5b22e7c7eb3ed32c32ba97c1f6e0de8eb7df86106769",
+  "source_run_cross_split_leakage": false,
+  "dataset_matches_v4": true,
+  "canonical_unchanged": true
+}
