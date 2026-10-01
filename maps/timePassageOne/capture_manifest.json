@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "map_id": "timePassageOne",
+  "sources": [
+    {
+      "name": "timePassageOneSample0",
+      "video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "decoded_frames": 4960,
+      "source_size": [
+        1920,
+        1080
+      ],
+      "first_frame_timestamp_s": 0.0,
+      "last_frame_timestamp_s": 186.366033,
+      "interval_s": 7.4546413199999995,
+      "sample_count": 25,
+      "display_positions": [
+        1,
+        25
+      ]
+    },
+    {
+      "name": "timePassageOneSample1",
+      "video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "decoded_frames": 76685,
+      "source_size": [
+        1920,
+        1080
+      ],
+      "first_frame_timestamp_s": 0.0,
+      "last_frame_timestamp_s": 2909.2011,
+      "interval_s": 116.36804400000001,
+      "sample_count": 25,
+      "display_positions": [
+        26,
+        50
+      ]
+    }
+  ],
+  "source_size": [
+    1920,
+    1080
+  ],
+  "geometry_status": "not_available"
+}

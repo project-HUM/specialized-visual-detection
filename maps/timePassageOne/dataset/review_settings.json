@@ -1,0 +1,16 @@
+{
+  "box_presets": [
+    {
+      "name": "mob",
+      "width": 104,
+      "height": 116,
+      "hue": 42
+    },
+    {
+      "name": "hero",
+      "width": 108,
+      "height": 148,
+      "hue": 205
+    }
+  ]
+}

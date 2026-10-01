@@ -1,0 +1,419 @@
+{
+  "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+  "map_id": "timePassageOne",
+  "labeling_method": "manual_visual_proposals_pending_review",
+  "class_mapping": {
+    "1": "mob",
+    "2": "hero"
+  },
+  "preset_snapshot": {
+    "box_presets": [
+      {
+        "name": "mob",
+        "width": 104,
+        "height": 116,
+        "hue": 42
+      },
+      {
+        "name": "hero",
+        "width": 108,
+        "height": 148,
+        "hue": 205
+      }
+    ]
+  },
+  "reference_frame_ids": [
+    "tpo-sample0-0000",
+    "tpo-sample0-0001",
+    "tpo-sample0-0002",
+    "tpo-sample0-0003",
+    "tpo-sample0-0004",
+    "tpo-sample0-0005",
+    "tpo-sample0-0006",
+    "tpo-sample0-0007"
+  ],
+  "reference_corrections": {
+    "adjusted_boxes": [
+      {
+        "display_position": 5,
+        "box_number": 4,
+        "preset": "1",
+        "before_bottom_center": [
+          1018,
+          734
+        ],
+        "after_bottom_center": [
+          1028.5301645338209,
+          734.0
+        ],
+        "delta_xy": [
+          10.53016453382088,
+          0.0
+        ]
+      },
+      {
+        "display_position": 6,
+        "box_number": 5,
+        "preset": "1",
+        "before_bottom_center": [
+          418,
+          754
+        ],
+        "after_bottom_center": [
+          409.2248628884826,
+          748.7349177330896
+        ],
+        "delta_xy": [
+          -8.775137111517381,
+          -5.26508226691044
+        ]
+      },
+      {
+        "display_position": 7,
+        "box_number": 6,
+        "preset": "1",
+        "before_bottom_center": [
+          1206,
+          383
+        ],
+        "after_bottom_center": [
+          1198.979890310786,
+          386.51005484460694
+        ],
+        "delta_xy": [
+          -7.020109689213996,
+          3.510054844606941
+        ]
+      },
+      {
+        "display_position": 7,
+        "box_number": 10,
+        "preset": "1",
+        "before_bottom_center": [
+          695,
+          753
+        ],
+        "after_bottom_center": [
+          695.0,
+          744.2248628884826
+        ],
+        "delta_xy": [
+          0.0,
+          -8.775137111517438
+        ]
+      }
+    ],
+    "class_counts_unchanged": true,
+    "hero_boxes_unchanged": true,
+    "preset_sizes_unchanged": true,
+    "application": "Small per-sprite placement corrections; retain existing dimensions and visibility policy. No global offset."
+  },
+  "before_annotations_sha256": "5f5c060a0d471b74ec2e6d125570a70db989517b9eee768fed6543dbba2c4522",
+  "after_annotations_sha256": "4139f8626634059f51b8f7bd3a301288b5cdc844c97d384afaf972a52dd46e98",
+  "proposals_sha256": "43cbbb78ef63ee2dce7454343411a3426f3f80292638595c1e1472911b15516b",
+  "review": {
+    "split": "pilot",
+    "status": "pending",
+    "images_only": true,
+    "display_positions": [
+      9,
+      25
+    ]
+  },
+  "counts_by_preset": {
+    "1": 176,
+    "2": 17
+  },
+  "frames": [
+    {
+      "frame_id": "tpo-sample0-0008",
+      "display_position": 9,
+      "source_frame": 1678,
+      "timestamp": 63.358133,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "dbfc7e3b8353f4128289cb06eac716ba9578f938124d5aede2aa6d727f0641d1",
+      "proposal_count": 13,
+      "counts_by_preset": {
+        "1": 12,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review the overlapping upper-left pair, loot-covered mobs, ladder-covered hero, and bottom UI clipping.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-09-tpo-sample0-0008.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0009",
+      "display_position": 10,
+      "source_frame": 1881,
+      "timestamp": 70.824667,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "d67f6ed258997ad6482a089b5799059349a1c15ba93c1af70e499e8f5e82f1b7",
+      "proposal_count": 18,
+      "counts_by_preset": {
+        "1": 17,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review faint mobs behind the minimap, both overlapping groups, and bottom UI clipping.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-10-tpo-sample0-0009.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0010",
+      "display_position": 11,
+      "source_frame": 2083,
+      "timestamp": 78.277367,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "f1791cd8d85a0b406eca88c772a9f1d33cb1a6dc9d5d6275144e041ebb4e4fe5",
+      "proposal_count": 10,
+      "counts_by_preset": {
+        "1": 9,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review the attack-covered mob beside the hero and the overlapping lower-right pair. Tiny uncertain fragment at the upper minimap edge excluded.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-11-tpo-sample0-0010.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0011",
+      "display_position": 12,
+      "source_frame": 2282,
+      "timestamp": 85.736933,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "e498e3448a625bb10c52913b89357864dddc0e94a668159de8844755dfe72ba9",
+      "proposal_count": 6,
+      "counts_by_preset": {
+        "1": 5,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review the top-clipped mob, loot occlusion, and lower-right mob under the event text.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-12-tpo-sample0-0011.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0012",
+      "display_position": 13,
+      "source_frame": 2484,
+      "timestamp": 93.175733,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "32d2a856ce76f95b7db558f9c6870729a2038dcb37ae6cae4fe1f2c630fed661",
+      "proposal_count": 7,
+      "counts_by_preset": {
+        "1": 6,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Inventory occlusion: hero is partly visible at the left edge of the item window. Fully hidden mobs under the inventory are not inferred from nameplates; top-edge fragments need review.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-13-tpo-sample0-0012.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0013",
+      "display_position": 14,
+      "source_frame": 2680,
+      "timestamp": 100.621467,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "7d86459a7c2607830146e0e8ef5cb8e40507729e178b162b04c4feba1d53229d",
+      "proposal_count": 12,
+      "counts_by_preset": {
+        "1": 11,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Inventory occlusion: hero legs remain visible below equipment window. Check the narrow mob fragment at the left inventory edge and top-edge clipped mobs.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-14-tpo-sample0-0013.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0014",
+      "display_position": 15,
+      "source_frame": 2880,
+      "timestamp": 108.1019,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "918f3cbfcb8b0ee6a83ca76fe3370a270c68ea7b76696deb188d8b1a598eb940",
+      "proposal_count": 12,
+      "counts_by_preset": {
+        "1": 11,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Hero climbing the ladder; preserve full 108x148 hero extent. Review mobs partly covered by the equipment window.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-15-tpo-sample0-0014.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0015",
+      "display_position": 16,
+      "source_frame": 3078,
+      "timestamp": 115.5407,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "ebe30b95863172d7929dbbd482968339903226b258ea993269ca57877dbb5b9c",
+      "proposal_count": 13,
+      "counts_by_preset": {
+        "1": 12,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Hero changed clothing while on ladder. Check inventory-edge mob fragments and overlapping upper-floor groups; inventory item icons are not targets.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-16-tpo-sample0-0015.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0016",
+      "display_position": 17,
+      "source_frame": 3279,
+      "timestamp": 122.993367,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "5e4d51039bdde749a4fa3d4a85f9b6b0612e7d778913ddc462a22ba342130ea2",
+      "proposal_count": 11,
+      "counts_by_preset": {
+        "1": 10,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review overlapping upper-floor pair and pointer/loot occlusion. Inventory contents and equipment preview are not targets.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-17-tpo-sample0-0016.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0017",
+      "display_position": 18,
+      "source_frame": 3477,
+      "timestamp": 130.452967,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "543806af8b89662e02950319aba8541cc9dec89520aadc125352e5661f900f79",
+      "proposal_count": 13,
+      "counts_by_preset": {
+        "1": 12,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review two faint mobs behind the minimap, upper-floor overlaps, effect-covered hero, and bottom UI clipping.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-18-tpo-sample0-0017.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0018",
+      "display_position": 19,
+      "source_frame": 3671,
+      "timestamp": 137.9126,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "edbe6215567177b3ada67433308c6c391a4305b1285f33d45b9770fd052b47e6",
+      "proposal_count": 12,
+      "counts_by_preset": {
+        "1": 11,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Dense attack effects obscure four independently visible mob sprites next to the hero; verify the count and placements. Check minimap and bottom UI occlusion.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-19-tpo-sample0-0018.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0019",
+      "display_position": 20,
+      "source_frame": 3868,
+      "timestamp": 145.365267,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "f93d771a96969befc515523bd390336a20d2b3986de45f6aa20ff7a23ebe8fbe",
+      "proposal_count": 12,
+      "counts_by_preset": {
+        "1": 11,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Hero is airborne. Review the near-coincident upper-floor pair and both effect-covered groups on the hero's sides.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-20-tpo-sample0-0019.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0020",
+      "display_position": 21,
+      "source_frame": 4065,
+      "timestamp": 152.8318,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "20f0f1b7fa3356b64c046de669354cbdc14f018b68ee9d3251eee584c34b7e90",
+      "proposal_count": 12,
+      "counts_by_preset": {
+        "1": 11,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Hero climbing ladder. Review top-edge fragments and the overlapping upper-left pair.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-21-tpo-sample0-0020.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0021",
+      "display_position": 22,
+      "source_frame": 4264,
+      "timestamp": 160.263667,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "e10c17b019ce24a1127f1f79088c9b9aad5e1c7d620399d809411f5eb2596c2c",
+      "proposal_count": 9,
+      "counts_by_preset": {
+        "1": 8,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review faint minimap pair and three bottom-clipped mobs. Ground loot/clothing and the rabbit pet are not targets.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-22-tpo-sample0-0021.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0022",
+      "display_position": 23,
+      "source_frame": 4466,
+      "timestamp": 167.723267,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "21b9604c3bab12fa07ab6af7986b7664259acaf8866ae5bca8d2cac09006a5f3",
+      "proposal_count": 13,
+      "counts_by_preset": {
+        "1": 12,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Camera puts the hero and many lower-floor mobs behind bottom UI. Keep full preset boxes; review inferred lower extents and tooltip-covered sprites.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-23-tpo-sample0-0022.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0023",
+      "display_position": 24,
+      "source_frame": 4660,
+      "timestamp": 175.196767,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "098f307bdf355135e58cbe7a7a450c80d982206b2cbca1990576910694e6b84d",
+      "proposal_count": 10,
+      "counts_by_preset": {
+        "1": 9,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review the mob partly visible below the minimap and the two mobs overlapping the hero under the ladder.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-24-tpo-sample0-0023.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0024",
+      "display_position": 25,
+      "source_frame": 4859,
+      "timestamp": 182.649433,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "e829a12ddc885d97ced3ee44f11d0f21324eaa7cc0ec0f3b4482ff19f938d6ea",
+      "proposal_count": 10,
+      "counts_by_preset": {
+        "1": 9,
+        "2": 1
+      },
+      "review_status": "pending",
+      "notes": "Review the very narrow left-edge mob, attack-covered lower-floor pair, and hero partly covered by loot/blocks.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch1/position-25-tpo-sample0-0024.jpg"
+    }
+  ],
+  "unchanged": "Positions 1-8 and 26-50, review settings, saved order, original images"
+}

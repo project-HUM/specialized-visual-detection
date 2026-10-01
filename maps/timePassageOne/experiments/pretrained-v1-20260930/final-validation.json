@@ -1,0 +1,16 @@
+{
+  "verified_utc": "2026-09-30T09:20:37.426342+00:00",
+  "payload_files_verified": 121,
+  "canonical_annotations_order_presets_unchanged": true,
+  "stopping_states_verified": 276,
+  "epochs_completed": 276,
+  "best_epoch": 176,
+  "stop_reason": "patience",
+  "epochs_since_improvement": 100,
+  "minimum_epochs": 200,
+  "best_weights_sha256": "a33343f6204f8b8650938b3defe8bc2b8246d983cd2165393b973aa89dba1dea",
+  "reviewed_validation_frames": 9,
+  "smoke_test": "passed: CPU training, validation, checkpoint and six runtime threads",
+  "unit_tests": "8 passed: tests/test_time_passage_training.py",
+  "training_seconds": 3906.91
+}

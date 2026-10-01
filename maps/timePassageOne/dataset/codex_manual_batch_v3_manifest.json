@@ -1,0 +1,414 @@
+{
+  "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+  "map_id": "timePassageOne",
+  "labeling_method": "manual_visual_proposals_pending_review",
+  "class_mapping": {
+    "1": "mob",
+    "2": "hero"
+  },
+  "preset_snapshot": {
+    "box_presets": [
+      {
+        "name": "mob",
+        "width": 104,
+        "height": 116,
+        "hue": 42
+      },
+      {
+        "name": "hero",
+        "width": 108,
+        "height": 148,
+        "hue": 205
+      }
+    ]
+  },
+  "reference_frame_ids": [
+    "tpo-sample0-0000",
+    "tpo-sample0-0001",
+    "tpo-sample0-0002",
+    "tpo-sample0-0003",
+    "tpo-sample0-0004",
+    "tpo-sample0-0005",
+    "tpo-sample0-0006",
+    "tpo-sample0-0007",
+    "tpo-sample0-0008",
+    "tpo-sample0-0009",
+    "tpo-sample0-0010",
+    "tpo-sample0-0011",
+    "tpo-sample0-0012",
+    "tpo-sample0-0013",
+    "tpo-sample0-0014",
+    "tpo-sample0-0015",
+    "tpo-sample0-0016",
+    "tpo-sample0-0017",
+    "tpo-sample0-0018",
+    "tpo-sample0-0019",
+    "tpo-sample0-0020",
+    "tpo-sample0-0021",
+    "tpo-sample0-0022",
+    "tpo-sample0-0023",
+    "tpo-sample0-0024",
+    "tpo-sample1-0000",
+    "tpo-sample1-0001",
+    "tpo-sample1-0002",
+    "tpo-sample1-0003",
+    "tpo-sample1-0004"
+  ],
+  "before_annotations_sha256": "639fc04540b7e9abd099eaf26e6d74c50a0be05a2f0a85038bbb9e10eddf73ee",
+  "after_annotations_sha256": "a174f693a967c8820508ccafd8e3e39eff76c1fa9d58bb736ba0396b578ef311",
+  "proposals_sha256": "0cadaf13453435e41ba33ed492ee7b6b14f577d7cebfec0366003d61f0406b67",
+  "review": {
+    "split": "pilot",
+    "status": "pending",
+    "images_only": true,
+    "display_positions": [
+      31,
+      50
+    ]
+  },
+  "new_counts_by_preset": {
+    "1": 155,
+    "2": 20
+  },
+  "frames": [
+    {
+      "frame_id": "tpo-sample1-0005",
+      "display_position": 31,
+      "source_frame": 16881,
+      "timestamp": 640.013067,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "d07b802d9c7be5b0aab86025bf291dc6dc4193a559a980a246e8d8e1305f825a",
+      "counts_by_preset": {
+        "1": 14,
+        "2": 1
+      },
+      "new_proposal_count": 15,
+      "review_status": "pending",
+      "notes": "Review two faint minimap mobs, the fading but recognizable lower-left sprite, attack-covered mobs beside the hero, and three bottom-toolbar fragments.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-31-tpo-sample1-0005.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0006",
+      "display_position": 32,
+      "source_frame": 19953,
+      "timestamp": 756.380333,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "dbcbabd5fd38b2308e0cc6606c80285b39eaa9d957d9067b3a67281cc4be588d",
+      "counts_by_preset": {
+        "1": 6,
+        "2": 1
+      },
+      "new_proposal_count": 7,
+      "review_status": "pending",
+      "notes": "Review overlapping lower-left pair and two separately visible mobs under damage effects near the hero. Chat and the left image edge obscure parts of the sprites.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-32-tpo-sample1-0006.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0007",
+      "display_position": 33,
+      "source_frame": 23011,
+      "timestamp": 872.768467,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "b809ee6fe346e4e414219945079523df956e77a445ad42a6ef4382d8bd1015c8",
+      "counts_by_preset": {
+        "1": 7,
+        "2": 1
+      },
+      "new_proposal_count": 8,
+      "review_status": "pending",
+      "notes": "Review three overlapping mobs left of the hero under shields, loot and damage text, and the recognizable hit-animation sprite on the right.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-33-tpo-sample1-0007.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0008",
+      "display_position": 34,
+      "source_frame": 26096,
+      "timestamp": 989.1149,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "c55bbf2520f63b7a0484413ade7fece1618e690e942351138843e6956704cae9",
+      "counts_by_preset": {
+        "1": 10,
+        "2": 1
+      },
+      "new_proposal_count": 11,
+      "review_status": "pending",
+      "notes": "Hero is climbing the ladder. Review the faint minimap mob and four lower-floor sprites behind chat and the bottom toolbar.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-34-tpo-sample1-0008.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0009",
+      "display_position": 35,
+      "source_frame": 29157,
+      "timestamp": 1105.503,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "28f3392629fab7fc8aa5ebe469f633d93f39ddc801c0aee0886b56e8da688c6f",
+      "counts_by_preset": {
+        "1": 12,
+        "2": 1
+      },
+      "new_proposal_count": 13,
+      "review_status": "pending",
+      "notes": "Hero is airborne above the blocks. Review three overlapping top-edge fragments, two minimap-covered mobs and loot occlusion.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-35-tpo-sample1-0009.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0010",
+      "display_position": 36,
+      "source_frame": 32217,
+      "timestamp": 1221.849433,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "a5411a6af4d7d921d1e1b6d8b7ec7858526ac775e71325c7252a23949d384d38",
+      "counts_by_preset": {
+        "1": 5,
+        "2": 1
+      },
+      "new_proposal_count": 6,
+      "review_status": "pending",
+      "notes": "Review the tiny top-edge mob fragment and the hit-animation mob covered by loot and damage text. An indeterminate smaller fragment at the top near x615 is excluded.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-36-tpo-sample1-0010.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0011",
+      "display_position": 37,
+      "source_frame": 35295,
+      "timestamp": 1338.237533,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "bfc877e7304277cb6e1a88f8c8f0da161d4f3c23ddb968ab8bb96aac6513d0be",
+      "counts_by_preset": {
+        "1": 15,
+        "2": 1
+      },
+      "new_proposal_count": 16,
+      "review_status": "pending",
+      "notes": "Hero is climbing the ladder. Review both overlapping middle-floor pairs, four top-edge fragments, minimap clipping and loot-covered sprites.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-37-tpo-sample1-0011.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0012",
+      "display_position": 38,
+      "source_frame": 38368,
+      "timestamp": 1454.5979,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "6becd9d89f6339495968513653934c8011a563db94916eab16f6c84460c977ec",
+      "counts_by_preset": {
+        "1": 4,
+        "2": 1
+      },
+      "new_proposal_count": 5,
+      "review_status": "pending",
+      "notes": "Review the very small top-edge fragment and two mobs under hit effects, including the white sprite immediately behind the hero's shield.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-38-tpo-sample1-0012.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0013",
+      "display_position": 39,
+      "source_frame": 41431,
+      "timestamp": 1570.9582,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "60c4b7ad6d37f2c160240e28d903c411fbf55ec871fc52a859aab756c189519b",
+      "counts_by_preset": {
+        "1": 15,
+        "2": 1
+      },
+      "new_proposal_count": 16,
+      "review_status": "pending",
+      "notes": "Multiple translucent respawning sprites remain identifiable. Review top-edge clipping, the beam-covered mob beside the hero, and fragments at both inventory edges. Do not infer fully inventory-hidden mobs.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-39-tpo-sample1-0013.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0014",
+      "display_position": 40,
+      "source_frame": 44509,
+      "timestamp": 1687.3324,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "3a74280a6c6ecdee8b7010a8b282e8d74464c0da8171b0124f3d9c1976591f70",
+      "counts_by_preset": {
+        "1": 2,
+        "2": 1
+      },
+      "new_proposal_count": 3,
+      "review_status": "pending",
+      "notes": "Hero is climbing the top-left ladder between two overlapping mobs; the left mob is covered by the event button and hero aura.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-40-tpo-sample1-0014.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0015",
+      "display_position": 41,
+      "source_frame": 47590,
+      "timestamp": 1803.692733,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "4fb5e40ee185fa84212783e49e3cb47b0b8b0db5c6bc2f057d78b448dd108664",
+      "counts_by_preset": {
+        "1": 11,
+        "2": 1
+      },
+      "new_proposal_count": 12,
+      "review_status": "pending",
+      "notes": "Hero is airborne over the lower-left blocks. Review five top-edge fragments and middle-floor loot occlusion. Indeterminate sliver beside the top minimap and vanished lower-left hit particles are excluded.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-41-tpo-sample1-0015.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0016",
+      "display_position": 42,
+      "source_frame": 50670,
+      "timestamp": 1920.080867,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "3fc80fe58c7de8f6e3fc7b40c8846fa09fb20fe862146868ef2666603ebad07a",
+      "counts_by_preset": {
+        "2": 1
+      },
+      "new_proposal_count": 1,
+      "review_status": "pending",
+      "notes": "Off-map Maple Sports event retained in sample order. Hero is just right of the stairs, partly overlapped by its rabbit pet. NPCs, pets and other players are not mobs; reconsider inclusion before map-specific training.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-42-tpo-sample1-0016.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0017",
+      "display_position": 43,
+      "source_frame": 53762,
+      "timestamp": 2036.4273,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "28d532a4a19acfd1408b9e832d04853f61b6237ad0ba92bc2433456d496c9fc4",
+      "counts_by_preset": {
+        "2": 1
+      },
+      "new_proposal_count": 1,
+      "review_status": "pending",
+      "notes": "Off-map tug-of-war event. Hero is crouched near the right team below the red dragon, with its distinctive helmet visible beside the rabbit and chat scroll button. Preserve preset dimensions; review inferred extent. Event creatures and NPCs are not mobs.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-43-tpo-sample1-0017.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0018",
+      "display_position": 44,
+      "source_frame": 56820,
+      "timestamp": 2152.822367,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "070af8995698e547dc4f1fd4fa12acaa4c23e35237f5ece6b70015f15b6d4da3",
+      "counts_by_preset": {
+        "1": 9,
+        "2": 1
+      },
+      "new_proposal_count": 10,
+      "review_status": "pending",
+      "notes": "Review the faint minimap mob, overlapping upper-floor pair, hit-animation mob next to the hero, and bottom-left sprite behind chat/toolbar. Hero overlaps a foreground block.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-44-tpo-sample1-0018.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0019",
+      "display_position": 45,
+      "source_frame": 59913,
+      "timestamp": 2269.161833,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "54858e733df55a484628eb8c9f11dc58f3c8716c380a32f0143d5f5af8dba60c",
+      "counts_by_preset": {
+        "1": 15,
+        "2": 1
+      },
+      "new_proposal_count": 16,
+      "review_status": "pending",
+      "notes": "Hero is mostly behind chat and the bottom toolbar; horn/effect fragments remain visible near x892. Its lower extent is uncertain and needs review. Review six bottom-floor hat fragments and translucent middle-floor sprites.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-45-tpo-sample1-0019.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0020",
+      "display_position": 46,
+      "source_frame": 62994,
+      "timestamp": 2385.543,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "2f2727532bf08757a99e9b50df4f3cef2763392bf6b14b352e5c58c78632ea79",
+      "counts_by_preset": {
+        "1": 4,
+        "2": 1
+      },
+      "new_proposal_count": 5,
+      "review_status": "pending",
+      "notes": "Review minimap/ladder occlusion and the mob left of the hero under hit effects. An indeterminate tiny top-edge fragment is excluded.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-46-tpo-sample1-0020.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0021",
+      "display_position": 47,
+      "source_frame": 66044,
+      "timestamp": 2501.924167,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "842dffbc81fbb2f34ada605bd5536df3e7815fd8b064d9bb39849856081dc747",
+      "counts_by_preset": {
+        "1": 11,
+        "2": 1
+      },
+      "new_proposal_count": 12,
+      "review_status": "pending",
+      "notes": "Hero is airborne beside the ladder. Review four top-edge fragments, two minimap-covered mobs, the overlapping middle-floor pair and translucent bottom-floor sprites.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-47-tpo-sample1-0021.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0022",
+      "display_position": 48,
+      "source_frame": 69121,
+      "timestamp": 2618.2706,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "1aee7ae0be0813973a4f6e74b842de93ff817b8a7a2155e97d97e9e237fdad9a",
+      "counts_by_preset": {
+        "1": 11,
+        "2": 1
+      },
+      "new_proposal_count": 12,
+      "review_status": "pending",
+      "notes": "Review three overlapping minimap-covered mobs, two recognizable fading hit sprites, a narrow mob fragment at the left skill-window edge, and three bottom-toolbar fragments. Hero is covered by loot/effects; fully hidden skill-window mobs are not inferred.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-48-tpo-sample1-0022.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0023",
+      "display_position": 49,
+      "source_frame": 72201,
+      "timestamp": 2734.651767,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "ab80bd2512fb4aa9ceb1e31a27361c1f4de87654a133d23d60a6586644eab05d",
+      "counts_by_preset": {
+        "1": 2,
+        "2": 1
+      },
+      "new_proposal_count": 3,
+      "review_status": "pending",
+      "notes": "Hero is climbing the left ladder. Review the mob below the minimap and the upper-right mob behind a foreground block.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-49-tpo-sample1-0023.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0024",
+      "display_position": 50,
+      "source_frame": 75291,
+      "timestamp": 2850.991267,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "71aa56f34d90b5f475778c62486489d59dabd981b98f7ae77c29611ea9a6e912",
+      "counts_by_preset": {
+        "1": 2,
+        "2": 1
+      },
+      "new_proposal_count": 3,
+      "review_status": "pending",
+      "notes": "Two independently visible mobs flank the hero under attack effects; chat covers their lower bodies. Review full preset extents and hero placement behind chat.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch3/position-50-tpo-sample1-0024.jpg"
+    }
+  ],
+  "unchanged": "Positions 1-30 byte-for-byte; presets, order and source images"
+}

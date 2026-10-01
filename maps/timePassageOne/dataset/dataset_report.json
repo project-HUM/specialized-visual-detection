@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "frames": 50,
+  "reviewed_frames": 30,
+  "pending_frames": 20,
+  "positive_frames": 50,
+  "negative_frames": 0,
+  "monster_instances": 495,
+  "occluded_instances": 374,
+  "review_required_instances": 175,
+  "count_distribution": {
+    "1": 3,
+    "10": 5,
+    "11": 2,
+    "12": 12,
+    "13": 7,
+    "15": 2,
+    "16": 3,
+    "18": 1,
+    "3": 3,
+    "5": 3,
+    "6": 3,
+    "7": 2,
+    "8": 3,
+    "9": 1
+  },
+  "condition_distribution": {
+    "codex_prelabel_pending": 46,
+    "hero_fully_occluded": 1,
+    "map_membership_unverified": 50,
+    "outside_timePassageOne_event": 3,
+    "timePassageOneSample0": 25,
+    "timePassageOneSample1": 25,
+    "unlabeled": 4
+  },
+  "splits": {
+    "pilot": {
+      "frames": 50,
+      "reviewed": 30,
+      "pending": 20
+    },
+    "train": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    },
+    "validation": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    },
+    "test": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    }
+  },
+  "malformed_frames": {},
+  "training_ready": false,
+  "box_size": {
+    "mean_width": 104.3959595959596,
+    "mean_height": 119.16767676767677
+  },
+  "pairwise_iou": {
+    "pairs": 2642,
+    "max": 0.8173918599450518,
+    "ge_0_5": 14
+  },
+  "note": "Positions 1-30 are reviewed; 31-50 have pending proposals. All 50 samples have been inspected. Frames 27, 42 and 43 are off-map events. Training readiness remains false pending review and map calibration."
+}

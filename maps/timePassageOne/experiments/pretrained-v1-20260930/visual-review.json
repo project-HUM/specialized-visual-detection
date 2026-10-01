@@ -1,0 +1,186 @@
+{
+  "reviewed_utc": "2026-09-30T09:20:36.269311+00:00",
+  "reviewer": "Codex",
+  "method": "Inspected all nine full-frame ground-truth/prediction comparison images and all three inspection contact sheets. No annotation changes or confidence tuning after evaluation.",
+  "confidence": 0.25,
+  "matching_iou": 0.5,
+  "nms_iou": 0.7,
+  "counts": {
+    "mob": {
+      "tp": 67,
+      "fp": 9,
+      "fn": 4
+    },
+    "hero": {
+      "tp": 7,
+      "fp": 0,
+      "fn": 2
+    }
+  },
+  "frames": [
+    {
+      "display_position": 8,
+      "frame_id": "tpo-sample0-0007",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample0-0007-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 10,
+          "fp": 1,
+          "fn": 1
+        },
+        "hero": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "finding": "Overlapping mobs produce one miss; one extra mob detection near minimap. Hero matched."
+    },
+    {
+      "display_position": 13,
+      "frame_id": "tpo-sample0-0012",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample0-0012-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 6,
+          "fp": 4,
+          "fn": 0
+        },
+        "hero": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        }
+      },
+      "finding": "Hero partly visible by inventory under strong effects is missed. Four extra mob detections, mostly around inventory/UI regions."
+    },
+    {
+      "display_position": 15,
+      "frame_id": "tpo-sample0-0014",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample0-0014-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 11,
+          "fp": 2,
+          "fn": 0
+        },
+        "hero": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "finding": "Climbing hero and all labeled mobs matched. Two extra mob detections around minimap/inventory."
+    },
+    {
+      "display_position": 21,
+      "frame_id": "tpo-sample0-0020",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample0-0020-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 1
+        },
+        "hero": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "finding": "Hero matched. One tiny top-edge mob fragment missed."
+    },
+    {
+      "display_position": 24,
+      "frame_id": "tpo-sample0-0023",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample0-0023-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 0
+        },
+        "hero": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "finding": "All labeled heroes and mobs matched with no extra detections."
+    },
+    {
+      "display_position": 36,
+      "frame_id": "tpo-sample1-0010",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample1-0010-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 4,
+          "fp": 2,
+          "fn": 0
+        },
+        "hero": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "finding": "Hero and all four labeled mobs matched. Extra mob detections near minimap border and top edge."
+    },
+    {
+      "display_position": 45,
+      "frame_id": "tpo-sample1-0019",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample1-0019-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 2
+        },
+        "hero": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        }
+      },
+      "finding": "Hero heavily hidden by chat/bottom UI is missed; two bottom-edge/UI mob fragments missed."
+    },
+    {
+      "display_position": 49,
+      "frame_id": "tpo-sample1-0023",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample1-0023-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        },
+        "hero": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "finding": "All labeled heroes and mobs matched with no extra detections."
+    },
+    {
+      "display_position": 50,
+      "frame_id": "tpo-sample1-0024",
+      "comparison": "evaluation/pretrained-640/overlays/tpo-sample1-0024-comparison.jpg",
+      "counts": {
+        "mob": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        },
+        "hero": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      },
+      "finding": "All labeled heroes and mobs matched with no extra detections."
+    }
+  ],
+  "limitations": "Small development validation set sharing source videos with training; not independent-source or production accuracy.",
+  "summary": "Hero misses occur under effects or heavy UI occlusion. Mob misses concentrate in overlaps and small edge/UI fragments. Extra mob detections cluster around inventory panels/icons and minimap/edge regions."
+}

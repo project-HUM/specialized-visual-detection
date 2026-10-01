@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "executable": "C:\\projects\\specialized-visual-detection\\.venv\\Scripts\\python.exe",
+  "torch": "2.14.0+cpu",
+  "ultralytics": "8.4.164",
+  "opencv": "4.11.0",
+  "cuda": false,
+  "threads": 6
+}

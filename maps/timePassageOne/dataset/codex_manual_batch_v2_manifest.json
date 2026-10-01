@@ -1,0 +1,173 @@
+{
+  "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+  "map_id": "timePassageOne",
+  "labeling_method": "manual_visual_proposals_pending_review",
+  "class_mapping": {
+    "1": "mob",
+    "2": "hero"
+  },
+  "preset_snapshot": {
+    "box_presets": [
+      {
+        "name": "mob",
+        "width": 104,
+        "height": 116,
+        "hue": 42
+      },
+      {
+        "name": "hero",
+        "width": 108,
+        "height": 148,
+        "hue": 205
+      }
+    ]
+  },
+  "reference_frame_ids": [
+    "tpo-sample0-0000",
+    "tpo-sample0-0001",
+    "tpo-sample0-0002",
+    "tpo-sample0-0003",
+    "tpo-sample0-0004",
+    "tpo-sample0-0005",
+    "tpo-sample0-0006",
+    "tpo-sample0-0007",
+    "tpo-sample0-0008",
+    "tpo-sample0-0009",
+    "tpo-sample0-0010",
+    "tpo-sample0-0011",
+    "tpo-sample0-0012",
+    "tpo-sample0-0013",
+    "tpo-sample0-0014",
+    "tpo-sample0-0015",
+    "tpo-sample0-0016",
+    "tpo-sample0-0017",
+    "tpo-sample0-0018",
+    "tpo-sample0-0019",
+    "tpo-sample0-0020",
+    "tpo-sample0-0021",
+    "tpo-sample0-0022",
+    "tpo-sample0-0023",
+    "tpo-sample0-0024",
+    "tpo-sample1-0000"
+  ],
+  "preserved_hero": {
+    "bbox_xyxy": [
+      680.0073126142596,
+      472.7312614259597,
+      788.0073126142596,
+      620.7312614259597
+    ],
+    "ground_position": [
+      734.0073126142596,
+      620.7312614259597
+    ],
+    "visibility": 1.0,
+    "occluded": false,
+    "annotation_confidence": 1.0,
+    "review_required": false,
+    "source": "visual_review",
+    "box_preset": "2"
+  },
+  "before_annotations_sha256": "d7848cbbd945ffb4cc8526aded290576011a121f3bcee00dbb3031dc5a1934f3",
+  "after_annotations_sha256": "3c96cb00d102cc9eb88722f607c8a81beee869aed8ed8f9ca911d17c7084ac0e",
+  "proposals_sha256": "3c50afa9c5a7b0b20c1c80eced27854ce4ee1534d292d5439c4afa3ff566fbde",
+  "review": {
+    "split": "pilot",
+    "status": "pending",
+    "images_only": true,
+    "display_positions": [
+      26,
+      30
+    ]
+  },
+  "new_counts_by_preset": {
+    "1": 35,
+    "2": 3
+  },
+  "frames": [
+    {
+      "frame_id": "tpo-sample1-0000",
+      "display_position": 26,
+      "source_frame": 1538,
+      "timestamp": 58.197533,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "00f1a8ac8d5d37eaabc23e503e4ff06853802253eb1442135e37ccc4b913c840",
+      "counts_by_preset": {
+        "2": 1,
+        "1": 11
+      },
+      "new_proposal_count": 11,
+      "review_status": "pending",
+      "notes": "Preserve the user's existing hero annotation exactly. Review both overlapping top-floor pairs, the left-edge fragment, and two independently visible mobs beside the hero under attack effects.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch2/position-26-tpo-sample1-0000.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0001",
+      "display_position": 27,
+      "source_frame": 4594,
+      "timestamp": 174.537,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "3494850d0cdcabfebdbd5fa61594eef5538d69509f841e6f136ac76bb7c92e91",
+      "counts_by_preset": {
+        "2": 1
+      },
+      "new_proposal_count": 1,
+      "review_status": "pending",
+      "notes": "Off-map Maple Sports event scene retained in the original sampling order. Only the identifiable player hero is proposed; event NPCs, other players, mounts and pets are not mobs. Review the hero amid overlapping characters and reconsider this frame's inclusion before map-specific training.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch2/position-27-tpo-sample1-0001.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0002",
+      "display_position": 28,
+      "source_frame": 7652,
+      "timestamp": 290.932067,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "2be706c6b4709bf19f6a325110561c21c4821b84f9c5d878901432e5fad0f087",
+      "counts_by_preset": {
+        "1": 7,
+        "2": 1
+      },
+      "new_proposal_count": 8,
+      "review_status": "pending",
+      "notes": "Review the top-edge fragment, two mobs below the minimap, and hero/mob overlap under attack effects. The rabbit pet and loot are not targets.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch2/position-28-tpo-sample1-0002.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0003",
+      "display_position": 29,
+      "source_frame": 10735,
+      "timestamp": 407.2924,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "d27f39c3b1e2214a80f76e8bef9ee6b742b843941c61f49112a7980e70a95420",
+      "counts_by_preset": {
+        "1": 12,
+        "2": 1
+      },
+      "new_proposal_count": 13,
+      "review_status": "pending",
+      "notes": "Hero is airborne above its nameplate, partly obscured by attack effects and chat. Review lower-floor mobs behind chat, inventory, experience text and the right image edge. No fully inventory-hidden mobs inferred.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch2/position-29-tpo-sample1-0003.jpg"
+    },
+    {
+      "frame_id": "tpo-sample1-0004",
+      "display_position": 30,
+      "source_frame": 13816,
+      "timestamp": 523.666633,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample1/screen.mp4",
+      "source_video_sha256": "cef0cc911116a774ef0441ff5f1af71fe789053ac672e4c833e602f446643ee3",
+      "image_sha256": "727d6e8a9b06cdb739bf500ad79e375e645c68c1836c3a11962ddc0047306bd0",
+      "counts_by_preset": {
+        "1": 5
+      },
+      "new_proposal_count": 5,
+      "review_status": "pending",
+      "notes": "Hero body is fully covered by the inventory window; the title below it is not enough to place a hero box. Top-edge fragments need review. Fading death particles, damage text, loot and rabbit at the lower right are not proposed as a live mob.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch2/position-30-tpo-sample1-0004.jpg"
+    }
+  ],
+  "unchanged": "Positions 1-25 and 31-50 byte-for-byte; frame-26 user hero exactly; presets, order and source images"
+}

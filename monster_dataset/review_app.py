@@ -149,8 +149,8 @@ def load_review_settings(path: Path) -> ReviewSettings:
         return ReviewSettings(DEFAULT_BOX_PRESETS)
     payload = json.loads(path.read_text(encoding="utf-8"))
     raw_presets = payload.get("box_presets")
-    if not isinstance(raw_presets, list) or len(raw_presets) != 3:
-        raise ValueError(f"{path}: box_presets must contain exactly three presets")
+    if not isinstance(raw_presets, list) or len(raw_presets) not in (2, 3):
+        raise ValueError(f"{path}: box_presets must contain two or three presets")
     presets: list[BoxPreset] = []
     for index, raw in enumerate(raw_presets, 1):
         try:
@@ -923,7 +923,7 @@ class MonsterReviewApp:
             ("Enter/R confirm + next   E needs review", normal),
             ("Left/Right: previous/next", normal),
             ("A: free Add mode   Esc: default/cancel", normal),
-            ("Ctrl+1/2/3 or drag preset card", normal),
+            (f"Ctrl+{'/'.join(self.presets)} or drag preset card", normal),
             ("Shift+Left/Right (or L/R): width -/+", normal),
             ("Shift+Down/Up (or D/U): height -/+", normal),
             ("key resize: bottom-left stays fixed", normal),
@@ -1138,7 +1138,7 @@ class MonsterReviewApp:
     def _adjust_preset_dimensions(self, delta_width: float, delta_height: float) -> bool:
         preset_id = self._dimension_target_preset_id()
         if preset_id is None:
-            self.dimension_status = "Select a preset (Ctrl+1/2/3) or a preset box before resizing"
+            self.dimension_status = f"Select a preset (Ctrl+{'/'.join(self.presets)}) or a preset box before resizing"
             return False
         current = self.presets[preset_id]
         width = max(4.0, current.width + delta_width)
@@ -1230,6 +1230,8 @@ class MonsterReviewApp:
             self.active_preset_id = None
             self.interaction = None
         elif control and low in (ord("1"), ord("2"), ord("3")):
+            if chr(low) not in self.presets:
+                return True
             self.active_preset_id = chr(low)
             self.add_mode = False
             self.interaction = None

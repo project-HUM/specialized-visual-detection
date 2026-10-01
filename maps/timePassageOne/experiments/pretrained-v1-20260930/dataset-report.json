@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "frames": 50,
+  "reviewed_frames": 50,
+  "pending_frames": 0,
+  "positive_frames": 50,
+  "negative_frames": 0,
+  "monster_instances": 490,
+  "occluded_instances": 369,
+  "review_required_instances": 0,
+  "count_distribution": {
+    "1": 3,
+    "10": 6,
+    "11": 2,
+    "12": 11,
+    "13": 7,
+    "14": 1,
+    "15": 1,
+    "16": 3,
+    "18": 1,
+    "3": 3,
+    "5": 4,
+    "6": 2,
+    "7": 3,
+    "8": 2,
+    "9": 1
+  },
+  "condition_distribution": {
+    "codex_prelabel_pending": 46,
+    "hero_fully_occluded": 1,
+    "map_membership_unverified": 50,
+    "outside_timePassageOne_event": 3,
+    "timePassageOneSample0": 25,
+    "timePassageOneSample1": 25,
+    "unlabeled": 4
+  },
+  "splits": {
+    "pilot": {
+      "frames": 3,
+      "reviewed": 3,
+      "pending": 0
+    },
+    "train": {
+      "frames": 38,
+      "reviewed": 38,
+      "pending": 0
+    },
+    "validation": {
+      "frames": 9,
+      "reviewed": 9,
+      "pending": 0
+    },
+    "test": {
+      "frames": 0,
+      "reviewed": 0,
+      "pending": 0
+    }
+  },
+  "malformed_frames": {},
+  "training_ready": true,
+  "box_size": {
+    "mean_width": 104.4,
+    "mean_height": 119.2
+  },
+  "pairwise_iou": {
+    "pairs": 2595,
+    "max": 0.8173918599450518,
+    "ge_0_5": 14
+  }
+}

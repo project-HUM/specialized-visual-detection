@@ -1,0 +1,7 @@
+{
+  "min_epochs": 200,
+  "max_epochs": 1000,
+  "patience": 100,
+  "metric": "validation mAP50-95",
+  "improvement": "strictly higher; ties do not reset patience"
+}

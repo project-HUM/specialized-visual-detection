@@ -457,6 +457,46 @@ def test_review_settings_load_three_user_configurable_fixed_box_presets(tmp_path
     assert len({preset.color for preset in settings.box_presets}) == 3
 
 
+def test_two_presets_select_resize_persist_and_ignore_absent_shortcut(tmp_path: Path):
+    settings_path = tmp_path / "review_settings.json"
+    settings_path.write_text(json.dumps({"box_presets": [
+        {"name": "mob", "width": 100, "height": 100, "hue": 42},
+        {"name": "hero", "width": 100, "height": 100, "hue": 205},
+    ]}), encoding="utf-8")
+    app = MonsterReviewApp.__new__(MonsterReviewApp)
+    app.settings_path = settings_path
+    app.settings = load_review_settings(settings_path)
+    app.presets = {preset.preset_id: preset for preset in app.settings.box_presets}
+    app.active_preset_id = None
+    app.add_mode = False
+    app.interaction = None
+    app.dimension_status = ""
+    box = MonsterAnnotation([100, 100, 200, 200], [150, 200], box_preset="2")
+    app.session = ReviewSession([FrameAnnotation("f", 0, "f.png", [box])], split="train")
+    app.session.selected_index = 0
+    for preset_id in ("1", "2"):
+        assert app._handle_key(ord(preset_id), control_pressed=True, shift_pressed=False)
+        assert app.active_preset_id == preset_id
+    assert app._handle_key(ord("3"), control_pressed=True, shift_pressed=False)
+    assert app.active_preset_id == "2"
+    assert box.visibility == 1.0  # Ctrl+3 must not fall through to visibility editing.
+    assert app._adjust_preset_dimensions(5, 10)
+    loaded = load_review_settings(settings_path)
+    assert [(p.preset_id, p.name, p.width, p.height) for p in loaded.box_presets] == [
+        ("1", "mob", 100, 100), ("2", "hero", 105, 110),
+    ]
+
+
+@pytest.mark.parametrize("count", [0, 1, 4])
+def test_review_settings_reject_unsupported_preset_counts(tmp_path: Path, count: int):
+    path = tmp_path / "review_settings.json"
+    path.write_text(json.dumps({"box_presets": [
+        {"name": "mob", "width": 100, "height": 100, "hue": 42}
+    ] * count}), encoding="utf-8")
+    with pytest.raises(ValueError, match="two or three presets"):
+        load_review_settings(path)
+
+
 def test_fixed_box_helpers_preserve_preset_size_and_drag_direction():
     preset = BoxPreset("1", "Mob", 160, 170, 40)
     assert fixed_box_from_drag((10, 20), (30, 40), preset) == [10, 20, 170, 190]

@@ -1,0 +1,101 @@
+{
+  "schema": "specialized-visual-detection.codex-manual-review-batch.v1",
+  "map_id": "timePassageOne",
+  "labeling_method": "manual_visual_proposals_pending_review",
+  "class_mapping": {
+    "1": "mob",
+    "2": "hero"
+  },
+  "preset_snapshot": {
+    "box_presets": [
+      {
+        "name": "mob",
+        "width": 104,
+        "height": 116,
+        "hue": 42
+      },
+      {
+        "name": "hero",
+        "width": 108,
+        "height": 148,
+        "hue": 205
+      }
+    ]
+  },
+  "reference_frame_ids": [
+    "tpo-sample0-0000",
+    "tpo-sample0-0001",
+    "tpo-sample0-0002",
+    "tpo-sample0-0003"
+  ],
+  "before_annotations_sha256": "ed599944872afca53d25fec5124d3d0393304fe5a76c415203e554dc8eca5110",
+  "after_annotations_sha256": "80d57650c37f423b5ea2977788ed31fdd29b611e5a6bf367d284413d91f9e218",
+  "review": {
+    "split": "pilot",
+    "status": "pending",
+    "images_only": true,
+    "display_positions": [
+      5,
+      8
+    ]
+  },
+  "counts_by_preset": {
+    "1": 36,
+    "2": 4
+  },
+  "frames": [
+    {
+      "frame_id": "tpo-sample0-0004",
+      "display_position": 5,
+      "source_frame": 893,
+      "timestamp": 33.540467,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "bf85e5a5fc58aab10bd1ed4bb600182a3d58693f6c10d537e228dba8f5e5582e",
+      "proposal_count": 6,
+      "review_status": "pending",
+      "notes": "Check the overlapping pair left of the hero and the hero hidden by green attack effects.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch0/position-05-tpo-sample0-0004.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0005",
+      "display_position": 6,
+      "source_frame": 1089,
+      "timestamp": 41.014,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "11211a058a4c1217a7ab2f19c55e4e0e99edc7d1de97bc396635aae780bf077a",
+      "proposal_count": 10,
+      "review_status": "pending",
+      "notes": "Check the top-clipped mob, the two mobs behind the minimap, and the mob overlapping the hero/attack beam.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch0/position-06-tpo-sample0-0005.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0006",
+      "display_position": 7,
+      "source_frame": 1284,
+      "timestamp": 48.4389,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "e0f628281f398431098e759fad49139e235301122e2eee869f3697bdac45e703",
+      "proposal_count": 12,
+      "review_status": "pending",
+      "notes": "Check the three top-clipped mobs, two overlapping left-edge mobs, and the small visible slice at the right edge. The tiny uncertain fragment behind the upper gold block was not labeled.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch0/position-07-tpo-sample0-0006.jpg"
+    },
+    {
+      "frame_id": "tpo-sample0-0007",
+      "display_position": 8,
+      "source_frame": 1480,
+      "timestamp": 55.905433,
+      "source_video": "C:/projects/input-flag-inspector/saves_m/timePassageOneSample0/screen.mp4",
+      "source_video_sha256": "bf1c3611ecf4cd3bd74d79b0b6809be17d14778297b65c1ff6ddd76e3c24904d",
+      "image_sha256": "5e984430b7831a2812037b630cec940cbb10649df115bea50e198fe058eec4ae",
+      "proposal_count": 12,
+      "review_status": "pending",
+      "notes": "Check the two faint mobs behind the translucent minimap, near-coincident mobs under loot, the attack-covered hero, and the two mobs partly hidden by the bottom UI.",
+      "overlay": "maps/timePassageOne/dataset/prelabel_contacts/batch0/position-08-tpo-sample0-0007.jpg"
+    }
+  ],
+  "unchanged": "Positions 1-4 and 9-50, review settings, saved order, original images"
+}

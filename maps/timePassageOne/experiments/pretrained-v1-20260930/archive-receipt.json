@@ -1,0 +1,9 @@
+{
+  "archive": "C:\\Users\\MAD\\Documents\\Project HUM\\Training Backups\\timePassageOne\\pretrained-v1-20260930-pretrained-640-complete.zip",
+  "sha256": "e5d13c107ae723f0cf1820a123c0b6d66f8e7b03d71ce94631e6f02641300210",
+  "bytes": 668595613,
+  "verified_restoration": "C:\\Users\\MAD\\Documents\\Project HUM\\Training Backups\\timePassageOne\\pretrained-v1-20260930-pretrained-640-verified-restore",
+  "verified_files": 504,
+  "verified_utc": "2026-09-30T09:21:29.602462+00:00",
+  "note": "Independent local copy on the same volume, not off-device backup"
+}
