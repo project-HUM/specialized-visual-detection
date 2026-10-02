@@ -44,7 +44,10 @@ Snapshot location relative to the map: dataset/runs/pretrained-v1-20260930.
 Best model within that snapshot: runs/pretrained-640/weights/best.pt.
 Best model SHA-256: a33343f6204f8b8650938b3defe8bc2b8246d983cd2165393b973aa89dba1dea.
 Prediction comparisons: evaluation/pretrained-640/overlays.
-No checkpoint has been deployed to Human.
+The best checkpoint is published in regular Git at
+`../../models/pretrained-v1-20260930/best.pt`, preserving the SHA-256 above.
+HUMAN now includes its FP32 ONNX export at `assets/time-passage-one/entities.v1.onnx`
+with a provenance manifest. Live gameplay acceptance remains outstanding.
 
 The recovery bundle includes frozen data, source weights, environment requirements,
 runner, checkpoints, epoch stopping states, logs, metrics and visual comparisons.

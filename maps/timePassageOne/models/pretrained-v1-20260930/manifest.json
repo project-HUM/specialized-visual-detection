@@ -1,0 +1,17 @@
+{
+  "schema": "specialized-visual-detection.published-model.v1",
+  "experiment": "pretrained-v1-20260930",
+  "checkpoint": "best.pt",
+  "bytes": 5478106,
+  "sha256": "a33343f6204f8b8650938b3defe8bc2b8246d983cd2165393b973aa89dba1dea",
+  "source": "dataset/runs/pretrained-v1-20260930/runs/pretrained-640/weights/best.pt",
+  "classes": ["mob", "hero"],
+  "bestEpoch": 176,
+  "trainingEpochs": 276,
+  "trainingFramework": "ultralytics",
+  "trainingFrameworkVersion": "8.4.164",
+  "humanModel": "assets/time-passage-one/entities.v1.onnx",
+  "humanModelSha256": "114ff9384cef4a20f40cfe7074648bf23063796d3209ae63951368d29146a9f4",
+  "results": "../../experiments/pretrained-v1-20260930/RESULTS.md",
+  "storage": "Regular Git binary. Full training snapshots and periodic checkpoints remain in ignored dataset/runs directories."
+}

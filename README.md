@@ -5,6 +5,13 @@ identity, capture locations, prompts, geometry references, and generated
 artifacts live under `maps/<map-id>/`; shared Python implementation lives in
 `perception/` and `monster_dataset/`.
 
+Approved shared detector checkpoints belong in `maps/<map-id>/models/<experiment>/`
+with a hash/provenance manifest and are committed as regular Git binaries.
+Time Passage One's published checkpoint is at
+`maps/timePassageOne/models/pretrained-v1-20260930/best.pt`; its exported runtime
+model is committed in HUMAN's `assets/time-passage-one/`. Full training runs,
+periodic checkpoints and recovery archives remain ignored derived artifacts.
+
 There is deliberately no root `run.bat`. Launch the map you intend to review:
 
 ```text

@@ -35,7 +35,10 @@ The archive receipt records the recovery ZIP and verified extracted copy under
 Eight focused tests and the one-epoch CPU smoke test passed. Canonical annotations,
 presets and order remain byte-identical. `resume_cpu_training.bat` is only for an
 interrupted unfinished run; this completed run must not be resumed.
-No checkpoint has been deployed.
+The best checkpoint is now Git-tracked at
+`models/pretrained-v1-20260930/best.pt`, with a hash/provenance manifest. HUMAN
+includes the exported `assets/time-passage-one/entities.v1.onnx` for shared
+installation. Live gameplay acceptance remains outstanding.
 
 ## Labeling history
 
